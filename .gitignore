@@ -1,0 +1,17 @@
+.vs/
+.vscode/
+Debug/
+Release/
+x64/
+x86/
+build/
+cmake-build-*/
+*.obj
+*.o
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.pch   
+*.suo
+*.user

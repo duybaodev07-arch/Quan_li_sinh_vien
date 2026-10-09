@@ -1,0 +1,1 @@
+Test monhoccopy lên terminal:chạy ra file exe(lần đầu, lần sau chỉ cần lệnh chạy file):g++ -I./Header ./Test/testMonHoc.cpp ./Implement/MonHoc.cpp ./Implement/Input.cpp -o ./Test/testMonHoc.exeChạy file exe: đứng ở thư mục đồ án, ko cd dô test gây lỗi đọc ghi file:.\Test\testMonHoc.exe

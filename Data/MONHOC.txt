@@ -1,0 +1,10 @@
+CSDL|Co so du lieu|4|2
+CTDL|Cau truc du lieu|3|1
+OOP|Lap trinh huong doi tuong|3|6
+XSTK|Xac xuat thong ke|2|4
+MMT|Mang may tinh|3|1
+HDH|He dieu hanh|3|0
+KTLT|Ky thuat lap trinh|3|1
+CNPM|Cong nghe phan mem|3|0
+LTW|Lap trinh web|3|1
+AI|Tri tue nhan tao|3|1
