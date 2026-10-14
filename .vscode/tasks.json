@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build QuanLySinhVien (MinGW)",
+      "type": "process",
+      "command": "C:\\mingw64\\bin\\g++.exe",
+      "args": [
+        "-std=c++17", "-Wall", "-Wextra", "-Wpedantic",
+        "-I${workspaceFolder}/include",
+        "${workspaceFolder}/src/DangKi.cpp",
+        "${workspaceFolder}/src/HienThi.cpp",
+        "${workspaceFolder}/src/Input.cpp",
+        "${workspaceFolder}/src/Lop.cpp",
+        "${workspaceFolder}/src/LopTinchi.cpp",
+        "${workspaceFolder}/src/main.cpp",
+        "${workspaceFolder}/src/Menu.cpp",
+        "${workspaceFolder}/src/MonHoc.cpp",
+        "${workspaceFolder}/src/SinhVien.cpp",
+        "-o", "${workspaceFolder}/QuanLySinhVien.exe"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$gcc"
+    }
+  ]
+}

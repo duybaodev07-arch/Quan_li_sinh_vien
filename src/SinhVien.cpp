@@ -3,7 +3,42 @@
 #include<iostream>
 #include<fstream>
 #include<cstring>
+#include<iomanip>
+#include<string>
 using namespace std;
+namespace {
+void inKhungDuoiDanhSachSinhVien();
+
+void inTieuDeDanhSachSinhVien() {
+    cout << "+" << string(MAX_MASV + 2, '-')
+         << "+" << string(MAX_HO + 2, '-')
+         << "+" << string(MAX_TEN + 2, '-')
+         << "+" << string(MAX_PHAI + 2, '-')
+         << "+" << string(MAX_SODT + 2, '-') << "+\n";
+    cout << "| " << left << setw(MAX_MASV) << "Ma SV"
+         << " | " << left << setw(MAX_HO) << "Ho"
+         << " | " << left << setw(MAX_TEN) << "Ten"
+         << " | " << left << setw(MAX_PHAI) << "Phai"
+         << " | " << left << setw(MAX_SODT) << "So dien thoai" << " |\n";
+    inKhungDuoiDanhSachSinhVien();
+}
+
+void inKhungDuoiDanhSachSinhVien() {
+    cout << "+" << string(MAX_MASV + 2, '-')
+         << "+" << string(MAX_HO + 2, '-')
+         << "+" << string(MAX_TEN + 2, '-')
+         << "+" << string(MAX_PHAI + 2, '-')
+         << "+" << string(MAX_SODT + 2, '-') << "+\n";
+}
+
+void inDongSinhVien(const SinhVien& sv) {
+    cout << "| " << left << setw(MAX_MASV) << sv.maSV
+         << " | " << left << setw(MAX_HO) << sv.ho
+         << " | " << left << setw(MAX_TEN) << sv.ten
+         << " | " << left << setw(MAX_PHAI) << sv.phai
+         << " | " << left << setw(MAX_SODT) << sv.soDT << " |\n";
+}
+}
 void khoiTaoDanhSachSinhVien(PTRSV& root) {
     root = nullptr;
 }
@@ -20,8 +55,8 @@ bool nhapSinhVien(SinhVien& sv) {
     cout << "Nhap ten: ";
     nhapChuoi(sv.ten, MAX_TEN);
 
-    cout << "Nhap phai: ";
-    nhapChuoi(sv.phai, MAX_PHAI);
+    cout << "Nhap phai (Nam/Nu): ";
+    nhapPhai(sv.phai, MAX_PHAI);
 
     cout << "Nhap so dien thoai: ";
     nhapSoDienThoai(sv.soDT, MAX_SODT);
@@ -35,8 +70,8 @@ void nhapThongTinHieuChinh(SinhVien& sv) {
     cout << "Nhap ten moi: ";
     nhapChuoi(sv.ten, MAX_TEN);
 
-    cout << "Nhap phai moi: ";
-    nhapChuoi(sv.phai, MAX_PHAI);
+    cout << "Nhap phai moi (Nam/Nu): ";
+    nhapPhai(sv.phai, MAX_PHAI);
 
     cout << "Nhap so dien thoai moi: ";
     nhapSoDienThoai(sv.soDT, MAX_SODT);
@@ -92,7 +127,7 @@ void themSinhVien(PTRSV& head) {
     SinhVien sv;
     while(true) {
         if(nhapSinhVien(sv) == false) {
-            cout << "\nDa nhap xong danh sach sinh vien!\n";
+            cout << "\nDa nhap xong danh sach sinh vien!" << "(" << demSoSinhVien(head) << " sinh vien" << ")\n\n";
             break;
         }
         if(daTonTaiSinhVien(head, sv.maSV) == true) {
@@ -152,21 +187,21 @@ bool hieuChinhSinhVien(PTRSV& head, const char* maSV) {
     return true;
 }
 void inSinhVien(const SinhVien& sv) {
-    cout << "Ma SV : " << sv.maSV << endl;
-    cout << "Ho    : " << sv.ho << endl;
-    cout << "Ten   : " << sv.ten << endl;
-    cout << "Phai  : " << sv.phai << endl;
-    cout << "So DT : " << sv.soDT << endl;
-}   
-void inDanhSachSinhVien(PTRSV head) {
-    PTRSV p = head;
+    inTieuDeDanhSachSinhVien();
+    inDongSinhVien(sv);
+    inKhungDuoiDanhSachSinhVien();
+}
 
-    while (p != nullptr) {
-        inSinhVien(p->sv);
-        if (p->next != nullptr)
-            cout << "------------------------------" << endl;
-        p = p->next;
+void inDanhSachSinhVien(PTRSV head) {
+    if (head == nullptr) {
+        cout << "Danh sach sinh vien rong!\n";
+        return;
     }
+
+    inTieuDeDanhSachSinhVien();
+    for (PTRSV p = head; p != nullptr; p = p->next)
+        inDongSinhVien(p->sv);
+    inKhungDuoiDanhSachSinhVien();
 }
 int demSoSinhVien(PTRSV head) {
     int soLuong = 0;
@@ -196,28 +231,23 @@ void sapXepTheoMaSinhVien(PTRSV pSV[], int soLuong) {
 }
 void inDanhSachSinhVienTheoMa(PTRSV head) {
     if (head == nullptr) {
-        cout << "Danh sach sinh vien rong!" << endl;
+        cout << "Danh sach sinh vien rong!\n";
         return;
     }
 
     int soLuong = demSoSinhVien(head);
-
     PTRSV* pSV = new PTRSV[soLuong];
 
     int i = 0;
-    for (PTRSV p = head; p != nullptr; p = p->next) {
-        pSV[i] = p;
-        i++;
-    }
+    for (PTRSV p = head; p != nullptr; p = p->next)
+        pSV[i++] = p;
 
     sapXepTheoMaSinhVien(pSV, soLuong);
 
-    for (i = 0; i < soLuong; i++) {
-        inSinhVien(pSV[i]->sv);
-
-        if (i < soLuong - 1)
-            cout << "------------------------------" << endl;
-    }
+    inTieuDeDanhSachSinhVien();
+    for (i = 0; i < soLuong; ++i)
+        inDongSinhVien(pSV[i]->sv);
+    inKhungDuoiDanhSachSinhVien();
 
     delete[] pSV;
 }

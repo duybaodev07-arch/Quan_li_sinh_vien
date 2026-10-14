@@ -28,7 +28,7 @@ void menuMonHoc(PTRMH& root) {
 
         switch (luaChon) {
         case 1:
-            themMonHocTuBanPhim(root);
+            themMonHoc(root);
             system("pause");
             break;
 
@@ -79,7 +79,7 @@ void menuMonHoc(PTRMH& root) {
             break;
 
         case 6:
-            inMonHocTheoTen(root);
+            inDanhSachMonHocTheoTen(root);
             system("pause");
             break;
 
@@ -118,7 +118,11 @@ void menuLop(DanhSachLop& dsLop) {
         switch (luaChon) {
 
         case 1:
-            themLopTuBanPhim(dsLop);
+            {
+                Lop lop{};
+                nhapLop(lop);
+                if (themLop(dsLop, lop)) cout << "Them lop thanh cong!\n";
+            }
             system("pause");
             break;
 
@@ -146,7 +150,7 @@ void menuLop(DanhSachLop& dsLop) {
             cout << "Nhap ma lop can tim: ";
             nhapChuoi(maLop, 16);
 
-            int viTri = timLop(dsLop, maLop);
+            int viTri = timLopTheoMa(dsLop, maLop);
 
             if (viTri != -1)
                 inLop(dsLop.lop[viTri]);
@@ -166,7 +170,7 @@ void menuLop(DanhSachLop& dsLop) {
             cout << "Nhap ma lop: ";
             nhapChuoi(maLop, 16);
 
-            int viTriLop = timLop(dsLop, maLop);
+            int viTriLop = timLopTheoMa(dsLop, maLop);
 
             if (viTriLop == -1) {
                 cout << "Khong tim thay lop!\n";
@@ -175,10 +179,14 @@ void menuLop(DanhSachLop& dsLop) {
             }
 
             SinhVien sv;
-            nhapSinhVien(sv);
-
-            if (themSinhVien(dsLop.lop[viTriLop].dssv, sv))
-                cout << "Them sinh vien thanh cong!\n";
+            if (nhapSinhVien(sv)) {
+                PTRSV& dssv = dsLop.lop[viTriLop].dssv;
+                if (daTonTaiSinhVien(dssv, sv.maSV)) cout << "Ma sinh vien da ton tai!\n";
+                else {
+                    themSinhVienVaoDSSV(dssv, taoNodeSinhVien(sv));
+                    cout << "Them sinh vien thanh cong!\n";
+                }
+            }
 
             system("pause");
             break;
@@ -188,7 +196,7 @@ void menuLop(DanhSachLop& dsLop) {
             cout << "Nhap ma lop: ";
             nhapChuoi(maLop, 16);
 
-            int viTriLop = timLop(dsLop, maLop);
+            int viTriLop = timLopTheoMa(dsLop, maLop);
 
             if (viTriLop == -1) {
                 cout << "Khong tim thay lop!\n";
@@ -212,7 +220,7 @@ void menuLop(DanhSachLop& dsLop) {
             cout << "Nhap ma lop: ";
             nhapChuoi(maLop, 16);
 
-            int viTriLop = timLop(dsLop, maLop);
+            int viTriLop = timLopTheoMa(dsLop, maLop);
 
             if (viTriLop == -1) {
                 cout << "Khong tim thay lop!\n";
@@ -236,7 +244,7 @@ void menuLop(DanhSachLop& dsLop) {
             cout << "Nhap ma lop: ";
             nhapChuoi(maLop, 16);
 
-            int viTriLop = timLop(dsLop, maLop);
+            int viTriLop = timLopTheoMa(dsLop, maLop);
 
             if (viTriLop == -1) {
                 cout << "Khong tim thay lop!\n";
@@ -254,7 +262,7 @@ void menuLop(DanhSachLop& dsLop) {
             cout << "Nhap ma lop: ";
             nhapChuoi(maLop, 16);
 
-            int viTriLop = timLop(dsLop, maLop);
+            int viTriLop = timLopTheoMa(dsLop, maLop);
 
             if (viTriLop == -1) {
                 cout << "Khong tim thay lop!\n";
@@ -396,7 +404,7 @@ void menuLopTinChi(
             cout << "Nhap ma lop: ";
             nhapChuoi(maLop, 16);
 
-            int viTri = timLop(dsLop, maLop);
+            int viTri = timLopTheoMa(dsLop, maLop);
 
             if (viTri == -1) {
                 cout << "Khong tim thay lop!\n";
@@ -420,7 +428,8 @@ void menuLopTinChi(
 }
 void menuDangKy(
     DanhSachLopTinChi& dsLopTC,
-    DanhSachLop& dsLop
+    DanhSachLop& dsLop,
+    PTRMH rootMonHoc
 ) {
     int luaChon;
 
@@ -440,7 +449,7 @@ void menuDangKy(
         switch (luaChon) {
 
         case 1:
-            dangKyLopTinChi(dsLopTC, dsLop);
+            dangKyLopTinChi(dsLopTC, dsLop, rootMonHoc);
             system("pause");
             break;
 
@@ -462,10 +471,7 @@ void menuDangKy(
         cout << "Khong tim thay lop tin chi!\n";
         }
         else {
-            inDanhSachSinhVienDangKy(
-                dsLop,
-                *dsLopTC.lop[viTri]
-            );
+            inDanhSachSinhVienDangKy(dsLop, *dsLopTC.lopTC[viTri]);
         }
 
         system("pause");
@@ -517,7 +523,7 @@ void menuChinh(
             break;
 
         case 4:
-            menuDangKy(dsLopTC, dsLop);
+            menuDangKy(dsLopTC, dsLop, root);
             break;
 
         case 5:
@@ -553,7 +559,7 @@ void menuChinh(
             cout << "Nhap ma lop: ";
             nhapChuoi(maLop, 16);
 
-            int viTri = timLop(dsLop, maLop);
+            int viTri = timLopTheoMa(dsLop, maLop);
 
             if (viTri == -1) {
                 cout << "Khong tim thay lop!\n";

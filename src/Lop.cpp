@@ -5,11 +5,16 @@
 #include<cstring>
 using namespace std;
 
+const char* DUONG_DAN_FILE_LOP = "data/LOP.txt";
+
 void khoiTaoDanhSachLop(DanhSachLop& dsLop) {
-    dsLop.lop->dssv = nullptr;
     dsLop.soLuong = 0;
+    for (int i = 0; i < MAX_LOP; ++i) {
+        dsLop.lop[i].dssv = nullptr;
+    }
 }
 void nhapLop(Lop& lop) {
+    lop.dssv = nullptr;
     cout << "Nhap ma lop: ";
     nhapChuoi(lop.maLop, MAX_MALOP);
 
@@ -72,7 +77,7 @@ bool hieuChinhLop(DanhSachLop& dsLop, const char* maLop) {
     }
 
     cout << "Nhap ten lop moi: ";
-    nhapChuoi(dsLop.lop[viTri].tenLop, 51);
+    nhapChuoi(dsLop.lop[viTri].tenLop, MAX_TENLOP);
 
     return true;
 }
@@ -90,6 +95,7 @@ bool xoaLop(DanhSachLop& dsLop, const char* maLop) {
         dsLop.lop[i] = dsLop.lop[i + 1];
     }
     dsLop.soLuong--;
+    dsLop.lop[dsLop.soLuong].dssv = nullptr;
 
     return true;
 }
@@ -111,13 +117,13 @@ void inDanhSachLop(const DanhSachLop& dsLop) {
 }
 
 bool ghiFileLop(const DanhSachLop& dsLop) {
-    ofstream file("LOP.txt");
+    ofstream file(DUONG_DAN_FILE_LOP);
     if (!file) {
         cout << "Khong the mo file LOP.txt!\n";
         return false;
     }
     for (int i = 0; i < dsLop.soLuong; i++) {
-        Lop lop = dsLop.lop[i];
+        const Lop& lop = dsLop.lop[i];
 
         file << lop.maLop << "|";
         file << lop.tenLop << "\n";
@@ -148,8 +154,7 @@ void xoaTatCaLop(DanhSachLop& dsLop) {
     dsLop.soLuong = 0;
 }
 bool docFileLop(DanhSachLop& dsLop) {
-    ifstream file("LOP.txt");
-
+    ifstream file(DUONG_DAN_FILE_LOP);
     if (!file) {
         cout << "Khong the mo file LOP.txt!\n";
         return false;
@@ -159,7 +164,7 @@ bool docFileLop(DanhSachLop& dsLop) {
         Lop lop;
         lop.dssv = nullptr;
 
-        if (!file.getline(lop.maLop, MAX_LOP, '|'))
+        if (!file.getline(lop.maLop, MAX_MALOP, '|'))
             break;
 
         file.getline(lop.tenLop, MAX_TENLOP);
@@ -185,6 +190,12 @@ bool docFileLop(DanhSachLop& dsLop) {
             themSinhVienVaoDSSV(lop.dssv, pSV);
         }
 
+        if (dsLop.soLuong >= MAX_LOP) {
+            xoaTatCaSinhVien(lop.dssv);
+            cout << "Danh sach lop trong file vuot qua gioi han!\n";
+            file.close();
+            return false;
+        }
         dsLop.lop[dsLop.soLuong] = lop;
         dsLop.soLuong++;
     }

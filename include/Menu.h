@@ -15,7 +15,8 @@ void menuLopTinChi(
 );
 void menuDangKy(
     DanhSachLopTinChi& dsLopTC,
-    DanhSachLop& dsLop
+    DanhSachLop& dsLop,
+    PTRMH rootMonHoc
 );
 void menuChinh(
     PTRMH& rootMonHoc,

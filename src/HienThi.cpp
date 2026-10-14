@@ -123,7 +123,7 @@ float tinhDiemTrungBinhSinhVien(
 
         PTRDK dk = timDangKyTheoMaSV(lopTC->dssvdk,sv->sv.maSV);
 
-        if (dk == nullptr)
+        if (dk == nullptr || dk->dk.huyDangKy || dk->dk.diem < 0)
             continue;
 
         PTRMH monHoc = timMonHocTheoMa(root, lopTC->maMH);
@@ -205,7 +205,7 @@ float timDiemThiLonNhat(
             maSV
         );
 
-        if (dk != nullptr && dk->dk.diem > diemLonNhat)
+        if (dk != nullptr && !dk->dk.huyDangKy && dk->dk.diem >= 0 && dk->dk.diem > diemLonNhat)
             diemLonNhat = dk->dk.diem;
     }
 
@@ -234,7 +234,7 @@ int layDanhSachMonHocCuaLop(
                 sv->sv.maSV
             );
 
-            if (dk != nullptr) {
+            if (dk != nullptr && !dk->dk.huyDangKy) {
                 coSinhVien = true;
                 break;
             }

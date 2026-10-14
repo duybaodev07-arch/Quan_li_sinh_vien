@@ -1,6 +1,8 @@
 #pragma once
 
 #include "DangKi.h"
+#include "Lop.h"
+#include "MonHoc.h"
 
 #define MAX_LOP_TC 10000
 
@@ -63,7 +65,8 @@ bool nhapDiem(DanhSachLopTinChi& dsLopTC, DanhSachLop& dsLop);
 bool xemBangDiemLopTinChi(DanhSachLopTinChi& dsLopTC, DanhSachLop& dsLop);
 // Đăng kí lớp tín chỉ
 bool dangKyLopTinChi(DanhSachLopTinChi& dsLopTC,
-    DanhSachLop& dsLop);
+    DanhSachLop& dsLop,
+    PTRMH rootMonHoc);
 // Hủy đăng kí tín chỉ
 bool huyDangKyLopTinChi(
     DanhSachLopTinChi& dsLopTC

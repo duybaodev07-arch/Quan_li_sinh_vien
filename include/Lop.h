@@ -3,7 +3,7 @@
 #include "Const.h"
 
 struct Lop {
-    char maLop[MAX_LOP];
+    char maLop[MAX_MALOP];
     char tenLop[MAX_TENLOP];
     PTRSV dssv;
 };
