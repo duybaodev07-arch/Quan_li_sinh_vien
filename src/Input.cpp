@@ -53,11 +53,83 @@ bool nhapMa(char* ma, int kichThuoc) {
         bool hopLe = true;
         for (int i = 0; ma[i] != '\0'; ++i) {
             const unsigned char kyTu = static_cast<unsigned char>(ma[i]);
-            if (isalpha(kyTu)) ma[i] = static_cast<char>(toupper(kyTu));
-            else if (!isdigit(kyTu)) { hopLe = false; break; }
+            if (!isalnum(kyTu)) {
+                hopLe = false;
+                break;
+            }
         }
-        if (hopLe) return true;
+        if (hopLe) {
+            chuanHoaMa(ma);
+            return true;
+        }
         cout << "Ma chi duoc chua chu cai va chu so! Vui long nhap lai: ";
+    }
+}
+
+void nhapMaBatBuoc(char* ma, int kichThuoc) {
+    while (true) {
+        if (nhapMa(ma, kichThuoc)) {
+            return;
+        }
+        if (cin.eof()) {
+            baoHetDauVao();
+        }
+        cout << "Ma khong duoc de trong! Vui long nhap lai: ";
+    }
+}
+
+void chuanHoaMa(char* ma) {
+    if (ma == nullptr) {
+        return;
+    }
+
+    for (int i = 0; ma[i] != '\0'; ++i) {
+        const unsigned char kyTu = static_cast<unsigned char>(ma[i]);
+        ma[i] = static_cast<char>(toupper(kyTu));
+    }
+}
+
+void nhapNienKhoa(char* nienKhoa, int kichThuoc) {
+    if (nienKhoa == nullptr || kichThuoc < 10) {
+        throw invalid_argument("Bo dem nien khoa phai co it nhat 10 ky tu");
+    }
+
+    string input;
+
+    while (true) {
+        cout << "Nhap nien khoa (YYYY-YYYY): ";
+        if (!getline(cin, input)) {
+            baoHetDauVao();
+        }
+
+        bool dungDinhDang = input.length() == 9 && input[4] == '-';
+        for (int i = 0; dungDinhDang && i < 9; ++i) {
+            if (i == 4) {
+                continue;
+            }
+            dungDinhDang = isdigit(
+                static_cast<unsigned char>(input[i])
+            ) != 0;
+        }
+
+        if (!dungDinhDang) {
+            cout << "Nien khoa phai co dang YYYY-YYYY.\n";
+            continue;
+        }
+
+        const int namTruoc = stoi(input.substr(0, 4));
+        const int namSau = stoi(input.substr(5, 4));
+        if (namSau < namTruoc) {
+            cout << "Nam sau khong duoc nho hon nam truoc.\n";
+            continue;
+        }
+
+        if (input.length() >= static_cast<size_t>(kichThuoc)) {
+            throw invalid_argument("Bo dem nien khoa qua nho");
+        }
+
+        strcpy(nienKhoa, input.c_str());
+        return;
     }
 }
 

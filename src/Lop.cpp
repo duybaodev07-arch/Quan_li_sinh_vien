@@ -3,6 +3,7 @@
 #include<fstream>
 #include<iostream>
 #include<cstring>
+#include<limits>
 using namespace std;
 
 const char* DUONG_DAN_FILE_LOP = "data/LOP.txt";
@@ -16,7 +17,7 @@ void khoiTaoDanhSachLop(DanhSachLop& dsLop) {
 void nhapLop(Lop& lop) {
     lop.dssv = nullptr;
     cout << "Nhap ma lop: ";
-    nhapChuoi(lop.maLop, MAX_MALOP);
+    nhapMaBatBuoc(lop.maLop, MAX_MALOP);
 
     cout << "Nhap ten lop: ";
     nhapChuoi(lop.tenLop, MAX_TENLOP);
@@ -161,30 +162,60 @@ bool docFileLop(DanhSachLop& dsLop) {
     }
     xoaTatCaLop(dsLop);
     while (true) {
-        Lop lop;
-        lop.dssv = nullptr;
+        Lop lop{};
 
         if (!file.getline(lop.maLop, MAX_MALOP, '|'))
             break;
+        chuanHoaMa(lop.maLop);
 
-        file.getline(lop.tenLop, MAX_TENLOP);
+        if (!file.getline(lop.tenLop, MAX_TENLOP)) {
+            cout << "File LOP.txt bi thieu ten lop!\n";
+            return false;
+        }
 
         while (true) {
+            file >> ws;
+
+            if (!file) {
+                xoaTatCaSinhVien(lop.dssv);
+                cout << "File LOP.txt bi thieu dau # ket thuc lop!\n";
+                return false;
+            }
+
+            if (file.peek() == '#') {
+                file.ignore(
+                    numeric_limits<streamsize>::max(),
+                    '\n'
+                );
+                break;
+            }
+
             char maSV[MAX_MASV];
 
-            if (!file.getline(maSV, MAX_MASV, '|'))
-                break;
+            if (!file.getline(maSV, MAX_MASV, '|')) {
+                xoaTatCaSinhVien(lop.dssv);
+                cout << "File LOP.txt bi thieu ma sinh vien hoac dau #!\n";
+                return false;
+            }
 
-            if (strcmp(maSV, "#") == 0)
-                break;
+            if (maSV[0] == '\0') {
+                xoaTatCaSinhVien(lop.dssv);
+                cout << "Ma sinh vien trong file khong duoc de trong!\n";
+                return false;
+            }
 
-            SinhVien sv;
+            SinhVien sv{};
             strcpy(sv.maSV, maSV);
+            chuanHoaMa(sv.maSV);
 
-            file.getline(sv.ho, MAX_HO, '|');
-            file.getline(sv.ten, MAX_TEN, '|');
-            file.getline(sv.phai, MAX_PHAI, '|');
-            file.getline(sv.soDT, MAX_SODT);
+            if (!file.getline(sv.ho, MAX_HO, '|') ||
+                !file.getline(sv.ten, MAX_TEN, '|') ||
+                !file.getline(sv.phai, MAX_PHAI, '|') ||
+                !file.getline(sv.soDT, MAX_SODT)) {
+                xoaTatCaSinhVien(lop.dssv);
+                cout << "Thong tin sinh vien trong file khong day du!\n";
+                return false;
+            }
 
             PTRSV pSV = taoNodeSinhVien(sv);
             themSinhVienVaoDSSV(lop.dssv, pSV);

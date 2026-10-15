@@ -261,6 +261,7 @@ bool docFileMonHoc(PTRMH& root) {
         }
         MonHoc mh{};
         memcpy(mh.maMH, ma.c_str(), ma.size() + 1);
+        chuanHoaMa(mh.maMH);
         memcpy(mh.tenMH, ten.c_str(), ten.size() + 1);
         mh.soTCLT = tclt;
         mh.soTCTH = tcth;

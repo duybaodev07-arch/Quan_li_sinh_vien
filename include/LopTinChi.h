@@ -3,13 +3,12 @@
 #include "DangKi.h"
 #include "Lop.h"
 #include "MonHoc.h"
-
-#define MAX_LOP_TC 10000
+#include "Const.h"
 
 struct LopTinChi {
     int maLopTC = 0;
-    char maMH[11] = "";
-    char nienKhoa[10] = "";
+    char maMH[MAX_MAMH] = "";
+    char nienKhoa[MAX_NIENKHOA] = "";
     int hocKy = 0;
     int nhom = 0;
     int minSV = 0;
@@ -29,16 +28,28 @@ struct DanhSachLopTinChi {
 PTRLTC taoLopTinChi();
 
 // Tìm kiếm
-int timLopTinChi(const DanhSachLopTinChi& dsLopTC, int maLopTC);
-int timLopTinChiTheoMonHoc(const DanhSachLopTinChi& dsLopTC, const char* maMH, const char* nienKhoa, int hocKy, int nhom);
+int timLopTinChiTheoMa(
+    const DanhSachLopTinChi& dsLopTC,
+    int maLopTC
+);
+int timLopTinChiTheoMonHoc(
+    const DanhSachLopTinChi& dsLopTC,
+    const char* maMH,
+    const char* nienKhoa,
+    int hocKy,
+    int nhom
+);
 
 // Nhập
 void nhapLopTinChi(LopTinChi& lopTC);
 // Nhập để tìm lớp tín chỉ
 void nhapThongTinTimLopTinChi(char* maMH, char* nienKhoa, int& hocKy, int& nhom);
 // Thêm
-bool themLopTinChi(DanhSachLopTinChi& dsLopTC, PTRLTC lopTC);
-void themLopTinChiTuBanPhim(DanhSachLopTinChi& dsLopTC);
+bool themLopTinChiVaoDanhSach(
+    DanhSachLopTinChi& dsLopTC,
+    PTRLTC lopTC
+);
+void themLopTinChi(DanhSachLopTinChi& dsLopTC);
 // Hiệu chỉnh
 bool hieuChinhLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC);
 
@@ -68,6 +79,4 @@ bool dangKyLopTinChi(DanhSachLopTinChi& dsLopTC,
     DanhSachLop& dsLop,
     PTRMH rootMonHoc);
 // Hủy đăng kí tín chỉ
-bool huyDangKyLopTinChi(
-    DanhSachLopTinChi& dsLopTC
-);
+bool huyDangKyLopTinChi(DanhSachLopTinChi& dsLopTC);

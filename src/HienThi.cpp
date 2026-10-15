@@ -4,8 +4,37 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <string>
 
 using namespace std;
+
+namespace {
+const int DO_RONG_STT = 3;
+const int DO_RONG_MASV = MAX_MASV - 1;
+const int DO_RONG_HO = MAX_HO - 1;
+const int DO_RONG_TEN = MAX_TEN - 1;
+const int DO_RONG_DIEM = 8;
+
+void inKhungBangDiem() {
+    cout << "+" << string(DO_RONG_STT + 2, '-')
+         << "+" << string(DO_RONG_MASV + 2, '-')
+         << "+" << string(DO_RONG_HO + 2, '-')
+         << "+" << string(DO_RONG_TEN + 2, '-')
+         << "+" << string(DO_RONG_DIEM + 2, '-')
+         << "+\n";
+}
+
+void inTieuDeBangDiem(const char* tieuDeDiem) {
+    inKhungBangDiem();
+    cout << "| " << right << setw(DO_RONG_STT) << "STT"
+         << " | " << left << setw(DO_RONG_MASV) << "MASV"
+         << " | " << setw(DO_RONG_HO) << "HO"
+         << " | " << setw(DO_RONG_TEN) << "TEN"
+         << " | " << right << setw(DO_RONG_DIEM) << tieuDeDiem
+         << " |\n";
+    inKhungBangDiem();
+}
+}
 
 float nhapDiemTrenBang(short x, short y) {
     float diem;
@@ -33,9 +62,7 @@ float nhapDiemTrenBang(short x, short y) {
 }
 
 void nhapDiemTrenBang(const DanhSachLop& dsLop, PTRDK dssvdk) {
-    cout << "+-----+---------------+-------------------------+-----------------+--------+\n";
-    cout << "| STT | MASV          | HO                      | TEN             | DIEM   |\n";
-    cout << "+-----+---------------+-------------------------+-----------------+--------+\n";
+    inTieuDeBangDiem("DIEM");
 
     int stt = 1;
 
@@ -47,22 +74,22 @@ void nhapDiemTrenBang(const DanhSachLop& dsLop, PTRDK dssvdk) {
 
             if (dk != nullptr) {
                 cout << "| "
-                     << setw(3) << left << stt << " | "
-                     << setw(13) << left << sv->sv.maSV << " | "
-                     << setw(23) << left << sv->sv.ho << " | "
-                     << setw(15) << left << sv->sv.ten << " |";
+                     << setw(DO_RONG_STT) << right << stt << " | "
+                     << setw(DO_RONG_MASV) << left << sv->sv.maSV << " | "
+                     << setw(DO_RONG_HO) << left << sv->sv.ho << " | "
+                     << setw(DO_RONG_TEN) << left << sv->sv.ten << " |";
 
                 short xDiem = wherex();
                 short yDiem = wherey();
 
-                cout << setw(8) << " " << "|\n";
+                cout << setw(DO_RONG_DIEM) << " " << "|\n";
 
                 dk->dk.diem = nhapDiemTrenBang(xDiem, yDiem);
 
                 gotoxy(xDiem, yDiem);
-                cout << setw(7) << right << dk->dk.diem << " |\n";
+                cout << setw(DO_RONG_DIEM) << right << dk->dk.diem << " |\n";
 
-                cout << "+-----+---------------+-------------------------+-----------------+--------+\n";
+                inKhungBangDiem();
 
                 stt++;
             }
@@ -78,9 +105,7 @@ void inBangDiemLopTinChi(const DanhSachLop& dsLop, const LopTinChi& lopTC) {
          << "    Hoc ky: " << lopTC.hocKy
          << "    Nhom: " << lopTC.nhom << endl;
 
-    cout << "+-----+---------------+-------------------------+-----------------+--------+\n";
-    cout << "| STT | MASV          | HO                      | TEN             | DIEM   |\n";
-    cout << "+-----+---------------+-------------------------+-----------------+--------+\n";
+    inTieuDeBangDiem("DIEM");
 
     int stt = 1;
 
@@ -92,13 +117,13 @@ void inBangDiemLopTinChi(const DanhSachLop& dsLop, const LopTinChi& lopTC) {
 
             if (dk != nullptr) {
                 cout << "| "
-                     << setw(3) << right << stt << " | "
-                     << setw(13) << left << sv->sv.maSV << " | "
-                     << setw(23) << left << sv->sv.ho << " | "
-                     << setw(15) << left << sv->sv.ten << " | "
-                     << setw(6) << right << dk->dk.diem << " |\n";
+                     << setw(DO_RONG_STT) << right << stt << " | "
+                     << setw(DO_RONG_MASV) << left << sv->sv.maSV << " | "
+                     << setw(DO_RONG_HO) << left << sv->sv.ho << " | "
+                     << setw(DO_RONG_TEN) << left << sv->sv.ten << " | "
+                     << setw(DO_RONG_DIEM) << right << dk->dk.diem << " |\n";
 
-                cout << "+-----+---------------+-------------------------+-----------------+--------+\n";
+                inKhungBangDiem();
 
                 stt++;
             }
@@ -157,9 +182,7 @@ void inBangDiemTrungBinh(DanhSachLop& dsLop, DanhSachLopTinChi& dsLopTC, PTRMH r
     cout << "Ma lop : " << lop.maLop << endl;
     cout << "Ten lop: " << lop.tenLop << endl;
 
-    cout << "+-----+-------------------+-------------------------+-----------------+----------+\n";
-    cout << "| STT | MASV              | HO                      | TEN             | DIEM TB  |\n";
-    cout << "+-----+-------------------+-------------------------+-----------------+----------+\n";
+    inTieuDeBangDiem("DIEM TB");
 
     int stt = 1;
     PTRSV sv = lop.dssv;
@@ -172,13 +195,14 @@ void inBangDiemTrungBinh(DanhSachLop& dsLop, DanhSachLopTinChi& dsLopTC, PTRMH r
         );
 
         cout << "| "
-             << setw(3) << right << stt << " | "
-             << setw(17) << left << sv->sv.maSV << " | "
-             << setw(23) << left << sv->sv.ho << " | "
-             << setw(15) << left << sv->sv.ten << " | "
-             << setw(8) << right << fixed << setprecision(2) << diemTB << " |\n";
+             << setw(DO_RONG_STT) << right << stt << " | "
+             << setw(DO_RONG_MASV) << left << sv->sv.maSV << " | "
+             << setw(DO_RONG_HO) << left << sv->sv.ho << " | "
+             << setw(DO_RONG_TEN) << left << sv->sv.ten << " | "
+             << setw(DO_RONG_DIEM) << right << fixed << setprecision(2)
+             << diemTB << " |\n";
 
-        cout << "+-----+-------------------+-------------------------+-----------------+----------+\n";
+        inKhungBangDiem();
 
         stt++;
         sv = sv->next;
@@ -214,7 +238,7 @@ float timDiemThiLonNhat(
 int layDanhSachMonHocCuaLop(
     Lop& lop,
     DanhSachLopTinChi& dsLopTC,
-    char dsMaMH[][11]
+    char dsMaMH[][MAX_MAMH]
 ) {
     int soLuongMon = 0;
 
@@ -266,7 +290,7 @@ void inBangDiemTongKet(
     Lop& lop,
     DanhSachLopTinChi& dsLopTC
 ) {
-    char dsMaMH[MAX_LOP_TC][11];
+    char dsMaMH[MAX_LOP_TC][MAX_MAMH];
 
     int soLuongMon = layDanhSachMonHocCuaLop(
         lop,
@@ -279,26 +303,32 @@ void inBangDiemTongKet(
     cout << "Lop: " << lop.maLop << endl;
     cout << "\n";
 
-    cout << "+-----+---------------+-------------------------+";
+    const int doRongSTT = 3;
+    const int doRongMaSV = MAX_MASV - 1;
+    const int doRongHoTen = MAX_HO + MAX_TEN - 1;
+    const int doRongMaMH = MAX_MAMH - 1;
 
-    for (int i = 0; i < soLuongMon; i++)
-        cout << "----------+";
+    const auto inDuongKe = [&]() {
+        cout << "+" << string(doRongSTT + 2, '-')
+             << "+" << string(doRongMaSV + 2, '-')
+             << "+" << string(doRongHoTen + 2, '-');
 
+        for (int i = 0; i < soLuongMon; ++i) {
+            cout << "+" << string(doRongMaMH + 2, '-');
+        }
+        cout << "+\n";
+    };
+
+    inDuongKe();
+    cout << "| " << right << setw(doRongSTT) << "STT"
+         << " | " << left << setw(doRongMaSV) << "MASV"
+         << " | " << setw(doRongHoTen) << "HO TEN" << " |";
+
+    for (int i = 0; i < soLuongMon; ++i) {
+        cout << " " << setw(doRongMaMH) << left << dsMaMH[i] << " |";
+    }
     cout << "\n";
-
-    cout << "| STT | MASV          | HO TEN                  |";
-
-    for (int i = 0; i < soLuongMon; i++)
-        cout << " " << setw(8) << left << dsMaMH[i] << "|";
-
-    cout << "\n";
-
-    cout << "+-----+---------------+-------------------------+";
-
-    for (int i = 0; i < soLuongMon; i++)
-        cout << "----------+";
-
-    cout << "\n";
+    inDuongKe();
 
     int stt = 1;
 
@@ -306,15 +336,15 @@ void inBangDiemTongKet(
 
     while (sv != nullptr) {
         cout << "| "
-             << setw(3) << right << stt << " | "
-             << setw(13) << left << sv->sv.maSV << " | ";
+             << setw(doRongSTT) << right << stt << " | "
+             << setw(doRongMaSV) << left << sv->sv.maSV << " | ";
 
         char hoTen[82];
         strcpy(hoTen, sv->sv.ho);
         strcat(hoTen, " ");
         strcat(hoTen, sv->sv.ten);
 
-        cout << setw(23) << left << hoTen << " |";
+        cout << setw(doRongHoTen) << left << hoTen << " |";
 
         for (int i = 0; i < soLuongMon; i++) {
             float diem = timDiemThiLonNhat(
@@ -324,10 +354,10 @@ void inBangDiemTongKet(
             );
 
             if (diem == -1) {
-                cout << setw(10) << " " << "|";
+                cout << " " << setw(doRongMaMH) << " " << " |";
             }
             else {
-                cout << setw(9) << right
+                cout << " " << setw(doRongMaMH) << right
                      << fixed << setprecision(2)
                      << diem << " |";
             }
@@ -335,12 +365,7 @@ void inBangDiemTongKet(
 
         cout << "\n";
 
-        cout << "+-----+---------------+-------------------------+";
-
-        for (int i = 0; i < soLuongMon; i++)
-            cout << "----------+";
-
-        cout << "\n";
+        inDuongKe();
 
         stt++;
         sv = sv->next;

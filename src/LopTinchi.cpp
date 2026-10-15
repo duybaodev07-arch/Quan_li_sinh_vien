@@ -2,30 +2,175 @@
 #include "Input.h"
 #include "HienThi.h"
 #include "MonHoc.h"
-#include<cstring>
-#include<limits>
-#include<fstream>
-#include<iostream>
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <vector>
+#include <cerrno>
+#include <cctype>
+#include <climits>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <string>
 using namespace std;
+
+const string DUONG_DAN_FILE_LOP_TIN_CHI = "data/LOPTC.txt";
 static int maLopTCTiepTheo = 0;
+
+namespace {
+const int MAX_DO_DAI_TRUONG_FILE = 64;
+
+bool tachTruongFile(
+    const string& dong,
+    char truong[][MAX_DO_DAI_TRUONG_FILE],
+    int soTruongToiDa,
+    int& soTruong
+) {
+    soTruong = 0;
+    size_t batDau = 0;
+
+    for (size_t i = 0; i <= dong.length(); ++i) {
+        if (i != dong.length() && dong[i] != '|') {
+            continue;
+        }
+
+        if (soTruong >= soTruongToiDa) {
+            return false;
+        }
+
+        const size_t doDai = i - batDau;
+        if (doDai >= MAX_DO_DAI_TRUONG_FILE) {
+            return false;
+        }
+
+        memcpy(truong[soTruong], dong.c_str() + batDau, doDai);
+        truong[soTruong][doDai] = '\0';
+        ++soTruong;
+        batDau = i + 1;
+    }
+
+    return true;
+}
+
+bool docSoNguyen(const char* noiDung, int& ketQua) {
+    if (noiDung == nullptr || noiDung[0] == '\0') {
+        return false;
+    }
+
+    errno = 0;
+    char* phanDu = nullptr;
+    const long giaTri = strtol(noiDung, &phanDu, 10);
+
+    if (errno != 0 || phanDu == noiDung || *phanDu != '\0' ||
+        giaTri < INT_MIN || giaTri > INT_MAX) {
+        return false;
+    }
+
+    ketQua = static_cast<int>(giaTri);
+    return true;
+}
+
+bool docSoThuc(const char* noiDung, float& ketQua) {
+    if (noiDung == nullptr || noiDung[0] == '\0') {
+        return false;
+    }
+
+    errno = 0;
+    char* phanDu = nullptr;
+    const float giaTri = strtof(noiDung, &phanDu);
+
+    if (errno != 0 || phanDu == noiDung || *phanDu != '\0' ||
+        !isfinite(giaTri)) {
+        return false;
+    }
+
+    ketQua = giaTri;
+    return true;
+}
+
+bool maChiChuaChuVaSo(const char* ma) {
+    if (ma == nullptr || ma[0] == '\0') {
+        return false;
+    }
+
+    for (int i = 0; ma[i] != '\0'; ++i) {
+        if (!isalnum(static_cast<unsigned char>(ma[i]))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool laNienKhoaHopLe(const char* nienKhoa) {
+    if (nienKhoa == nullptr || strlen(nienKhoa) != 9 ||
+        nienKhoa[4] != '-') {
+        return false;
+    }
+
+    for (int i = 0; i < 9; ++i) {
+        if (i == 4) {
+            continue;
+        }
+        if (!isdigit(static_cast<unsigned char>(nienKhoa[i]))) {
+            return false;
+        }
+    }
+
+    char namTruocText[5]{};
+    char namSauText[5]{};
+    memcpy(namTruocText, nienKhoa, 4);
+    memcpy(namSauText, nienKhoa + 5, 4);
+
+    int namTruoc = 0;
+    int namSau = 0;
+    return docSoNguyen(namTruocText, namTruoc) &&
+           docSoNguyen(namSauText, namSau) &&
+           namSau >= namTruoc;
+}
+
+void giaiPhongLopDangDoc(PTRLTC& lopTC) {
+    if (lopTC == nullptr) {
+        return;
+    }
+    xoaTatCaDangKy(lopTC->dssvdk);
+    delete lopTC;
+    lopTC = nullptr;
+}
+}
+
 PTRLTC taoLopTinChi() {
     return new LopTinChi;
 }
-int timLopTinChi(const DanhSachLopTinChi& dsLopTc, int maLopTC) {
-    for(int i = 0; i < dsLopTc.soLuong; i++) {
-        if(dsLopTc.lopTC[i]->maLopTC == maLopTC) 
+
+int timLopTinChiTheoMa(
+    const DanhSachLopTinChi& dsLopTC,
+    int maLopTC
+) {
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
+        if (dsLopTC.lopTC[i] != nullptr &&
+            dsLopTC.lopTC[i]->maLopTC == maLopTC) {
             return i;
+        }
     }
     return -1;
 }
-int timLopTinChiTheoMonHoc(const DanhSachLopTinChi& dsLopTC, const char* maMH, const char* nienKhoa, int hocKy, int nhom) {
-    for (int i = 0; i < dsLopTC.soLuong; i++) {
+
+int timLopTinChiTheoMonHoc(
+    const DanhSachLopTinChi& dsLopTC,
+    const char* maMH,
+    const char* nienKhoa,
+    int hocKy,
+    int nhom
+) {
+    if (maMH == nullptr || nienKhoa == nullptr) {
+        return -1;
+    }
+
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
         LopTinChi* lopTC = dsLopTC.lopTC[i];
+        if (lopTC == nullptr) {
+            continue;
+        }
 
         if (strcmp(lopTC->maMH, maMH) == 0 &&
             strcmp(lopTC->nienKhoa, nienKhoa) == 0 &&
@@ -36,12 +181,12 @@ int timLopTinChiTheoMonHoc(const DanhSachLopTinChi& dsLopTC, const char* maMH, c
     }
     return -1;
 }
+
 void nhapLopTinChi(LopTinChi& lopTC) {
     cout << "Ma mon hoc: ";
-    nhapChuoi(lopTC.maMH, MAX_MAMH);
+    nhapMaBatBuoc(lopTC.maMH, MAX_MAMH);
 
-    cout << "Nien khoa: ";
-    nhapChuoi(lopTC.nienKhoa, MAX_NIENKHOA);
+    nhapNienKhoa(lopTC.nienKhoa, MAX_NIENKHOA);
 
     cout << "Hoc ky: ";
     lopTC.hocKy = nhapSoNguyenKhongAm();
@@ -61,58 +206,97 @@ void nhapLopTinChi(LopTinChi& lopTC) {
 
     } while (lopTC.maxSV < lopTC.minSV);
 }
+
 void nhapThongTinTimLopTinChi(char* maMH, char* nienKhoa, int& hocKy, int& nhom) {
-    cout << "Nien khoa: ";
-    nhapChuoi(nienKhoa, MAX_NIENKHOA);
+    nhapNienKhoa(nienKhoa, MAX_NIENKHOA);
 
     cout << "Hoc ky: ";
     hocKy = nhapSoNguyenKhongAm();
 
     cout << "Ma mon hoc: ";
-    nhapChuoi(maMH, MAX_MAMH);
+    nhapMaBatBuoc(maMH, MAX_MAMH);
 
     cout << "Nhom: ";
     nhom = nhapSoNguyenKhongAm();
 }
-bool themLopTinChi(DanhSachLopTinChi& dsLopTC, PTRLTC lopTC) {
-    if (lopTC == nullptr)
+bool themLopTinChiVaoDanhSach(
+    DanhSachLopTinChi& dsLopTC,
+    PTRLTC lopTC
+) {
+    if (lopTC == nullptr || dsLopTC.soLuong < 0) {
         return false;
+    }
 
-    if (dsLopTC.soLuong >= MAX_LOP_TC)
+    if (dsLopTC.soLuong >= MAX_LOP_TC) {
         return false;
+    }
+
+    if (lopTC->maxSV < lopTC->minSV || lopTC->minSV < 0) {
+        return false;
+    }
+
+    const int viTriTrung = timLopTinChiTheoMonHoc(
+        dsLopTC,
+        lopTC->maMH,
+        lopTC->nienKhoa,
+        lopTC->hocKy,
+        lopTC->nhom
+    );
+    if (viTriTrung != -1) {
+        return false;
+    }
 
     lopTC->maLopTC = maLopTCTiepTheo++;
     dsLopTC.lopTC[dsLopTC.soLuong] = lopTC;
-    dsLopTC.soLuong++;
+    ++dsLopTC.soLuong;
 
     return true;
 }
-void themLopTinChiTuBanPhim(DanhSachLopTinChi& dsLopTC) {
+
+void themLopTinChi(DanhSachLopTinChi& dsLopTC) {
     PTRLTC lopTC = taoLopTinChi();
 
     nhapLopTinChi(*lopTC);
 
-    if (!themLopTinChi(dsLopTC, lopTC)) {
+    if (!themLopTinChiVaoDanhSach(dsLopTC, lopTC)) {
         delete lopTC;
-        cout << "Them lop tin chi that bai!\n";
+        cout << "Them lop tin chi that bai. Kiem tra trung lop hoac suc chua.\n";
         return;
     }
 
     cout << "Them lop tin chi thanh cong!\n";
     cout << "Ma lop tin chi: " << lopTC->maLopTC << endl;
 }
+
 bool hieuChinhLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC) {
-    int findIdx = timLopTinChi(dsLopTC, maLopTC);
+    const int findIdx = timLopTinChiTheoMa(dsLopTC, maLopTC);
 
     if (findIdx == -1)
         return false;
 
-    nhapLopTinChi(*dsLopTC.lopTC[findIdx]); // ko sua dssv dki
+    LopTinChi thongTinMoi = *dsLopTC.lopTC[findIdx];
+    nhapLopTinChi(thongTinMoi);
+
+    const int viTriTrung = timLopTinChiTheoMonHoc(
+        dsLopTC,
+        thongTinMoi.maMH,
+        thongTinMoi.nienKhoa,
+        thongTinMoi.hocKy,
+        thongTinMoi.nhom
+    );
+    if (viTriTrung != -1 && viTriTrung != findIdx) {
+        cout << "Thong tin lop tin chi bi trung voi lop khac!\n";
+        return false;
+    }
+
+    thongTinMoi.maLopTC = dsLopTC.lopTC[findIdx]->maLopTC;
+    thongTinMoi.dssvdk = dsLopTC.lopTC[findIdx]->dssvdk;
+    *dsLopTC.lopTC[findIdx] = thongTinMoi;
 
     return true;
 }
 bool xoaLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC) {
-    int viTri = timLopTinChi(dsLopTC, maLopTC);
+    const int viTri = timLopTinChiTheoMa(dsLopTC, maLopTC);
 
     if (viTri == -1)
         return false;
@@ -129,7 +313,10 @@ bool xoaLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC) {
     return true;
 }
 void xoaTatCaLopTinChi(DanhSachLopTinChi& dsLopTC) {
-    for(int i = 0; i < dsLopTC.soLuong; i++) {
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
+        if (dsLopTC.lopTC[i] == nullptr) {
+            continue;
+        }
         xoaTatCaDangKy(dsLopTC.lopTC[i]->dssvdk);
         delete dsLopTC.lopTC[i];
         dsLopTC.lopTC[i] = nullptr;
@@ -137,7 +324,7 @@ void xoaTatCaLopTinChi(DanhSachLopTinChi& dsLopTC) {
     dsLopTC.soLuong = 0;
 }
 bool huyLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC) {
-    int viTri = timLopTinChi(dsLopTC, maLopTC);
+    const int viTri = timLopTinChiTheoMa(dsLopTC, maLopTC);
 
     if (viTri == -1)
         return false;
@@ -160,22 +347,10 @@ bool tuDongHuyLopKhongDuSinhVien(LopTinChi& lopTC) {
     cout << "So SV dang ky: " << soSVDangKy << endl;
     cout << "So SV toi thieu: " << lopTC.minSV << endl;
 
-    char xacNhan;
+    cout << "Ban co muon huy lop nay? (Y/N): ";
+    const char xacNhan = nhapXacNhan();
 
-    do {
-        cout << "Ban co muon huy lop nay? (Y/N): ";
-        cin >> xacNhan;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        if (xacNhan != 'Y' && xacNhan != 'y' &&
-            xacNhan != 'N' && xacNhan != 'n') {
-            cout << "Vui long chi nhap Y hoac N!\n";
-        }
-
-    } while (xacNhan != 'Y' && xacNhan != 'y' &&
-             xacNhan != 'N' && xacNhan != 'n');
-
-    if (xacNhan == 'Y' || xacNhan == 'y') {
+    if (xacNhan == 'Y') {
         lopTC.huyLop = true;
         cout << "Da huy lop tin chi!\n";
         return true;
@@ -184,48 +359,111 @@ bool tuDongHuyLopKhongDuSinhVien(LopTinChi& lopTC) {
     return false;
 }
 void tuDongHuyDanhSachLopKhongDuSinhVien(DanhSachLopTinChi& dsLopTC) {
-    for (int i = 0; i < dsLopTC.soLuong; i++) {
+    if (dsLopTC.soLuong <= 0) {
+        cout << "Danh sach lop tin chi rong!\n";
+        return;
+    }
+
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
         tuDongHuyLopKhongDuSinhVien(*dsLopTC.lopTC[i]);
     }
 }
+namespace {
+const int DO_RONG_MA_LOP_TC = 10;
+const int DO_RONG_HOC_KY = 4;
+const int DO_RONG_NHOM = 5;
+const int DO_RONG_SI_SO = 6;
+const int DO_RONG_TRANG_THAI = 8;
+
+void inDuongKeLopTinChi() {
+    cout << "+" << string(DO_RONG_MA_LOP_TC + 2, '-')
+         << "+" << string(MAX_MAMH - 1 + 2, '-')
+         << "+" << string(MAX_NIENKHOA - 1 + 2, '-')
+         << "+" << string(DO_RONG_HOC_KY + 2, '-')
+         << "+" << string(DO_RONG_NHOM + 2, '-')
+         << "+" << string(DO_RONG_SI_SO + 2, '-')
+         << "+" << string(DO_RONG_SI_SO + 2, '-')
+         << "+" << string(DO_RONG_TRANG_THAI + 2, '-')
+         << "+\n";
+}
+
+void inTieuDeLopTinChi() {
+    inDuongKeLopTinChi();
+    cout << "| " << left << setw(DO_RONG_MA_LOP_TC) << "Ma lop TC"
+         << " | " << setw(MAX_MAMH - 1) << "Ma mon hoc"
+         << " | " << setw(MAX_NIENKHOA - 1) << "Nien khoa"
+         << " | " << right << setw(DO_RONG_HOC_KY) << "HK"
+         << " | " << setw(DO_RONG_NHOM) << "Nhom"
+         << " | " << setw(DO_RONG_SI_SO) << "Min SV"
+         << " | " << setw(DO_RONG_SI_SO) << "Max SV"
+         << " | " << left << setw(DO_RONG_TRANG_THAI) << "Trang thai"
+         << " |\n";
+    inDuongKeLopTinChi();
+}
+
+void inDongLopTinChi(const LopTinChi& lopTC) {
+    cout << "| " << left << setw(DO_RONG_MA_LOP_TC) << lopTC.maLopTC
+         << " | " << setw(MAX_MAMH - 1) << lopTC.maMH
+         << " | " << setw(MAX_NIENKHOA - 1) << lopTC.nienKhoa
+         << " | " << right << setw(DO_RONG_HOC_KY) << lopTC.hocKy
+         << " | " << setw(DO_RONG_NHOM) << lopTC.nhom
+         << " | " << setw(DO_RONG_SI_SO) << lopTC.minSV
+         << " | " << setw(DO_RONG_SI_SO) << lopTC.maxSV
+         << " | " << left << setw(DO_RONG_TRANG_THAI)
+         << (lopTC.huyLop ? "Da huy" : "Dang mo") << " |\n";
+}
+}
+
 void inLopTinChi(const LopTinChi& lopTC) {
-    cout << "+----------+------------+------------+-----+------+--------+--------+----------+\n";
-    cout << "| Ma lop TC| Ma mon hoc | Nien khoa  | HK  | Nhom | Min SV | Max SV | Status  |\n";
-    cout << "+----------+------------+------------+-----+------+--------+--------+----------+\n";
-    cout << "| " << left << setw(8) << lopTC.maLopTC << " | "
-         << setw(10) << lopTC.maMH << " | " << setw(10) << lopTC.nienKhoa << " | "
-         << right << setw(3) << lopTC.hocKy << " | " << setw(4) << lopTC.nhom << " | "
-         << setw(6) << lopTC.minSV << " | " << setw(6) << lopTC.maxSV << " | "
-         << left << setw(8) << (lopTC.huyLop ? "Da huy" : "Dang mo") << " |\n";
-    cout << "+----------+------------+------------+-----+------+--------+--------+----------+\n";
+    inTieuDeLopTinChi();
+    inDongLopTinChi(lopTC);
+    inDuongKeLopTinChi();
 }
+
 void inDanhSachLopTinChi(const DanhSachLopTinChi& dsLopTC) {
-    cout << "+----------+------------+------------+-----+------+--------+--------+----------+\n";
-    cout << "| Ma lop TC| Ma mon hoc | Nien khoa  | HK  | Nhom | Min SV | Max SV | Status  |\n";
-    cout << "+----------+------------+------------+-----+------+--------+--------+----------+\n";
-    for (int i = 0; i < dsLopTC.soLuong; i++) {
-        const LopTinChi& lopTC = *dsLopTC.lopTC[i];
-        cout << "| " << left << setw(8) << lopTC.maLopTC << " | "
-             << setw(10) << lopTC.maMH << " | " << setw(10) << lopTC.nienKhoa << " | "
-             << right << setw(3) << lopTC.hocKy << " | " << setw(4) << lopTC.nhom << " | "
-             << setw(6) << lopTC.minSV << " | " << setw(6) << lopTC.maxSV << " | "
-             << left << setw(8) << (lopTC.huyLop ? "Da huy" : "Dang mo") << " |\n";
+    if (dsLopTC.soLuong == 0) {
+        cout << "Danh sach lop tin chi rong!\n";
+        return;
     }
-    cout << "+----------+------------+------------+-----+------+--------+--------+----------+\n";
+
+    inTieuDeLopTinChi();
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
+        if (dsLopTC.lopTC[i] != nullptr) {
+            inDongLopTinChi(*dsLopTC.lopTC[i]);
+        }
+    }
+    inDuongKeLopTinChi();
 }
-void inDanhSachSinhVienDangKy(
-    DanhSachLop& dsLop,
-    const LopTinChi& lopTC
-) {
+void inDanhSachSinhVienDangKy(DanhSachLop& dsLop, const LopTinChi& lopTC) {
     cout << "\nDANH SACH SINH VIEN DANG KY - LOP TC " << lopTC.maLopTC << "\n";
 
     if (lopTC.dssvdk == nullptr) {
         cout << "Chua co sinh vien dang ky!\n";
         return;
     }
-    cout << "+-----+---------------+-------------------------+-----------------+------------+\n";
-    cout << "| STT | Ma sinh vien  | Ho                      | Ten             | Trang thai |\n";
-    cout << "+-----+---------------+-------------------------+-----------------+------------+\n";
+    const int doRongSTT = 3;
+    const int doRongMaSV = MAX_MASV - 1;
+    const int doRongHo = MAX_HO - 1;
+    const int doRongTen = MAX_TEN - 1;
+    const int doRongTrangThai = 10;
+
+    const auto inDuongKe = [&]() {
+        cout << "+" << string(doRongSTT + 2, '-')
+             << "+" << string(doRongMaSV + 2, '-')
+             << "+" << string(doRongHo + 2, '-')
+             << "+" << string(doRongTen + 2, '-')
+             << "+" << string(doRongTrangThai + 2, '-')
+             << "+\n";
+    };
+
+    inDuongKe();
+    cout << "| " << right << setw(doRongSTT) << "STT"
+         << " | " << left << setw(doRongMaSV) << "Ma sinh vien"
+         << " | " << setw(doRongHo) << "Ho"
+         << " | " << setw(doRongTen) << "Ten"
+         << " | " << setw(doRongTrangThai) << "Trang thai"
+         << " |\n";
+    inDuongKe();
 
     int stt = 1;
     PTRDK dk = lopTC.dssvdk;
@@ -233,83 +471,189 @@ void inDanhSachSinhVienDangKy(
     while (dk != nullptr) {
         PTRSV sv = timSinhVienTrongDanhSachLop(dsLop, dk->dk.maSV);
         if (sv != nullptr) {
-            cout << "| " << right << setw(3) << stt << " | "
-                 << left << setw(13) << sv->sv.maSV << " | "
-                 << setw(23) << sv->sv.ho << " | "
-                 << setw(15) << sv->sv.ten << " | "
-                 << setw(10) << (dk->dk.huyDangKy ? "Da huy" : "Dang ky") << " |\n";
+            cout << "| " << right << setw(doRongSTT) << stt << " | "
+                 << left << setw(doRongMaSV) << sv->sv.maSV << " | "
+                 << setw(doRongHo) << sv->sv.ho << " | "
+                 << setw(doRongTen) << sv->sv.ten << " | "
+                 << setw(doRongTrangThai)
+                 << (dk->dk.huyDangKy ? "Da huy" : "Dang ky")
+                 << " |\n";
             stt++;
         }
         dk = dk->next;
     }
-    cout << "+-----+---------------+-------------------------+-----------------+------------+\n";
+    inDuongKe();
 }
 bool ghiFileLopTinChi(const DanhSachLopTinChi& dsLopTC) {
-    ofstream file("data/LOPTC.txt");
-
-    if (!file)
+    ofstream file(DUONG_DAN_FILE_LOP_TIN_CHI);
+    if (!file) {
         return false;
+    }
 
-    for (int i = 0; i < dsLopTC.soLuong; i++) {
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
         const LopTinChi* lopTC = dsLopTC.lopTC[i];
-        if (lopTC == nullptr) return false;
-        file << "L|" << lopTC->maLopTC << '|' << lopTC->maMH << '|'
-             << lopTC->nienKhoa << '|' << lopTC->hocKy << '|' << lopTC->nhom
-             << '|' << lopTC->minSV << '|' << lopTC->maxSV << '|' << lopTC->huyLop << '\n';
-        for (PTRDK dk = lopTC->dssvdk; dk != nullptr; dk = dk->next)
-            file << "D|" << dk->dk.maSV << '|' << dk->dk.diem << '|'
+        if (lopTC == nullptr) {
+            return false;
+        }
+
+        file << "L|"
+             << lopTC->maLopTC << '|'
+             << lopTC->maMH << '|'
+             << lopTC->nienKhoa << '|'
+             << lopTC->hocKy << '|'
+             << lopTC->nhom << '|'
+             << lopTC->minSV << '|'
+             << lopTC->maxSV << '|'
+             << lopTC->huyLop << '\n';
+
+        for (PTRDK dk = lopTC->dssvdk; dk != nullptr; dk = dk->next) {
+            file << "D|"
+                 << dk->dk.maSV << '|'
+                 << dk->dk.diem << '|'
                  << dk->dk.huyDangKy << '\n';
+        }
         file << "E\n";
     }
 
     file.close();
-    return true;
+    return file.good();
 }
-bool docFileLopTinChi(DanhSachLopTinChi& dsLopTC) {
-    ifstream file("data/LOPTC.txt");
 
-    if (!file)
+bool docFileLopTinChi(DanhSachLopTinChi& dsLopTC) {
+    ifstream file(DUONG_DAN_FILE_LOP_TIN_CHI);
+    if (!file) {
         return false;
+    }
 
     DanhSachLopTinChi loaded{};
     string line;
     PTRLTC current = nullptr;
-    auto fields = [](const string& value) {
-        vector<string> result;
-        string part;
-        istringstream stream(value);
-        while (getline(stream, part, '|')) result.push_back(part);
-        return result;
-    };
+
     while (getline(file, line)) {
-        if (line.empty()) continue;
-        vector<string> f = fields(line);
-        if (f[0] == "L" && f.size() == 9 && current == nullptr) {
-            if (loaded.soLuong >= MAX_LOP_TC) { xoaTatCaLopTinChi(loaded); return false; }
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
+        if (line.empty()) {
+            continue;
+        }
+
+        char truong[9][MAX_DO_DAI_TRUONG_FILE]{};
+        int soTruong = 0;
+        if (!tachTruongFile(line, truong, 9, soTruong)) {
+            giaiPhongLopDangDoc(current);
+            xoaTatCaLopTinChi(loaded);
+            return false;
+        }
+
+        if (strcmp(truong[0], "L") == 0 &&
+            soTruong == 9 && current == nullptr) {
+            if (loaded.soLuong >= MAX_LOP_TC) {
+                xoaTatCaLopTinChi(loaded);
+                return false;
+            }
+
             current = taoLopTinChi();
-            try {
-                current->maLopTC = stoi(f[1]);
-                if (f[2].size() >= MAX_MAMH || f[3].size() >= MAX_NIENKHOA) throw runtime_error("field too long");
-                strcpy(current->maMH, f[2].c_str()); strcpy(current->nienKhoa, f[3].c_str());
-                current->hocKy = stoi(f[4]); current->nhom = stoi(f[5]);
-                current->minSV = stoi(f[6]); current->maxSV = stoi(f[7]); current->huyLop = stoi(f[8]) != 0;
-                if (current->maLopTC < 0 || current->hocKy < 0 || current->nhom < 0 || current->minSV < 0 || current->maxSV < current->minSV) throw runtime_error("invalid values");
-            } catch (...) { delete current; current = nullptr; xoaTatCaLopTinChi(loaded); return false; }
-        } else if (f[0] == "D" && f.size() == 4 && current != nullptr) {
+            int huyLop = 0;
+            const bool hopLe =
+                docSoNguyen(truong[1], current->maLopTC) &&
+                strlen(truong[2]) < MAX_MAMH &&
+                strlen(truong[3]) < MAX_NIENKHOA &&
+                docSoNguyen(truong[4], current->hocKy) &&
+                docSoNguyen(truong[5], current->nhom) &&
+                docSoNguyen(truong[6], current->minSV) &&
+                docSoNguyen(truong[7], current->maxSV) &&
+                docSoNguyen(truong[8], huyLop) &&
+                (huyLop == 0 || huyLop == 1);
+
+            if (!hopLe) {
+                giaiPhongLopDangDoc(current);
+                xoaTatCaLopTinChi(loaded);
+                return false;
+            }
+
+            strcpy(current->maMH, truong[2]);
+            strcpy(current->nienKhoa, truong[3]);
+            chuanHoaMa(current->maMH);
+            current->huyLop = huyLop != 0;
+
+            const bool giaTriHopLe =
+                maChiChuaChuVaSo(current->maMH) &&
+                laNienKhoaHopLe(current->nienKhoa) &&
+                current->maLopTC >= 0 &&
+                current->hocKy >= 0 &&
+                current->nhom >= 0 &&
+                current->minSV >= 0 &&
+                current->maxSV >= current->minSV;
+            const bool maKhongTrung =
+                timLopTinChiTheoMa(loaded, current->maLopTC) == -1;
+            const bool thongTinKhongTrung =
+                timLopTinChiTheoMonHoc(
+                    loaded,
+                    current->maMH,
+                    current->nienKhoa,
+                    current->hocKy,
+                    current->nhom
+                ) == -1;
+
+            if (!giaTriHopLe || !maKhongTrung || !thongTinKhongTrung) {
+                giaiPhongLopDangDoc(current);
+                xoaTatCaLopTinChi(loaded);
+                return false;
+            }
+        } else if (strcmp(truong[0], "D") == 0 &&
+                   soTruong == 4 && current != nullptr) {
             DangKy dk{};
-            try {
-                if (f[1].empty() || f[1].size() >= MAX_MASV) throw runtime_error("invalid student id");
-                strcpy(dk.maSV, f[1].c_str()); dk.diem = stof(f[2]); dk.huyDangKy = stoi(f[3]) != 0;
-                if (!isfinite(dk.diem) || dk.diem < -1 || dk.diem > 10) throw runtime_error("invalid grade");
-                if (!themDangKy(current->dssvdk, dk)) throw runtime_error("duplicate registration");
-            } catch (...) { delete current; current = nullptr; xoaTatCaLopTinChi(loaded); return false; }
-        } else if (f[0] == "E" && f.size() == 1 && current != nullptr) {
-            loaded.lopTC[loaded.soLuong++] = current;
-            if (current->maLopTC >= maLopTCTiepTheo) maLopTCTiepTheo = current->maLopTC + 1;
+            int huyDangKy = 0;
+            const bool hopLe =
+                strlen(truong[1]) < MAX_MASV &&
+                docSoThuc(truong[2], dk.diem) &&
+                docSoNguyen(truong[3], huyDangKy) &&
+                (huyDangKy == 0 || huyDangKy == 1);
+
+            if (!hopLe) {
+                giaiPhongLopDangDoc(current);
+                xoaTatCaLopTinChi(loaded);
+                return false;
+            }
+
+            strcpy(dk.maSV, truong[1]);
+            chuanHoaMa(dk.maSV);
+            dk.huyDangKy = huyDangKy != 0;
+
+            const bool duLieuDangKyHopLe =
+                maChiChuaChuVaSo(dk.maSV) &&
+                dk.diem >= -1.0f &&
+                dk.diem <= 10.0f &&
+                timDangKyTheoMaSV(current->dssvdk, dk.maSV) == nullptr;
+
+            if (!duLieuDangKyHopLe ||
+                !themDangKy(current->dssvdk, dk)) {
+                giaiPhongLopDangDoc(current);
+                xoaTatCaLopTinChi(loaded);
+                return false;
+            }
+        } else if (strcmp(truong[0], "E") == 0 &&
+                   soTruong == 1 && current != nullptr) {
+            loaded.lopTC[loaded.soLuong] = current;
+            ++loaded.soLuong;
+
+            if (current->maLopTC >= maLopTCTiepTheo) {
+                maLopTCTiepTheo = current->maLopTC + 1;
+            }
             current = nullptr;
-        } else { if (current) { xoaTatCaDangKy(current->dssvdk); delete current; } xoaTatCaLopTinChi(loaded); return false; }
+        } else {
+            giaiPhongLopDangDoc(current);
+            xoaTatCaLopTinChi(loaded);
+            return false;
+        }
     }
-    if (current != nullptr) { xoaTatCaDangKy(current->dssvdk); delete current; xoaTatCaLopTinChi(loaded); return false; }
+
+    if (file.bad() || current != nullptr) {
+        giaiPhongLopDangDoc(current);
+        xoaTatCaLopTinChi(loaded);
+        return false;
+    }
+
     xoaTatCaLopTinChi(dsLopTC);
     dsLopTC = loaded;
     return true;
@@ -402,14 +746,33 @@ bool dangKyLopTinChi(
     inSinhVien(sv->sv);
 
     cout << "Nhap nien khoa: ";
-    nhapChuoi(nienKhoa, MAX_NIENKHOA);
+    nhapNienKhoa(nienKhoa, MAX_NIENKHOA);
     cout << "Nhap hoc ky: ";
     const int hocKy = nhapSoNguyenKhongAm();
 
     int soLopHienThi = 0;
-    cout << "+----------+------------+------+----------------------+--------------+----------------+\n";
-    cout << "| Ma lop TC| Ma MH      | Nhom | Ten mon hoc          | Da dang ky   | Slot con trong |\n";
-    cout << "+----------+------------+------+----------------------+--------------+----------------+\n";
+    const int doRongMaLopTC = 10;
+    const int doRongMaMH = MAX_MAMH - 1;
+    const int doRongNhom = 6;
+    const int doRongTenMH = MAX_TENMH - 1;
+    const int doRongDaDangKy = 14;
+    const int doRongSlotCon = 16;
+    const string dongKe =
+        "+" + string(doRongMaLopTC, '-') +
+        "+" + string(doRongMaMH, '-') +
+        "+" + string(doRongNhom, '-') +
+        "+" + string(doRongTenMH, '-') +
+        "+" + string(doRongDaDangKy, '-') +
+        "+" + string(doRongSlotCon, '-') + "+\n";
+
+    cout << dongKe;
+    cout << "|" << left << setw(doRongMaLopTC) << "Ma lop TC"
+         << "|" << setw(doRongMaMH) << "Ma MH"
+         << "|" << setw(doRongNhom) << "Nhom"
+         << "|" << setw(doRongTenMH) << "Ten mon hoc"
+         << "|" << setw(doRongDaDangKy) << "Da dang ky"
+         << "|" << setw(doRongSlotCon) << "Slot con trong" << "|\n";
+    cout << dongKe;
     for (int i = 0; i < dsLopTC.soLuong; ++i) {
         const LopTinChi& lopTC = *dsLopTC.lopTC[i];
         if (lopTC.huyLop || strcmp(lopTC.nienKhoa, nienKhoa) != 0 || lopTC.hocKy != hocKy)
@@ -418,15 +781,15 @@ bool dangKyLopTinChi(
         const char* tenMH = monHoc == nullptr ? "(khong tim thay)" : monHoc->mh.tenMH;
         const int daDangKy = demSoSVDangKy(lopTC.dssvdk);
         const int slotCon = lopTC.maxSV > daDangKy ? lopTC.maxSV - daDangKy : 0;
-        cout << "| " << right << setw(8) << lopTC.maLopTC << " | "
-             << left << setw(10) << lopTC.maMH << " | "
-             << right << setw(4) << lopTC.nhom << " | "
-             << left << setw(20) << tenMH << " | "
-             << right << setw(12) << daDangKy << " | "
-             << setw(14) << slotCon << " |\n";
+        cout << "|" << right << setw(doRongMaLopTC) << lopTC.maLopTC
+             << "|" << left << setw(doRongMaMH) << lopTC.maMH
+             << "|" << right << setw(doRongNhom) << lopTC.nhom
+             << "|" << left << setw(doRongTenMH) << tenMH
+             << "|" << right << setw(doRongDaDangKy) << daDangKy
+             << "|" << setw(doRongSlotCon) << slotCon << "|\n";
         ++soLopHienThi;
     }
-    cout << "+----------+------------+------+----------------------+--------------+----------------+\n";
+    cout << dongKe;
     if (soLopHienThi == 0) {
         cout << "Khong co lop tin chi dang mo trong nien khoa, hoc ky nay.\n";
         return false;
@@ -434,7 +797,7 @@ bool dangKyLopTinChi(
 
     cout << "Nhap ma lop tin chi muon dang ky: ";
     const int maLopTC = nhapSoNguyenKhongAm();
-    const int viTriLopTC = timLopTinChi(dsLopTC, maLopTC);
+    const int viTriLopTC = timLopTinChiTheoMa(dsLopTC, maLopTC);
     if (viTriLopTC < 0) {
         cout << "Ma lop tin chi khong hop le!\n";
         return false;

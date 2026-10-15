@@ -2,6 +2,9 @@
 
 // Chuoi rong tra ve false de ket thuc phan nhap ma.
 bool nhapMa(char* ma, int kichThuoc);
+void nhapMaBatBuoc(char* ma, int kichThuoc);
+void chuanHoaMa(char* ma);
+void nhapNienKhoa(char* nienKhoa, int kichThuoc);
 void nhapChuoi(char* str, int kichThuoc);
 void nhapChuoiChoPhepRong(char* str, int kichThuoc);
 
