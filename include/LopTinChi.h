@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Const.h"
 #include "DangKi.h"
 #include "Lop.h"
 #include "MonHoc.h"
-#include "Const.h"
 
 struct LopTinChi {
     int maLopTC = 0;
@@ -17,21 +17,14 @@ struct LopTinChi {
     PTRDK dssvdk = nullptr;
 };
 
-typedef LopTinChi* PTRLTC;
+using PTRLTC = LopTinChi*;
 
 struct DanhSachLopTinChi {
     PTRLTC lopTC[MAX_LOP_TC] = {};
     int soLuong = 0;
 };
 
-// Tạo
-PTRLTC taoLopTinChi();
-
-// Tìm kiếm
-int timLopTinChiTheoMa(
-    const DanhSachLopTinChi& dsLopTC,
-    int maLopTC
-);
+int timLopTinChiTheoMa(const DanhSachLopTinChi& dsLopTC, int maLopTC);
 int timLopTinChiTheoMonHoc(
     const DanhSachLopTinChi& dsLopTC,
     const char* maMH,
@@ -40,43 +33,51 @@ int timLopTinChiTheoMonHoc(
     int nhom
 );
 
-// Nhập
-void nhapLopTinChi(LopTinChi& lopTC);
-// Nhập để tìm lớp tín chỉ
+void nhapLopTinChi(LopTinChi& lopTC, PTRMH rootMonHoc);
 void nhapThongTinTimLopTinChi(char* maMH, char* nienKhoa, int& hocKy, int& nhom);
-// Thêm
 bool themLopTinChiVaoDanhSach(
     DanhSachLopTinChi& dsLopTC,
-    PTRLTC lopTC
+    PTRLTC lopTC,
+    PTRMH rootMonHoc
 );
-void themLopTinChi(DanhSachLopTinChi& dsLopTC);
-// Hiệu chỉnh
-bool hieuChinhLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC);
-
-// Xóa, giai phong
+void themLopTinChi(DanhSachLopTinChi& dsLopTC, PTRMH rootMonHoc);
+bool hieuChinhLopTinChi(
+    DanhSachLopTinChi& dsLopTC,
+    int maLopTC,
+    PTRMH rootMonHoc
+);
 bool xoaLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC);
 void xoaTatCaLopTinChi(DanhSachLopTinChi& dsLopTC);
-// Hủy lớp
 bool huyLopTinChi(DanhSachLopTinChi& dsLopTC, int maLopTC);
-bool tuDongHuyLopKhongDuSinhVien(LopTinChi& lopTC);
-void tuDongHuyDanhSachLopKhongDuSinhVien(DanhSachLopTinChi& dsLopTC);
-// In
+bool tuDongHuyLopKhongDuSinhVien(
+    LopTinChi& lopTC,
+    const char* nienKhoa,
+    int hocKy
+);
+void tuDongHuyDanhSachLopKhongDuSinhVien(
+    DanhSachLopTinChi& dsLopTC,
+    const char* nienKhoa,
+    int hocKy
+);
+
 void inLopTinChi(const LopTinChi& lopTC);
 void inDanhSachLopTinChi(const DanhSachLopTinChi& dsLopTC);
 void inDanhSachSinhVienDangKy(
-    DanhSachLop& dsLop,
+    const DanhSachLop& dsLop,
     const LopTinChi& lopTC
 );
-// File
+
 bool ghiFileLopTinChi(const DanhSachLopTinChi& dsLopTC);
-bool docFileLopTinChi(DanhSachLopTinChi& dsLopTC);
-// nhap diem
+bool docFileLopTinChi(DanhSachLopTinChi& dsLopTC, PTRMH rootMonHoc);
 bool nhapDiem(DanhSachLopTinChi& dsLopTC, DanhSachLop& dsLop);
-// xem bang diem
-bool xemBangDiemLopTinChi(DanhSachLopTinChi& dsLopTC, DanhSachLop& dsLop);
-// Đăng kí lớp tín chỉ
-bool dangKyLopTinChi(DanhSachLopTinChi& dsLopTC,
+bool xemBangDiemLopTinChi(
+    DanhSachLopTinChi& dsLopTC,
+    const DanhSachLop& dsLop,
+    PTRMH rootMonHoc
+);
+bool dangKyLopTinChi(
+    DanhSachLopTinChi& dsLopTC,
     DanhSachLop& dsLop,
-    PTRMH rootMonHoc);
-// Hủy đăng kí tín chỉ
+    PTRMH rootMonHoc
+);
 bool huyDangKyLopTinChi(DanhSachLopTinChi& dsLopTC);

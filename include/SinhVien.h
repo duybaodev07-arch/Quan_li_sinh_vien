@@ -31,13 +31,14 @@ bool sinhVienDungTruoc(const SinhVien& a, const SinhVien& b); // dùng cho sort 
 void themSinhVienVaoDSSV(PTRSV& head, PTRSV p);
 
 // ===== THEM / XOA / HIEU CHINH =====
-void themSinhVien(PTRSV& head);
+// HÀM THÊM SV CÓ CHECK TRÙNG MASV TRONG DSLOP NÊN ĐỂ Ở FILE LOP
+
 bool xoaSinhVien(PTRSV& head, const char* maSV);
 bool hieuChinhSinhVien(PTRSV& head, const char* maSV);
 
 // ===== IN DANH SACH =====
 void inSinhVien(const SinhVien& sv);
-void inDanhSachSinhVien(PTRSV head);
+void inDanhSachSinhVienTheoTen(PTRSV head);
 void inDanhSachSinhVienTheoMa(PTRSV head);
 
 // ===== SAP XEP THEO MA =====

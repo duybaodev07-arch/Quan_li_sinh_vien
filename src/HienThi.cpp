@@ -1,10 +1,12 @@
 #include "HienThi.h"
 #include "mylib.h"
-#include "LopTinChi.h"
+#include "Input.h"
 #include <iostream>
 #include <iomanip>
-#include <limits>
+#include <algorithm>
 #include <string>
+#include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -36,71 +38,58 @@ void inTieuDeBangDiem(const char* tieuDeDiem) {
 }
 }
 
-float nhapDiemTrenBang(short x, short y) {
-    float diem;
-
-    while (true) {
-        gotoxy(x, y);
-        clreol();
-
-        cin >> diem;
-
-        if (cin.fail()) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue;
-        }
-
-        if (diem < 0 || diem > 10) {
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue;
-        }
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return diem;
+static float nhapDiemTaiO(short x, short y, float diemHienTai) {
+    gotoxy(x, y);
+    clreol();
+    if (diemHienTai >= 0.0f) {
+        cout << "Diem hien tai " << fixed << setprecision(2) << diemHienTai
+             << ". Nhap diem moi: ";
+    } else {
+        cout << "Nhap diem: ";
     }
+    return nhapDiem(0.0f, 10.0f);
 }
 
-void nhapDiemTrenBang(const DanhSachLop& dsLop, PTRDK dssvdk) {
+void nhapDiemDanhSachDangKy(const DanhSachLop& dsLop, PTRDK dssvdk) {
     inTieuDeBangDiem("DIEM");
-
     int stt = 1;
 
-    for (int i = 0; i < dsLop.soLuong; i++) {
+    for (int i = 0; i < dsLop.soLuong; ++i) {
         PTRSV sv = dsLop.lop[i].dssv;
-
         while (sv != nullptr) {
             PTRDK dk = timDangKyTheoMaSV(dssvdk, sv->sv.maSV);
-
-            if (dk != nullptr) {
-                cout << "| "
-                     << setw(DO_RONG_STT) << right << stt << " | "
+            if (dk != nullptr && !dk->dk.huyDangKy) {
+                cout << "| " << setw(DO_RONG_STT) << right << stt << " | "
                      << setw(DO_RONG_MASV) << left << sv->sv.maSV << " | "
                      << setw(DO_RONG_HO) << left << sv->sv.ho << " | "
                      << setw(DO_RONG_TEN) << left << sv->sv.ten << " |";
 
-                short xDiem = wherex();
-                short yDiem = wherey();
+                const short xDiem = wherex();
+                const short yDiem = wherey();
+                const float diemHienTai = dk->dk.diem;
+                if (diemHienTai >= 0.0f)
+                    cout << setw(DO_RONG_DIEM) << fixed << setprecision(2) << diemHienTai;
+                else
+                    cout << setw(DO_RONG_DIEM) << " ";
+                cout << " |\n";
 
-                cout << setw(DO_RONG_DIEM) << " " << "|\n";
-
-                dk->dk.diem = nhapDiemTrenBang(xDiem, yDiem);
-
+                dk->dk.diem = nhapDiemTaiO(xDiem, yDiem, diemHienTai);
                 gotoxy(xDiem, yDiem);
-                cout << setw(DO_RONG_DIEM) << right << dk->dk.diem << " |\n";
-
+                cout << setw(DO_RONG_DIEM) << right << fixed << setprecision(2)
+                     << dk->dk.diem << " |\n";
                 inKhungBangDiem();
-
-                stt++;
+                ++stt;
             }
-
             sv = sv->next;
         }
     }
 }
-void inBangDiemLopTinChi(const DanhSachLop& dsLop, const LopTinChi& lopTC) {
+
+void inBangDiemLopTinChi(const DanhSachLop& dsLop, const LopTinChi& lopTC, PTRMH rootMonHoc) {
     cout << "\n";
-    cout << "                 BANG DIEM MON HOC " << lopTC.maMH << endl;
+    PTRMH monHoc = timMonHocTheoMa(rootMonHoc, lopTC.maMH);
+    const char* tenMonHoc = monHoc == nullptr ? lopTC.maMH : monHoc->mh.tenMH;
+    cout << "                 BANG DIEM MON HOC " << tenMonHoc << endl;
     cout << "Nien khoa: " << lopTC.nienKhoa
          << "    Hoc ky: " << lopTC.hocKy
          << "    Nhom: " << lopTC.nhom << endl;
@@ -115,7 +104,7 @@ void inBangDiemLopTinChi(const DanhSachLop& dsLop, const LopTinChi& lopTC) {
         while (sv != nullptr) {
             PTRDK dk = timDangKyTheoMaSV(lopTC.dssvdk, sv->sv.maSV);
 
-            if (dk != nullptr) {
+            if (dk != nullptr && !dk->dk.huyDangKy && dk->dk.diem >= 0.0f) {
                 cout << "| "
                      << setw(DO_RONG_STT) << right << stt << " | "
                      << setw(DO_RONG_MASV) << left << sv->sv.maSV << " | "
@@ -132,42 +121,44 @@ void inBangDiemLopTinChi(const DanhSachLop& dsLop, const LopTinChi& lopTC) {
         }
     }
 }
-float tinhDiemTrungBinhSinhVien(
+static float tinhDiemTrungBinhSinhVien(
     PTRSV sv,
-    DanhSachLopTinChi& dsLopTC,
+    const DanhSachLopTinChi& dsLopTC,
     PTRMH root
 ) {
-    float tongDiemTinChi = 0;
+    std::vector<std::pair<std::string, float>> diemCaoNhatTheoMon;
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
+        const LopTinChi* lopTC = dsLopTC.lopTC[i];
+        if (lopTC == nullptr || lopTC->huyLop) continue;
+
+        PTRDK dk = timDangKyTheoMaSV(lopTC->dssvdk, sv->sv.maSV);
+        if (dk == nullptr || dk->dk.huyDangKy || dk->dk.diem < 0.0f) continue;
+
+        auto mon = std::find_if(
+            diemCaoNhatTheoMon.begin(), diemCaoNhatTheoMon.end(),
+            [&](const auto& item) { return item.first == lopTC->maMH; }
+        );
+        if (mon == diemCaoNhatTheoMon.end())
+            diemCaoNhatTheoMon.emplace_back(lopTC->maMH, dk->dk.diem);
+        else if (dk->dk.diem > mon->second)
+            mon->second = dk->dk.diem;
+    }
+
+    float tongDiemTinChi = 0.0f;
     int tongSoTinChi = 0;
-
-    for (int i = 0; i < dsLopTC.soLuong; i++) {
-        LopTinChi* lopTC = dsLopTC.lopTC[i];
-
-        if (lopTC == nullptr || lopTC->huyLop)
-            continue;
-
-        PTRDK dk = timDangKyTheoMaSV(lopTC->dssvdk,sv->sv.maSV);
-
-        if (dk == nullptr || dk->dk.huyDangKy || dk->dk.diem < 0)
-            continue;
-
-        PTRMH monHoc = timMonHocTheoMa(root, lopTC->maMH);
-
-        if (monHoc == nullptr)
-            continue;
-
-        int soTinChi = monHoc->mh.soTCLT + monHoc->mh.soTCTH;
-
-        tongDiemTinChi += dk->dk.diem * soTinChi;
+    for (const auto& mon : diemCaoNhatTheoMon) {
+        PTRMH nodeMonHoc = timMonHocTheoMa(root, mon.first.c_str());
+        if (nodeMonHoc == nullptr) continue;
+        const int soTinChi = nodeMonHoc->mh.soTCLT + nodeMonHoc->mh.soTCTH;
+        if (soTinChi <= 0) continue;
+        tongDiemTinChi += mon.second * soTinChi;
         tongSoTinChi += soTinChi;
     }
 
-    if (tongSoTinChi == 0)
-        return 0;
-
+    if (tongSoTinChi == 0) return -1.0f;
     return tongDiemTinChi / tongSoTinChi;
 }
-void inBangDiemTrungBinh(DanhSachLop& dsLop, DanhSachLopTinChi& dsLopTC, PTRMH root, const char* maLop) {
+void inBangDiemTrungBinh(const DanhSachLop& dsLop, const DanhSachLopTinChi& dsLopTC, PTRMH root, const char* maLop) {
     int viTri = timLopTheoMa(dsLop, maLop);
 
     if (viTri == -1) {
@@ -175,7 +166,7 @@ void inBangDiemTrungBinh(DanhSachLop& dsLop, DanhSachLopTinChi& dsLopTC, PTRMH r
         return;
     }
 
-    Lop& lop = dsLop.lop[viTri];
+    const Lop& lop = dsLop.lop[viTri];
 
     cout << "\n";
     cout << "                 BANG DIEM TRUNG BINH\n";
@@ -194,29 +185,29 @@ void inBangDiemTrungBinh(DanhSachLop& dsLop, DanhSachLopTinChi& dsLopTC, PTRMH r
             root
         );
 
-        cout << "| "
-             << setw(DO_RONG_STT) << right << stt << " | "
+        cout << "| " << setw(DO_RONG_STT) << right << stt << " | "
              << setw(DO_RONG_MASV) << left << sv->sv.maSV << " | "
              << setw(DO_RONG_HO) << left << sv->sv.ho << " | "
              << setw(DO_RONG_TEN) << left << sv->sv.ten << " | "
-             << setw(DO_RONG_DIEM) << right << fixed << setprecision(2)
-             << diemTB << " |\n";
-
+             << setw(DO_RONG_DIEM) << right;
+        if (diemTB < 0.0f) cout << " ";
+        else cout << fixed << setprecision(2) << diemTB;
+        cout << " |\n";
         inKhungBangDiem();
 
         stt++;
         sv = sv->next;
     }
 }
-float timDiemThiLonNhat(
+static float timDiemThiLonNhat(
     const char* maSV,
     const char* maMH,
-    DanhSachLopTinChi& dsLopTC
+    const DanhSachLopTinChi& dsLopTC
 ) {
     float diemLonNhat = -1;
 
     for (int i = 0; i < dsLopTC.soLuong; i++) {
-        LopTinChi* lopTC = dsLopTC.lopTC[i];
+        const LopTinChi* lopTC = dsLopTC.lopTC[i];
 
         if (lopTC == nullptr || lopTC->huyLop)
             continue;
@@ -235,15 +226,15 @@ float timDiemThiLonNhat(
 
     return diemLonNhat;
 }
-int layDanhSachMonHocCuaLop(
-    Lop& lop,
-    DanhSachLopTinChi& dsLopTC,
+static int layDanhSachMonHocCuaLop(
+    const Lop& lop,
+    const DanhSachLopTinChi& dsLopTC,
     char dsMaMH[][MAX_MAMH]
 ) {
     int soLuongMon = 0;
 
     for (int i = 0; i < dsLopTC.soLuong; i++) {
-        LopTinChi* lopTC = dsLopTC.lopTC[i];
+        const LopTinChi* lopTC = dsLopTC.lopTC[i];
 
         if (lopTC == nullptr || lopTC->huyLop)
             continue;
@@ -258,7 +249,7 @@ int layDanhSachMonHocCuaLop(
                 sv->sv.maSV
             );
 
-            if (dk != nullptr && !dk->dk.huyDangKy) {
+            if (dk != nullptr && !dk->dk.huyDangKy && dk->dk.diem >= 0.0f) {
                 coSinhVien = true;
                 break;
             }
@@ -287,8 +278,8 @@ int layDanhSachMonHocCuaLop(
     return soLuongMon;
 }
 void inBangDiemTongKet(
-    Lop& lop,
-    DanhSachLopTinChi& dsLopTC
+    const Lop& lop,
+    const DanhSachLopTinChi& dsLopTC
 ) {
     char dsMaMH[MAX_LOP_TC][MAX_MAMH];
 
@@ -371,3 +362,9 @@ void inBangDiemTongKet(
         sv = sv->next;
     }
 }
+
+
+
+
+
+

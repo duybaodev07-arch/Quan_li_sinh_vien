@@ -1,5 +1,6 @@
 #pragma once
 
+// KÍCH THƯỚC MẢNG CHAR.
 const int MAX_MAMH = 11;
 const int MAX_TENMH = 51;
 const int MAX_MASV = 16;

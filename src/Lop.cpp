@@ -14,14 +14,6 @@ void khoiTaoDanhSachLop(DanhSachLop& dsLop) {
         dsLop.lop[i].dssv = nullptr;
     }
 }
-void nhapLop(Lop& lop) {
-    lop.dssv = nullptr;
-    cout << "Nhap ma lop: ";
-    nhapMaBatBuoc(lop.maLop, MAX_MALOP);
-
-    cout << "Nhap ten lop: ";
-    nhapChuoi(lop.tenLop, MAX_TENLOP);
-}
 int timLopTheoMa(const DanhSachLop& dsLop, const char* maLop) {
     for (int i = 0; i < dsLop.soLuong; i++) {
         
@@ -34,22 +26,17 @@ int timLopTheoMa(const DanhSachLop& dsLop, const char* maLop) {
 bool daTonTaiLop(const DanhSachLop& dsLop, const char* maLop) {
     return timLopTheoMa(dsLop, maLop) != -1;
 }
-PTRSV timSinhVienTrongDanhSachLop(const DanhSachLop& dsLop, const char* maSV) {
-    for (int i = 0; i < dsLop.soLuong; i++) {
-        PTRSV cur = dsLop.lop[i].dssv;
+void nhapLop(Lop& lop) {
+    lop.dssv = nullptr;
+    cout << "Nhap ma lop: ";
+    nhapMaBatBuoc(lop.maLop, MAX_MALOP); // nhập ko cho rỗng
 
-        while (cur != nullptr) {
-            if (strcmp(cur->sv.maSV, maSV) == 0)
-                return cur;
-
-            cur = cur->next;
-        }
-    }
-    return nullptr;
+    cout << "Nhap ten lop: ";
+    nhapTen(lop.tenLop, MAX_TENLOP);
 }
 bool themLopVaoDanhSachLop(DanhSachLop& dsLop, const Lop& lop) {
+    // check đầy, trùng mã check ở dưới.
     if (dsLop.soLuong >= MAX_LOP) {
-        cout << "Danh sach lop da day!\n";
         return false;
     }
     dsLop.lop[dsLop.soLuong] = lop;
@@ -57,17 +44,33 @@ bool themLopVaoDanhSachLop(DanhSachLop& dsLop, const Lop& lop) {
 
     return true;
 }
-bool themLop(DanhSachLop& dsLop, const Lop& lop) {
-
+void themLop(DanhSachLop& dsLop) {
+    Lop lop;
+    nhapLop(lop);
     if(daTonTaiLop(dsLop, lop.maLop) == true) {
-        cout << "Ma lop da ton tai!\n";
-        return false;
+        cout << "Ma lop da ton tai!Them that bai\n";
+    }
+    else if(themLopVaoDanhSachLop(dsLop, lop) == false) {
+        cout << "Danh sach lop da day!\n";
+    }  
+}
+void themSinhVienVaoLop(DanhSachLop& dsLop, int viTri) {
+    if (viTri < 0 || viTri >= dsLop.soLuong) {
+        cout << "Vi tri lop khong hop le!\n";
+        return;
     }
 
-    if(themLopVaoDanhSachLop(dsLop, lop) == false) 
-        return false;
-
-    return true;
+    while(true) {
+        SinhVien sv;
+        if(!nhapSinhVien(sv)) 
+            break;
+        if(timSinhVienTrongDanhSachLop(dsLop, sv.maSV)) {
+            cout << "Ma sinh vien da ton tai!\n";
+            continue;
+        }
+        PTRSV p = taoNodeSinhVien(sv);
+        themSinhVienVaoDSSV(dsLop.lop[viTri].dssv, p);
+    }
 }
 bool hieuChinhLop(DanhSachLop& dsLop, const char* maLop) {
     int viTri = timLopTheoMa(dsLop, maLop);
@@ -78,7 +81,7 @@ bool hieuChinhLop(DanhSachLop& dsLop, const char* maLop) {
     }
 
     cout << "Nhap ten lop moi: ";
-    nhapChuoi(dsLop.lop[viTri].tenLop, MAX_TENLOP);
+    nhapTen(dsLop.lop[viTri].tenLop, MAX_TENLOP);
 
     return true;
 }
@@ -100,6 +103,19 @@ bool xoaLop(DanhSachLop& dsLop, const char* maLop) {
 
     return true;
 }
+PTRSV timSinhVienTrongDanhSachLop(const DanhSachLop& dsLop, const char* maSV) {
+    for (int i = 0; i < dsLop.soLuong; i++) {
+        PTRSV cur = dsLop.lop[i].dssv;
+
+        while (cur != nullptr) {
+            if (strcmp(cur->sv.maSV, maSV) == 0)
+                return cur;
+
+            cur = cur->next;
+        }
+    }
+    return nullptr;
+}
 void inLop(const Lop& lop) {
     cout << "Ma lop : " << lop.maLop << endl;
     cout << "Ten lop: " << lop.tenLop << endl;
@@ -109,14 +125,19 @@ void inDanhSachLop(const DanhSachLop& dsLop) {
         cout << "Danh sach lop rong!\n";
         return;
     }
-
     for (int i = 0; i < dsLop.soLuong; i++) {
         cout << "Lop thu " << i + 1 << ":\n";
         inLop(dsLop.lop[i]);
         cout << "--------------------\n";
     }
 }
+void xoaTatCaLop(DanhSachLop& dsLop) {
+    for (int i = 0; i < dsLop.soLuong; i++) {
+        xoaTatCaSinhVien(dsLop.lop[i].dssv);
+    }
 
+    dsLop.soLuong = 0;
+}
 bool ghiFileLop(const DanhSachLop& dsLop) {
     ofstream file(DUONG_DAN_FILE_LOP);
     if (!file) {
@@ -147,13 +168,7 @@ bool ghiFileLop(const DanhSachLop& dsLop) {
     file.close();
     return true;
 }
-void xoaTatCaLop(DanhSachLop& dsLop) {
-    for (int i = 0; i < dsLop.soLuong; i++) {
-        xoaTatCaSinhVien(dsLop.lop[i].dssv);
-    }
 
-    dsLop.soLuong = 0;
-}
 bool docFileLop(DanhSachLop& dsLop) {
     ifstream file(DUONG_DAN_FILE_LOP);
     if (!file) {
@@ -214,6 +229,15 @@ bool docFileLop(DanhSachLop& dsLop) {
                 !file.getline(sv.soDT, MAX_SODT)) {
                 xoaTatCaSinhVien(lop.dssv);
                 cout << "Thong tin sinh vien trong file khong day du!\n";
+                return false;
+            }
+
+            if (daTonTaiSinhVien(lop.dssv, sv.maSV) ||
+                timSinhVienTrongDanhSachLop(dsLop, sv.maSV) != nullptr) {
+                xoaTatCaSinhVien(lop.dssv);
+                xoaTatCaLop(dsLop);
+                cout << "Ma sinh vien bi trung trong file LOP.txt!\n";
+                file.close();
                 return false;
             }
 

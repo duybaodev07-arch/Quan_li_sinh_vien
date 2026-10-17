@@ -50,10 +50,10 @@ bool nhapSinhVien(SinhVien& sv) {
         return false; 
 
     cout << "Nhap ho: ";
-    nhapChuoi(sv.ho, MAX_HO);
+    nhapHoTenSinhVien(sv.ho, MAX_HO);
 
     cout << "Nhap ten: ";
-    nhapChuoi(sv.ten, MAX_TEN);
+    nhapHoTenSinhVien(sv.ten, MAX_TEN);
 
     cout << "Nhap phai (Nam/Nu): ";
     nhapPhai(sv.phai, MAX_PHAI);
@@ -65,10 +65,10 @@ bool nhapSinhVien(SinhVien& sv) {
 }
 void nhapThongTinHieuChinh(SinhVien& sv) {
     cout << "Nhap ho moi: ";
-    nhapChuoi(sv.ho, MAX_HO);
+    nhapHoTenSinhVien(sv.ho, MAX_HO);
 
     cout << "Nhap ten moi: ";
-    nhapChuoi(sv.ten, MAX_TEN);
+    nhapHoTenSinhVien(sv.ten, MAX_TEN);
 
     cout << "Nhap phai moi (Nam/Nu): ";
     nhapPhai(sv.phai, MAX_PHAI);
@@ -108,8 +108,8 @@ bool sinhVienDungTruoc(const SinhVien& a, const SinhVien& b) {
     return strcmp(a.maSV, b.maSV) < 0;
 }
 void themSinhVienVaoDSSV(PTRSV& head, PTRSV p) {
-
-    if (head == nullptr || sinhVienDungTruoc(head->sv, p->sv)) {
+    
+    if (head == nullptr || sinhVienDungTruoc(p->sv, head->sv)) {
         p->next = head;
         head = p;
         return;
@@ -122,24 +122,6 @@ void themSinhVienVaoDSSV(PTRSV& head, PTRSV p) {
     p->next = q->next;
     q->next = p;
     return;
-}
-void themSinhVien(PTRSV& head) {
-    SinhVien sv;
-    while(true) {
-        if(nhapSinhVien(sv) == false) {
-            cout << "\nDa nhap xong danh sach sinh vien!" << "(" << demSoSinhVien(head) << " sinh vien" << ")\n\n";
-            break;
-        }
-        if(daTonTaiSinhVien(head, sv.maSV) == true) {
-            cout << "Ma sinh vien da ton tai!\n";
-            cout << "Them that bai!\n\n";
-            continue;
-        }
-        PTRSV p = taoNodeSinhVien(sv);
-
-        themSinhVienVaoDSSV(head, p);
-        cout << "Them sinh vien thanh cong!\n\n";
-    }
 }
 bool xoaSinhVien(PTRSV& head, const char* maSV) {
     if (head == nullptr)
@@ -192,7 +174,7 @@ void inSinhVien(const SinhVien& sv) {
     inKhungDuoiDanhSachSinhVien();
 }
 
-void inDanhSachSinhVien(PTRSV head) {
+void inDanhSachSinhVienTheoTen(PTRSV head) {
     if (head == nullptr) {
         cout << "Danh sach sinh vien rong!\n";
         return;

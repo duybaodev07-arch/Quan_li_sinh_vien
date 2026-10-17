@@ -3,14 +3,16 @@
 
 #include <cstring>
 #include <fstream>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <string>
+#include <system_error>
 #include <utility>
 
 using namespace std;    
-
+// NAMESPACE DÙNG CHO CÁC HÀM IN GỌI TRONG IN DANH SÁCH MÔN HỌC
 namespace {
 const char* DUONG_DAN_FILE_MON_HOC = "data/MONHOC.txt";
 
@@ -38,28 +40,11 @@ void inDongMonHoc(const MonHoc& mh) {
          << " | " << right << setw(5) << mh.soTCLT
          << " | " << right << setw(5) << mh.soTCTH << " |\n";
 }
-
-void inDuLieuMonHocTheoMa(PTRMH root) {
-    if (root == nullptr) return;
-    inDuLieuMonHocTheoMa(root->left);
-    inDongMonHoc(root->mh);
-    inDuLieuMonHocTheoMa(root->right);
-}
-
-void ghiDuLieuMonHoc(PTRMH root, ofstream& file) {
-    if (root == nullptr || !file) return;
-    ghiDuLieuMonHoc(root->left, file);
-    file << root->mh.maMH << '|'
-         << root->mh.tenMH << '|'
-         << root->mh.soTCLT << '|'
-         << root->mh.soTCTH << '\n';
-    ghiDuLieuMonHoc(root->right, file);
-}
-
+// ĐỌC TỪNG TRƯỜNG DỮ LIỆU
 bool docTruong(ifstream& file, string& value, char delimiter) {
     return static_cast<bool>(getline(file, value, delimiter));
 }
-
+// DÙNG ĐỌC FILE, CHUYỂN STRING THÀNH SỐ NGUYÊN 
 bool chuyenSoNguyen(const string& value, int& result) {
     try {
         size_t consumed = 0;
@@ -78,7 +63,7 @@ bool nhapMonHoc(MonHoc& mh) {
     if (!nhapMa(mh.maMH, MAX_MAMH)) return false;
 
     cout << "Nhap ten mon hoc: ";
-    nhapChuoi(mh.tenMH, MAX_TENMH);
+    nhapTen(mh.tenMH, MAX_TENMH);
     cout << "Nhap so tin chi ly thuyet: ";
     mh.soTCLT = nhapSoNguyenTrongKhoang(MIN_TCLT, MAX_TCLT);
     cout << "Nhap so tin chi thuc hanh: ";
@@ -88,7 +73,7 @@ bool nhapMonHoc(MonHoc& mh) {
 
 void nhapThongTinHieuChinh(MonHoc& mh) {
     cout << "Nhap ten mon hoc moi: ";
-    nhapChuoi(mh.tenMH, MAX_TENMH);
+    nhapTen(mh.tenMH, MAX_TENMH);
     cout << "Nhap so tin chi ly thuyet moi: ";
     mh.soTCLT = nhapSoNguyenTrongKhoang(MIN_TCLT, MAX_TCLT);
     cout << "Nhap so tin chi thuc hanh moi: ";
@@ -109,7 +94,6 @@ PTRMH timMonHocTheoMa(PTRMH root, const char* maMH) {
     }
     return nullptr;
 }
-
 bool themMonHocVaoDSMH(PTRMH& root, const MonHoc& mh) {
     PTRMH* link = &root;
     while (*link != nullptr) {
@@ -120,7 +104,6 @@ bool themMonHocVaoDSMH(PTRMH& root, const MonHoc& mh) {
     *link = taoNodeMonHoc(mh);
     return true;
 }
-
 void themMonHoc(PTRMH& root) {
     while (true) {
         MonHoc mh{};
@@ -140,13 +123,11 @@ bool hieuChinhMonHoc(PTRMH root, const char* maMH) {
     nhapThongTinHieuChinh(node->mh);
     return true;
 }
-
 PTRMH timNodeNhoNhatBenPhai(PTRMH root) {
     if (root == nullptr) return nullptr;
     while (root->left != nullptr) root = root->left;
     return root;
 }
-
 bool xoaMonHoc(PTRMH& root, const char* maMH) {
     if (root == nullptr) return false;
     const int cmp = strcmp(maMH, root->mh.maMH);
@@ -171,7 +152,12 @@ void inMonHoc(const MonHoc& mh) {
          << "So tin chi ly thuyet: " << mh.soTCLT << '\n'
          << "So tin chi thuc hanh: " << mh.soTCTH << '\n';
 }
-
+void inDuLieuMonHocTheoMa(PTRMH root) {
+    if (root == nullptr) return;
+    inDuLieuMonHocTheoMa(root->left);
+    inDongMonHoc(root->mh);
+    inDuLieuMonHocTheoMa(root->right);
+}
 void inDanhSachMonHocTheoMa(PTRMH root) {
     if (root == nullptr) {
         cout << "Danh sach mon hoc rong!\n";
@@ -181,7 +167,6 @@ void inDanhSachMonHocTheoMa(PTRMH root) {
     inDuLieuMonHocTheoMa(root);
     inKhungDuoiDanhSachMonHoc();
 }
-
 void demSoMonHoc(PTRMH root, int& n) {
     if (root == nullptr) return;
     ++n;
@@ -195,12 +180,10 @@ void duaMonHocVaoMang(PTRMH root, MonHoc mh[], int& n) {
     mh[n++] = root->mh;
     duaMonHocVaoMang(root->right, mh, n);
 }
-
 bool monHocDungTruoc(const MonHoc& a, const MonHoc& b) {
     const int cmpTen = strcmp(a.tenMH, b.tenMH);
     return cmpTen < 0 || (cmpTen == 0 && strcmp(a.maMH, b.maMH) < 0);
 }
-
 void inDanhSachMonHocTheoTen(PTRMH root) {
     int soLuong = 0;
     demSoMonHoc(root, soLuong);
@@ -232,7 +215,15 @@ void giaiPhongMonHoc(PTRMH& root) {
     delete root;
     root = nullptr;
 }
-
+void ghiDuLieuMonHoc(PTRMH root, ofstream& file) {
+    if (root == nullptr || !file) return;
+    ghiDuLieuMonHoc(root->left, file);
+    file << root->mh.maMH << '|'
+         << root->mh.tenMH << '|'
+         << root->mh.soTCLT << '|'
+         << root->mh.soTCTH << '\n';
+    ghiDuLieuMonHoc(root->right, file);
+}
 bool ghiFileMonHoc(PTRMH root) {
     ofstream file(DUONG_DAN_FILE_MON_HOC);
     if (!file) return false;
@@ -241,38 +232,57 @@ bool ghiFileMonHoc(PTRMH root) {
     return file.good();
 }
 
-bool docFileMonHoc(PTRMH& root) {
-    ifstream file(DUONG_DAN_FILE_MON_HOC);
-    if (!file) return false;
+KetQuaDocMonHoc docFileMonHoc(PTRMH& root) {
+    namespace fs = std::filesystem;
+    std::error_code errorCode;
+    const bool fileTonTai = fs::exists(DUONG_DAN_FILE_MON_HOC, errorCode);
+    if (errorCode) return KetQuaDocMonHoc::KhongMoDuocFile;
+    if (!fileTonTai) return KetQuaDocMonHoc::KhongTimThayFile;
 
-    giaiPhongMonHoc(root);
+    ifstream file(DUONG_DAN_FILE_MON_HOC);
+    if (!file) return KetQuaDocMonHoc::KhongMoDuocFile;
+
+    PTRMH rootTam = nullptr;
+    auto thatBai = [&](KetQuaDocMonHoc ketQua) {
+        giaiPhongMonHoc(rootTam);
+        return ketQua;
+    };
+
     string ma, ten, tcltText, tcthText;
     while (docTruong(file, ma, '|')) {
         if (!docTruong(file, ten, '|') || !docTruong(file, tcltText, '|') ||
             !static_cast<bool>(getline(file, tcthText))) {
-            giaiPhongMonHoc(root);
-            return false;
+            return thatBai(KetQuaDocMonHoc::SaiDinhDang);
         }
-        int tclt = 0, tcth = 0;
-        if (ma.empty() || ma.size() >= MAX_MAMH || ten.size() >= MAX_TENMH ||
+
+        int tclt = 0;
+        int tcth = 0;
+        if (ma.size() >= MAX_MAMH || ten.size() >= MAX_TENMH ||
+            !laMaHopLe(ma) || !laTenHopLe(ten) ||
             !chuyenSoNguyen(tcltText, tclt) || !chuyenSoNguyen(tcthText, tcth)) {
-            giaiPhongMonHoc(root);
-            return false;
+            return thatBai(KetQuaDocMonHoc::SaiDinhDang);
         }
+        if (tclt < MIN_TCLT || tclt > MAX_TCLT ||
+            tcth < MIN_TCTH || tcth > MAX_TCTH) {
+            return thatBai(KetQuaDocMonHoc::TinChiNgoaiKhoang);
+        }
+
         MonHoc mh{};
         memcpy(mh.maMH, ma.c_str(), ma.size() + 1);
         chuanHoaMa(mh.maMH);
         memcpy(mh.tenMH, ten.c_str(), ten.size() + 1);
         mh.soTCLT = tclt;
         mh.soTCTH = tcth;
-        if (!themMonHocVaoDSMH(root, mh)) {
-            giaiPhongMonHoc(root);
-            return false;
+        if (!themMonHocVaoDSMH(rootTam, mh)) {
+            return thatBai(KetQuaDocMonHoc::MaMonHocTrung);
         }
     }
-    if (file.bad()) {
-        giaiPhongMonHoc(root);
-        return false;
+
+    if (file.bad() || !file.eof()) {
+        return thatBai(KetQuaDocMonHoc::LoiDocFile);
     }
-    return true;
+
+    giaiPhongMonHoc(root);
+    root = rootTam;
+    return KetQuaDocMonHoc::ThanhCong;
 }
