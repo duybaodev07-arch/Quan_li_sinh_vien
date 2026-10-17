@@ -1,11 +1,12 @@
-gya|dsa2@|12|20
-thaidzai|CTDL|18|26
-bolon|cakkkkkkkkkkkkkkkkkkkkk|0|0
-CTDLGT|Cau truc du lieu va giai thuat|3|1
 CSDL|Co so du lieu|3|1
+CTDLGT|Cau truc du lieu va giai thuat|3|1
+HDH|He dieu hanh|3|1
+KTLT|Ky thuat lap trinh|3|0
 LTW|Lap trinh Web|2|1
 MMT|Mang may tinh|3|0
-HDH|He dieu hanh|3|1
 OOP|Lap trinh huong doi tuong|3|1
-KTLT|Ky thuat lap trinh|3|0
 XSTK|Xac suat thong ke|3|0
+MATH|Toan roi rac|3|0
+XSTH|Xac suat thong ke nang cao|3|1
+ANM|An ninh mang|3|1
+PTTKHT|Phan tich thiet ke he thong|3|1

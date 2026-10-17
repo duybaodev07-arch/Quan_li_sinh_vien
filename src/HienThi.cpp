@@ -5,8 +5,6 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
-#include <utility>
-#include <vector>
 
 using namespace std;
 
@@ -126,39 +124,65 @@ static float tinhDiemTrungBinhSinhVien(
     const DanhSachLopTinChi& dsLopTC,
     PTRMH root
 ) {
-    std::vector<std::pair<std::string, float>> diemCaoNhatTheoMon;
+    char dsMaMH[MAX_LOP_TC][MAX_MAMH]{};
+    float dsDiemCaoNhat[MAX_LOP_TC]{};
+    int soLuongMon = 0;
+
     for (int i = 0; i < dsLopTC.soLuong; ++i) {
         const LopTinChi* lopTC = dsLopTC.lopTC[i];
-        if (lopTC == nullptr || lopTC->huyLop) continue;
+        if (lopTC == nullptr || lopTC->huyLop) {
+            continue;
+        }
 
         PTRDK dk = timDangKyTheoMaSV(lopTC->dssvdk, sv->sv.maSV);
-        if (dk == nullptr || dk->dk.huyDangKy || dk->dk.diem < 0.0f) continue;
+        if (dk == nullptr || dk->dk.huyDangKy || dk->dk.diem < 0.0f) {
+            continue;
+        }
 
-        auto mon = std::find_if(
-            diemCaoNhatTheoMon.begin(), diemCaoNhatTheoMon.end(),
-            [&](const auto& item) { return item.first == lopTC->maMH; }
-        );
-        if (mon == diemCaoNhatTheoMon.end())
-            diemCaoNhatTheoMon.emplace_back(lopTC->maMH, dk->dk.diem);
-        else if (dk->dk.diem > mon->second)
-            mon->second = dk->dk.diem;
+        int viTriMon = 0;
+        while (viTriMon < soLuongMon &&
+               strcmp(dsMaMH[viTriMon], lopTC->maMH) != 0) {
+            ++viTriMon;
+        }
+
+        if (viTriMon == soLuongMon) {
+            if (soLuongMon >= MAX_LOP_TC) {
+                continue;
+            }
+            strcpy(dsMaMH[soLuongMon], lopTC->maMH);
+            dsDiemCaoNhat[soLuongMon] = dk->dk.diem;
+            ++soLuongMon;
+        }
+        else if (dk->dk.diem > dsDiemCaoNhat[viTriMon]) {
+            dsDiemCaoNhat[viTriMon] = dk->dk.diem;
+        }
     }
 
     float tongDiemTinChi = 0.0f;
     int tongSoTinChi = 0;
-    for (const auto& mon : diemCaoNhatTheoMon) {
-        PTRMH nodeMonHoc = timMonHocTheoMa(root, mon.first.c_str());
-        if (nodeMonHoc == nullptr) continue;
-        const int soTinChi = nodeMonHoc->mh.soTCLT + nodeMonHoc->mh.soTCTH;
-        if (soTinChi <= 0) continue;
-        tongDiemTinChi += mon.second * soTinChi;
+
+    for (int i = 0; i < soLuongMon; ++i) {
+        PTRMH nodeMonHoc = timMonHocTheoMa(root, dsMaMH[i]);
+        if (nodeMonHoc == nullptr) {
+            continue;
+        }
+
+        const int soTinChi =
+            nodeMonHoc->mh.soTCLT + nodeMonHoc->mh.soTCTH;
+        if (soTinChi <= 0) {
+            continue;
+        }
+
+        tongDiemTinChi += dsDiemCaoNhat[i] * soTinChi;
         tongSoTinChi += soTinChi;
     }
 
-    if (tongSoTinChi == 0) return -1.0f;
+    if (tongSoTinChi == 0) {
+        return -1.0f;
+    }
+
     return tongDiemTinChi / tongSoTinChi;
-}
-void inBangDiemTrungBinh(const DanhSachLop& dsLop, const DanhSachLopTinChi& dsLopTC, PTRMH root, const char* maLop) {
+}void inBangDiemTrungBinh(const DanhSachLop& dsLop, const DanhSachLopTinChi& dsLopTC, PTRMH root, const char* maLop) {
     int viTri = timLopTheoMa(dsLop, maLop);
 
     if (viTri == -1) {
@@ -362,9 +386,3 @@ void inBangDiemTongKet(
         sv = sv->next;
     }
 }
-
-
-
-
-
-

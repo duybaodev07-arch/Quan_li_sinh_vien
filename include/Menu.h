@@ -6,30 +6,20 @@
 #include "DangKi.h"
 #include "LopTinChi.h"
 #include "HienThi.h"
-// QUẢN LÍ MÔN HỌC
-void menuMonHoc(PTRMH& root);
 
-// QUẢN LÍ SINH VIÊN, TRUYỀN DSLOP, VITRI ĐỂ TÌM MÃ SV TRÙNG KHI THÊM SV MỚI
+void menuMonHoc(PTRMH& root, const DanhSachLopTinChi& dsLopTC);
 void menuSinhVien(DanhSachLop& dsLop, int viTri);
-
-// QUẢN LÍ LỚP
 void menuLop(DanhSachLop& dsLop);
-
-// QUẢN LÍ LỚP TÍN CHỈ
 void menuLopTinChi(
     DanhSachLopTinChi& dsLopTC,
     DanhSachLop& dsLop,
     PTRMH root
 );
-
-// MENU ĐĂNG KÝ
 void menuDangKy(
     DanhSachLopTinChi& dsLopTC,
     DanhSachLop& dsLop,
     PTRMH rootMonHoc
 );
-
-// MENU CHÍNH, MENU CHA
 void menuChinh(
     PTRMH& rootMonHoc,
     DanhSachLop& dsLop,

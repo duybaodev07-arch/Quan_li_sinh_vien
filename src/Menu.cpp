@@ -1,4 +1,6 @@
 #include "Menu.h"
+#include "ConsoleUI.h"
+#include "ConsoleSelection.h"
 #include "Input.h"
 #include <cstdlib>
 #include <iostream>
@@ -15,504 +17,696 @@ bool danhSachLopTinChiRong(const DanhSachLopTinChi& dsLopTC) {
     cout << "Danh sach lop tin chi rong! Hay them lop truoc.\n";
     return true;
 }
+
+bool monHocDangDuocMoLop(
+    const DanhSachLopTinChi& dsLopTC,
+    const char* maMH
+) {
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
+        if (dsLopTC.lopTC[i] != nullptr &&
+            strcmp(dsLopTC.lopTC[i]->maMH, maMH) == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
-void menuMonHoc(PTRMH& root) {
-    int luaChon;
+void timSinhVienTheoTuKhoa(PTRSV dssv, const char* tuKhoa) {
+    int soSinhVienTimThay = 0;
+    for (PTRSV p = dssv; p != nullptr; p = p->next) {
+        char maSV[MAX_MASV];
+        char ho[MAX_HO];
+        char ten[MAX_TEN];
 
-    do {
-        system("cls");
+        strcpy(maSV, p->sv.maSV);
+        strcpy(ho, p->sv.ho);
+        strcpy(ten, p->sv.ten);
+        chuanHoaMa(maSV);
+        chuanHoaMa(ho);
+        chuanHoaMa(ten);
 
-        cout << "========== QUAN LY MON HOC ==========\n";
-        cout << "1. Them mon hoc\n";
-        cout << "2. Hieu chinh mon hoc\n";
-        cout << "3. Xoa mon hoc\n";
-        cout << "4. Tim mon hoc theo ma\n";
-        cout << "5. In danh sach mon hoc theo ma\n";
-        cout << "6. In danh sach mon hoc theo ten\n";
-        cout << "0. Quay lai\n";
-        cout << "=====================================\n";
-        cout << "Nhap lua chon: ";
-
-        luaChon = nhapSoNguyenTrongKhoang(0, 6);
-
-        switch (luaChon) {
-        case 1:
-            themMonHoc(root);
-            system("pause");
-            break;
-
-        case 2: {
-            char maMH[MAX_MAMH];
-            cout << "Nhap ma mon hoc can hieu chinh: ";
-            nhapMaBatBuoc(maMH, MAX_MAMH);
-
-            if (hieuChinhMonHoc(root, maMH))
-                cout << "Hieu chinh mon hoc thanh cong!\n";
-            else
-                cout << "Khong tim thay mon hoc!\n";
-
-            system("pause");
-            break;
+        if (strstr(maSV, tuKhoa) != nullptr ||
+            strstr(ho, tuKhoa) != nullptr ||
+            strstr(ten, tuKhoa) != nullptr) {
+            cout << p->sv.maSV << " | "
+                 << p->sv.ho << " " << p->sv.ten << " | "
+                 << p->sv.phai << " | " << p->sv.soDT << '\n';
+            ++soSinhVienTimThay;
         }
-        case 3: {
-            char maMH[MAX_MAMH];
-            cout << "Nhap ma mon hoc can xoa: ";
-            nhapMaBatBuoc(maMH, MAX_MAMH);
+    }
 
-            if (xoaMonHoc(root, maMH))
-                cout << "Xoa mon hoc thanh cong!\n";
-            else
-                cout << "Khong tim thay mon hoc!\n";
+    if (soSinhVienTimThay == 0) {
+        cout << "Khong tim thay sinh vien phu hop.\n";
+    }
+    else {
+        cout << "Tong so sinh vien tim thay: "
+             << soSinhVienTimThay << '\n';
+    }
+}
+void inDanhSachLopTinChiDaLoc(
+    const DanhSachLopTinChi& dsLopTC,
+    PTRMH rootMonHoc
+) {
+    char nienKhoa[MAX_NIENKHOA];
+    char tuKhoa[MAX_TENMH];
 
-            system("pause");
-            break;
+    cout << "Nhap nien khoa can xem (YYYY-YYYY): ";
+    nhapNienKhoa(nienKhoa, MAX_NIENKHOA);
+    cout << "Nhap ma/ten mon hoc can tim (Enter de bo qua): ";
+    nhapChuoiChoPhepRong(tuKhoa, MAX_TENMH);
+    chuanHoaMa(tuKhoa);
+
+    int soLopTimThay = 0;
+    for (int i = 0; i < dsLopTC.soLuong; ++i) {
+        const LopTinChi& lopTC = *dsLopTC.lopTC[i];
+        if (strcmp(lopTC.nienKhoa, nienKhoa) != 0) {
+            continue;
         }
-        case 4: {
+
+        bool khopTuKhoa = tuKhoa[0] == '\0';
+        if (!khopTuKhoa) {
+            char maMH[MAX_MAMH];
+            strcpy(maMH, lopTC.maMH);
+            chuanHoaMa(maMH);
+            khopTuKhoa = strstr(maMH, tuKhoa) != nullptr;
+
+            PTRMH monHoc = timMonHocTheoMa(rootMonHoc, lopTC.maMH);
+            if (!khopTuKhoa && monHoc != nullptr) {
+                char tenMH[MAX_TENMH];
+                strcpy(tenMH, monHoc->mh.tenMH);
+                chuanHoaMa(tenMH);
+                khopTuKhoa = strstr(tenMH, tuKhoa) != nullptr;
+            }
+        }
+
+        if (khopTuKhoa) {
+            inLopTinChi(lopTC);
+            ++soLopTimThay;
+        }
+    }
+
+    if (soLopTimThay == 0) {
+        cout << "Khong co lop tin chi phu hop.\n";
+    }
+    else {
+        cout << "Tong so lop tin chi: " << soLopTimThay << '\n';
+    }
+}
+}
+
+void menuMonHoc(PTRMH& root, const DanhSachLopTinChi& dsLopTC) {
+    const char* cacMuc[] = {
+        "Thao tac mon hoc",
+        "Tim mon hoc theo ma",
+        "In danh sach mon hoc theo ma",
+        "In danh sach mon hoc theo ten",
+        "Quay lai"
+    };
+
+    const char* cacThaoTac[] = {
+        "[F1] Them mon hoc",
+        "[F3] Hieu chinh mon hoc",
+        "[DEL] Xoa mon hoc",
+        "[F2] Luu danh sach mon hoc",
+        "Xoa toan bo mon hoc",
+        "Quay lai"
+    };
+
+    while (true) {
+        const int luaChon = chonMenuConsole(
+            "QUAN LY MON HOC",
+            cacMuc,
+            static_cast<int>(sizeof(cacMuc) / sizeof(cacMuc[0])),
+            "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+        );
+
+        if (luaChon < 0 || luaChon == 4) {
+            return;
+        }
+
+        if (luaChon == 0) {
+            while (true) {
+                const int thaoTac = chonMenuConsole(
+                    "THAO TAC MON HOC",
+                    cacThaoTac,
+                    static_cast<int>(sizeof(cacThaoTac) / sizeof(cacThaoTac[0])),
+                    "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+                );
+
+                if (thaoTac < 0 || thaoTac == 5) {
+                    break;
+                }
+
+                if (thaoTac == 0) {
+                    themMonHoc(root);
+                    choNhanPhim();
+                }
+                else if (thaoTac == 1) {
+                    char maMH[MAX_MAMH];
+                    if (!chonMonHocTuDanhSach(root, maMH)) {
+                        continue;
+                    }
+
+                    if (hieuChinhMonHoc(root, maMH)) {
+                        cout << "Hieu chinh mon hoc thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay mon hoc!\n";
+                    }
+                    choNhanPhim();
+                }
+                else if (thaoTac == 2) {
+                    char maMH[MAX_MAMH];
+                    if (!chonMonHocTuDanhSach(root, maMH)) {
+                        continue;
+                    }
+
+                    if (monHocDangDuocMoLop(dsLopTC, maMH)) {
+                        cout << "Mon hoc dang duoc lop tin chi su dung, khong the xoa!\n";
+                    }
+                    else if (!xacNhanConsole("Xac nhan xoa mon hoc")) {
+                        cout << "Da huy thao tac xoa.\n";
+                    }
+                    else if (xoaMonHoc(root, maMH)) {
+                        cout << "Xoa mon hoc thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay mon hoc!\n";
+                    }
+                    choNhanPhim();
+                }
+                else if (thaoTac == 3) {
+                    if (ghiFileMonHoc(root)) {
+                        cout << "Da luu danh sach mon hoc.\n";
+                    }
+                    else {
+                        cout << "Luu danh sach mon hoc that bai.\n";
+                    }
+                    choNhanPhim();
+                }
+                else if (thaoTac == 4) {
+                    if (dsLopTC.soLuong > 0) {
+                        cout << "Khong the xoa mon hoc khi van con lop tin chi.\n";
+                    }
+                    else if (root == nullptr) {
+                        cout << "Danh sach mon hoc da rong.\n";
+                    }
+                    else if (xacNhanConsole("Xac nhan xoa toan bo mon hoc")) {
+                        giaiPhongMonHoc(root);
+                        cout << "Da xoa toan bo mon hoc.\n";
+                    }
+                    else {
+                        cout << "Da huy thao tac xoa.\n";
+                    }
+                    choNhanPhim();
+                }
+            }
+        }
+        else if (luaChon == 1) {
             char maMH[MAX_MAMH];
             cout << "Nhap ma mon hoc can tim: ";
             nhapMaBatBuoc(maMH, MAX_MAMH);
+            PTRMH monHoc = timMonHocTheoMa(root, maMH);
 
-            PTRMH p = timMonHocTheoMa(root, maMH);
-
-            if (p != nullptr) {
-                cout << "\nDa tim thay mon hoc!\n";
-                inMonHoc(p->mh);
+            if (monHoc == nullptr) {
+                cout << "Khong tim thay mon hoc!\n";
             }
-            else
-                cout << "\nKhong tim thay mon hoc!\n";
-
-            system("pause");
-            break;
+            else {
+                inMonHoc(monHoc->mh);
+            }
+            choNhanPhim();
         }
-
-        case 5: {
+        else if (luaChon == 2) {
             inDanhSachMonHocTheoMa(root);
-            system("pause");
-            break;
+            choNhanPhim();
         }
-        case 6: {
+        else if (luaChon == 3) {
             inDanhSachMonHocTheoTen(root);
-            system("pause");
-            break;
+            choNhanPhim();
         }
-        case 0:
-            break;
-        }
-
-    } while (luaChon != 0);
+    }
 }
+
 void menuSinhVien(DanhSachLop& dsLop, int viTri) {
-    int luaChon;
+    if (viTri < 0 || viTri >= dsLop.soLuong) {
+        return;
+    }
+
     Lop& lop = dsLop.lop[viTri];
-    do {
-        system("cls");
+    const char* cacMuc[] = {
+        "Thao tac sinh vien",
+        "In danh sach theo ma",
+        "In danh sach theo ten",
+        "Tim sinh vien theo ma/ho/ten",
+        "Quay lai"
+    };
+    const char* cacThaoTac[] = {
+        "[F1] Them sinh vien vao lop",
+        "[F3] Hieu chinh sinh vien",
+        "[DEL] Xoa sinh vien khoi lop",
+        "[F2] Luu danh sach sinh vien",
+        "Quay lai"
+    };
 
-        cout << "========== CAP NHAT SINH VIEN TRONG LOP ==========\n"
-             << "1. Them sinh vien vao lop\n"
-             << "2. Hieu chinh thong tin sinh vien\n"
-             << "3. Xoa sinh vien khoi lop\n"
-             << "4. In danh dach sinh vien theo ma\n"
-             << "5. In danh sach sinh vien theo ten\n"
-             << "6. Tim sinh vien\n"
-             << "0. Quay lai\n"
-             << "=================================\n"
-             << "Nhap lua chon: ";
-        luaChon = nhapSoNguyenTrongKhoang(0, 6);
+    while (true) {
+        const int luaChon = chonMenuConsole(
+            "QUAN LY SINH VIEN TRONG LOP",
+            cacMuc,
+            static_cast<int>(sizeof(cacMuc) / sizeof(cacMuc[0])),
+            "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+        );
 
-        switch(luaChon) {
-            case 1: {
-                themSinhVienVaoLop(dsLop, viTri);
-                cout << "\nKet thuc nhap!\n";
-                system("pause");
-                break;
-            }
-            case 2: {
-                char maSV[MAX_MASV];
-                cout << "Nhap ma sinh vien can hieu chinh: ";
-                nhapMaBatBuoc(maSV, MAX_MASV);
-                if(hieuChinhSinhVien(lop.dssv, maSV)) 
-                    cout << "Hieu chinh thong tin sinh vien thanh cong!\n";
-                else 
-                    cout << "Khong tim thay ma sinh vien!\n";
-                system("pause");
-                break;
-            }
-            case 3: {
-                char maSV[MAX_MASV];
-                cout << "Nhap ma sinh vien can xoa: ";
-                nhapMaBatBuoc(maSV, MAX_MASV);
-                if(xoaSinhVien(lop.dssv, maSV)) 
-                    cout << "Xoa sinh vien thanh cong!\n";
-                else 
-                    cout << "Khong tim thay ma sinh vien";
-                system("pause");
-                break;
-            }
-            case 4: {
-                inDanhSachSinhVienTheoMa(lop.dssv);
-                system("pause");
-                break;
-            }
-            case 5: {
-                inDanhSachSinhVienTheoTen(lop.dssv);
-                system("pause");
-                break;
-            }
-            case 6: {
-                char maSV[MAX_MASV];
-                cout << "Nhap ma sinh vien can tim: ";
-                nhapMaBatBuoc(maSV, MAX_MASV);
-                PTRSV found = timSinhVien(lop.dssv, maSV);
-
-                if(found != nullptr)
-                    inSinhVien(found->sv);
-                else 
-                    cout << "Khong tim thay ma sinh vien!\n";
-
-                system("pause");
-                break;
-            }
-            case 0: break;
+        if (luaChon < 0 || luaChon == 4) {
+            return;
         }
-    } while(luaChon != 0);
-}
-void menuLop(DanhSachLop& dsLop) {
-    int luaChon;
 
-    do {
-        system("cls");
+        if (luaChon == 0) {
+            while (true) {
+                const int thaoTac = chonMenuConsole(
+                    "THAO TAC SINH VIEN",
+                    cacThaoTac,
+                    static_cast<int>(sizeof(cacThaoTac) / sizeof(cacThaoTac[0])),
+                    "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+                );
 
-        cout << "========== QUAN LY LOP ==========\n"
-             << "1. Them lop\n"
-             << "2. Hieu chinh lop\n"
-             << "3. Xoa lop\n"
-             << "4. Cap nhat sinh vien cua 1 lop\n"
-             << "5. In danh sach lop\n"
-             << "6. Tim thong tin sinh vien\n"
-             << "0. Quay lai\n"
-             << "=================================\n"
-             << "Nhap lua chon: ";
+                if (thaoTac < 0 || thaoTac == 4) {
+                    break;
+                }
 
-        luaChon = nhapSoNguyenTrongKhoang(0, 6);
-
-        switch(luaChon) {
-            case 1: {
-                themLop(dsLop);
-                system("pause");
-                break;
-            }
-            case 2: {
-                char maLop[MAX_MALOP];
-                
-                cout << "Nhap ma lop can hieu chinh: ";
-                nhapMaBatBuoc(maLop, MAX_MALOP);
-                if(hieuChinhLop(dsLop, maLop)) 
-                    cout << "Hieu chinh thanh cong!\n";
-                else 
-                    cout << "Khong tim thay ma lop!\n";
-
-                system("pause");
-                break;
-            }
-            case 3: {
-                char maLop[MAX_MALOP];
-                cout << "Nhap ma lop can xoa: ";
-                nhapMaBatBuoc(maLop, MAX_MALOP);
-                if(xoaLop(dsLop, maLop)) 
-                    cout << "Xoa lop thanh cong!\n";
-                else 
-                    cout << "Khong tim thay ma lop!\n";
-
-                system("pause");
-                break;
-            }
-            case 4: {
-                char maLop[MAX_MALOP];
-                cout << "Nhap ma lop can cap nhat sinh vien: ";
-                nhapMaBatBuoc(maLop, MAX_MALOP);
-
-                int viTri = timLopTheoMa(dsLop, maLop);
-
-                if(viTri != -1) {
-                    cout << "Thong tin lop: ";
-                    inLop(dsLop.lop[viTri]);
-                    cout << "Ban co muon cap nhat sinh vien lop nay(Y/N)?\n";
-                    if(nhapTrangThaiHuy()) {
-                        menuSinhVien(dsLop, viTri);
-                        cout << "Cap nhat sinh vien thanh cong!\n";
-                        system("pause");
+                if (thaoTac == 3) {
+                    if (ghiFileLop(dsLop)) {
+                        cout << "Da luu danh sach sinh vien.\n";
                     }
                     else {
-                        cout<< "Thoat thanh cong!\n";
-                        system("pause");
+                        cout << "Luu danh sach sinh vien that bai.\n";
                     }
+                    choNhanPhim();
+                    continue;
                 }
-                else 
-                    cout << "Khong tim thay ma lop!\n";
 
-                system("pause");
-                break;
-            }
-            case 5: {
-                inDanhSachLop(dsLop);
-                system("pause");
-                break;
-            }
-            case 6: {
                 char maSV[MAX_MASV];
-                cout << "Nhap ma sinh vien can tim: ";
-                nhapMaBatBuoc(maSV, MAX_MASV);
-                PTRSV found = timSinhVienTrongDanhSachLop(dsLop, maSV);
-
-                if(found != nullptr) 
-                    inSinhVien(found->sv);
-                else 
-                    cout << "Khong tim thay ma sinh vien!\n";
-
-                system("pause");
-                break;
+                if (thaoTac == 0) {
+                    themSinhVienVaoLop(dsLop, viTri);
+                    choNhanPhim();
+                }
+                else if (thaoTac == 1) {
+                    if (!chonSinhVienTuDanhSach(lop.dssv, maSV)) {
+                        continue;
+                    }
+                    if (hieuChinhSinhVien(lop.dssv, maSV)) {
+                        cout << "Hieu chinh sinh vien thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay sinh vien!\n";
+                    }
+                    choNhanPhim();
+                }
+                else if (thaoTac == 2) {
+                    if (!chonSinhVienTuDanhSach(lop.dssv, maSV)) {
+                        continue;
+                    }
+                    if (!xacNhanConsole("Xac nhan xoa sinh vien")) {
+                        cout << "Da huy thao tac xoa.\n";
+                    }
+                    else if (xoaSinhVien(lop.dssv, maSV)) {
+                        cout << "Xoa sinh vien thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay sinh vien!\n";
+                    }
+                    choNhanPhim();
+                }
             }
-            case 0: break;
-        }   
-    } while(luaChon != 0);
-
+        }
+        else if (luaChon == 1) {
+            inDanhSachSinhVienTheoMa(lop.dssv);
+            choNhanPhim();
+        }
+        else if (luaChon == 2) {
+            inDanhSachSinhVienTheoTen(lop.dssv);
+            choNhanPhim();
+        }
+        else if (luaChon == 3) {
+            char tuKhoa[MAX_HO];
+            cout << "Nhap ma, ho hoac ten sinh vien can tim: ";
+            nhapChuoi(tuKhoa, MAX_HO);
+            chuanHoaMa(tuKhoa);
+            timSinhVienTheoTuKhoa(lop.dssv, tuKhoa);
+            choNhanPhim();
+        }
+    }
 }
+
+void menuLop(DanhSachLop& dsLop) {
+    const char* cacMuc[] = {
+        "Thao tac lop",
+        "Cap nhat sinh vien cua lop",
+        "In danh sach lop",
+        "Tim sinh vien theo ma/ho/ten",
+        "Quay lai"
+    };
+    const char* cacThaoTac[] = {
+        "[F1] Them lop",
+        "[F3] Hieu chinh lop",
+        "[DEL] Xoa lop",
+        "[F2] Luu danh sach lop",
+        "Quay lai"
+    };
+
+    while (true) {
+        const int luaChon = chonMenuConsole(
+            "QUAN LY LOP VA SINH VIEN",
+            cacMuc,
+            static_cast<int>(sizeof(cacMuc) / sizeof(cacMuc[0])),
+            "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+        );
+
+        if (luaChon < 0 || luaChon == 4) {
+            return;
+        }
+
+        if (luaChon == 0) {
+            while (true) {
+                const int thaoTac = chonMenuConsole(
+                    "THAO TAC LOP",
+                    cacThaoTac,
+                    static_cast<int>(sizeof(cacThaoTac) / sizeof(cacThaoTac[0])),
+                    "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+                );
+
+                if (thaoTac < 0 || thaoTac == 4) {
+                    break;
+                }
+
+                if (thaoTac == 3) {
+                    if (ghiFileLop(dsLop)) {
+                        cout << "Da luu danh sach lop.\n";
+                    }
+                    else {
+                        cout << "Luu danh sach lop that bai.\n";
+                    }
+                    choNhanPhim();
+                    continue;
+                }
+
+                if (thaoTac == 0) {
+                    themLop(dsLop);
+                    choNhanPhim();
+                }
+                else if (thaoTac == 1) {
+                    char maLop[MAX_MALOP];
+                    if (!chonLopTuDanhSach(dsLop, maLop)) {
+                        continue;
+                    }
+                    if (hieuChinhLop(dsLop, maLop)) {
+                        cout << "Hieu chinh lop thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay lop!\n";
+                    }
+                    choNhanPhim();
+                }
+                else if (thaoTac == 2) {
+                    char maLop[MAX_MALOP];
+                    if (!chonLopTuDanhSach(dsLop, maLop)) {
+                        continue;
+                    }
+                    if (!xacNhanConsole("Xac nhan xoa lop")) {
+                        cout << "Da huy thao tac xoa.\n";
+                    }
+                    else if (xoaLop(dsLop, maLop)) {
+                        cout << "Xoa lop thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay lop!\n";
+                    }
+                    choNhanPhim();
+                }
+            }
+        }
+        else if (luaChon == 1) {
+            char maLop[MAX_MALOP];
+            cout << "Nhap ma lop can cap nhat sinh vien: ";
+            nhapMaBatBuoc(maLop, MAX_MALOP);
+            const int viTri = timLopTheoMa(dsLop, maLop);
+
+            if (viTri == -1) {
+                cout << "Khong tim thay lop!\n";
+                choNhanPhim();
+                continue;
+            }
+
+            inLop(dsLop.lop[viTri]);
+            cout << "Cap nhat sinh vien lop nay? (Y/N): ";
+            if (nhapTrangThaiHuy()) {
+                menuSinhVien(dsLop, viTri);
+            }
+            choNhanPhim();
+        }
+        else if (luaChon == 2) {
+            inDanhSachLop(dsLop);
+            choNhanPhim();
+        }
+        else if (luaChon == 3) {
+            char maSV[MAX_MASV];
+            cout << "Nhap ma sinh vien can tim: ";
+            nhapMaBatBuoc(maSV, MAX_MASV);
+            PTRSV sinhVien = timSinhVienTrongDanhSachLop(dsLop, maSV);
+
+            if (sinhVien == nullptr) {
+                cout << "Khong tim thay sinh vien!\n";
+            }
+            else {
+                inSinhVien(sinhVien->sv);
+            }
+            choNhanPhim();
+        }
+    }
+}
+
 void menuLopTinChi(
     DanhSachLopTinChi& dsLopTC,
     DanhSachLop& dsLop,
     PTRMH root
 ) {
-    int luaChon;
+    const char* cacMuc[] = {
+        "Thao tac lop tin chi",
+        "Huy lop tin chi",
+        "Loc lop tin chi theo nien khoa va ma/ten mon hoc",
+        "Tu dong huy lop khong du sinh vien",
+        "Nhap diem",
+        "Xem bang diem lop tin chi",
+        "In bang diem trung binh",
+        "In bang diem tong ket",
+        "Quay lai"
+    };
+    const char* cacThaoTac[] = {
+        "[F1] Them lop tin chi",
+        "[F3] Hieu chinh lop tin chi",
+        "[DEL] Xoa lop tin chi",
+        "[F2] Luu danh sach lop tin chi",
+        "Quay lai"
+    };
 
-    do {
-        system("cls");
+    while (true) {
+        const int luaChon = chonMenuConsole(
+            "QUAN LY LOP TIN CHI",
+            cacMuc,
+            static_cast<int>(sizeof(cacMuc) / sizeof(cacMuc[0])),
+            "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+        );
 
-        cout << "========= QUAN LY LOP TIN CHI =========\n";
-        cout << "1. Them lop tin chi\n";
-        cout << "2. Hieu chinh lop tin chi\n";
-        cout << "3. Xoa lop tin chi\n";
-        cout << "4. Huy lop tin chi\n";
-        cout << "5. In danh sach lop tin chi\n";
-        cout << "6. Tu dong huy lop khong du sinh vien\n";
-        cout << "7. Nhap diem\n";
-        cout << "8. Xem bang diem lop tin chi\n";
-        cout << "9. In bang diem trung binh\n";
-        cout << "10. In bang diem tong ket\n";
-        cout << "0. Quay lai\n";
-        cout << "========================================\n";
-        cout << "Nhap lua chon: ";
-
-        luaChon = nhapSoNguyenTrongKhoang(0, 10);
-
-        switch (luaChon) {
-
-        case 1:
-            themLopTinChi(dsLopTC, root);
-            system("pause");
-            break;
-
-        case 2: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
-            int maLopTC;
-
-            cout << "Nhap ma lop tin chi can hieu chinh: ";
-            maLopTC = nhapSoNguyenKhongAm();
-
-            if (hieuChinhLopTinChi(dsLopTC, maLopTC, root))
-                cout << "Hieu chinh lop tin chi thanh cong!\n";
-            else
-                cout << "Khong tim thay lop tin chi!\n";
-
-            system("pause");
-            break;
+        if (luaChon < 0 || luaChon == 8) {
+            return;
         }
 
-        case 3: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
+        if (luaChon == 0) {
+            while (true) {
+                const int thaoTac = chonMenuConsole(
+                    "THAO TAC LOP TIN CHI",
+                    cacThaoTac,
+                    static_cast<int>(sizeof(cacThaoTac) / sizeof(cacThaoTac[0])),
+                    "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+                );
+
+                if (thaoTac < 0 || thaoTac == 4) {
+                    break;
+                }
+
+                if (thaoTac == 3) {
+                    if (ghiFileLopTinChi(dsLopTC)) {
+                        cout << "Da luu danh sach lop tin chi.\n";
+                    }
+                    else {
+                        cout << "Luu danh sach lop tin chi that bai.\n";
+                    }
+                    choNhanPhim();
+                    continue;
+                }
+
+                if (thaoTac == 0) {
+                    themLopTinChi(dsLopTC, root);
+                    choNhanPhim();
+                }
+                else if (thaoTac == 1) {
+                    if (danhSachLopTinChiRong(dsLopTC)) {
+                        choNhanPhim();
+                        continue;
+                    }
+                    int maLopTC = 0;
+                    if (!chonLopTinChiTuDanhSach(dsLopTC, maLopTC)) {
+                        continue;
+                    }
+                    if (hieuChinhLopTinChi(dsLopTC, maLopTC, root)) {
+                        cout << "Hieu chinh lop tin chi thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay lop tin chi!\n";
+                    }
+                    choNhanPhim();
+                }
+                else if (thaoTac == 2) {
+                    if (danhSachLopTinChiRong(dsLopTC)) {
+                        choNhanPhim();
+                        continue;
+                    }
+                    int maLopTC = 0;
+                    if (!chonLopTinChiTuDanhSach(dsLopTC, maLopTC)) {
+                        continue;
+                    }
+                    if (!xacNhanConsole("Xac nhan xoa lop tin chi")) {
+                        cout << "Da huy thao tac xoa.\n";
+                    }
+                    else if (xoaLopTinChi(dsLopTC, maLopTC)) {
+                        cout << "Xoa lop tin chi thanh cong!\n";
+                    }
+                    else {
+                        cout << "Khong tim thay lop tin chi!\n";
+                    }
+                    choNhanPhim();
+                }
             }
-            int maLopTC;
-
-            cout << "Nhap ma lop tin chi can xoa: ";
-            maLopTC = nhapSoNguyenKhongAm();
-
-            if (xoaLopTinChi(dsLopTC, maLopTC))
-                cout << "Xoa lop tin chi thanh cong!\n";
-            else
-                cout << "Khong tim thay lop tin chi!\n";
-
-            system("pause");
-            break;
         }
-
-        case 4: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
+        else if (luaChon == 1) {
+            if (!danhSachLopTinChiRong(dsLopTC)) {
+                int maLopTC = 0;
+                if (!chonLopTinChiTuDanhSach(dsLopTC, maLopTC)) {
+                    choNhanPhim();
+                    continue;
+                }
+                if (!xacNhanConsole("Xac nhan huy lop tin chi")) {
+                    cout << "Da huy thao tac.\n";
+                }
+                else if (huyLopTinChi(dsLopTC, maLopTC)) {
+                    cout << "Huy lop tin chi thanh cong!\n";
+                }
+                else {
+                    cout << "Khong tim thay lop tin chi!\n";
+                }
             }
-            int maLopTC;
-
-            cout << "Nhap ma lop tin chi can huy: ";
-            maLopTC = nhapSoNguyenKhongAm();
-
-            if (huyLopTinChi(dsLopTC, maLopTC))
-                cout << "Huy lop tin chi thanh cong!\n";
-            else
-                cout << "Khong tim thay lop tin chi!\n";
-
-            system("pause");
-            break;
+            choNhanPhim();
         }
-
-        case 5:
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
+        else if (luaChon == 2) {
+            if (!danhSachLopTinChiRong(dsLopTC)) {
+                inDanhSachLopTinChiDaLoc(dsLopTC, root);
             }
-            inDanhSachLopTinChi(dsLopTC);
-            system("pause");
-            break;
-
-        case 6: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
-            char nienKhoa[MAX_NIENKHOA];
-            cout << "Nhap nien khoa can xet huy: ";
-            nhapNienKhoa(nienKhoa, MAX_NIENKHOA);
-            cout << "Nhap hoc ky can xet huy: ";
-            const int hocKy = nhapSoNguyenKhongAm();
-            tuDongHuyDanhSachLopKhongDuSinhVien(dsLopTC, nienKhoa, hocKy);
-            system("pause");
-            break;
+            choNhanPhim();
         }
-
-        case 7:
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
-            nhapDiem(dsLopTC, dsLop);
-            system("pause");
-            break;
-
-        case 8:
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
-            xemBangDiemLopTinChi(dsLopTC, dsLop, root);
-            system("pause");
-            break;
-
-        case 9: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
-            char maLop[MAX_MALOP];
-
-            cout << "Nhap ma lop: ";
-            nhapMaBatBuoc(maLop, MAX_MALOP);
-
-            inBangDiemTrungBinh(
-                dsLop,
-                dsLopTC,
-                root,
-                maLop
-            );
-
-            system("pause");
-            break;
-        }
-
-        case 10: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
-            char maLop[MAX_MALOP];
-
-            cout << "Nhap ma lop: ";
-            nhapMaBatBuoc(maLop, MAX_MALOP);
-
-            int viTri = timLopTheoMa(dsLop, maLop);
-
-            if (viTri == -1) {
-                cout << "Khong tim thay lop!\n";
-            }
-            else {
-                inBangDiemTongKet(
-                    dsLop.lop[viTri],
-                    dsLopTC
+        else if (luaChon == 3) {
+            if (!danhSachLopTinChiRong(dsLopTC)) {
+                char nienKhoa[MAX_NIENKHOA];
+                cout << "Nhap nien khoa can xet huy: ";
+                nhapNienKhoa(nienKhoa, MAX_NIENKHOA);
+                cout << "Nhap hoc ky can xet huy: ";
+                const int hocKy = nhapSoNguyenKhongAm();
+                tuDongHuyDanhSachLopKhongDuSinhVien(
+                    dsLopTC,
+                    nienKhoa,
+                    hocKy
                 );
             }
+            choNhanPhim();
+        }
+        else if (luaChon == 4) {
+            if (!danhSachLopTinChiRong(dsLopTC)) {
+                nhapDiem(dsLopTC, dsLop);
+            }
+            choNhanPhim();
+        }
+        else if (luaChon == 5) {
+            if (!danhSachLopTinChiRong(dsLopTC)) {
+                xemBangDiemLopTinChi(dsLopTC, dsLop, root);
+            }
+            choNhanPhim();
+        }
+        else if (luaChon == 6) {
+            if (!danhSachLopTinChiRong(dsLopTC)) {
+                char maLop[MAX_MALOP];
+                cout << "Nhap ma lop: ";
+                nhapMaBatBuoc(maLop, MAX_MALOP);
+                inBangDiemTrungBinh(dsLop, dsLopTC, root, maLop);
+            }
+            choNhanPhim();
+        }
+        else if (luaChon == 7) {
+            if (!danhSachLopTinChiRong(dsLopTC)) {
+                char maLop[MAX_MALOP];
+                cout << "Nhap ma lop: ";
+                nhapMaBatBuoc(maLop, MAX_MALOP);
+                const int viTri = timLopTheoMa(dsLop, maLop);
 
-            system("pause");
-            break;
+                if (viTri == -1) {
+                    cout << "Khong tim thay lop!\n";
+                }
+                else {
+                    inBangDiemTongKet(dsLop.lop[viTri], dsLopTC);
+                }
+            }
+            choNhanPhim();
         }
-        case 0:
-            break;
-        }
-    } while (luaChon != 0);
+    }
 }
+
 void menuDangKy(
     DanhSachLopTinChi& dsLopTC,
     DanhSachLop& dsLop,
     PTRMH rootMonHoc
 ) {
-    int luaChon;
+    const char* cacMuc[] = {
+        "Dang ky lop tin chi",
+        "Huy dang ky lop tin chi",
+        "Xem danh sach sinh vien dang ky",
+        "Quay lai"
+    };
 
-    do {
-        system("cls");
+    while (true) {
+        const int luaChon = chonMenuConsole(
+            "DANG KY LOP TIN CHI",
+            cacMuc,
+            static_cast<int>(sizeof(cacMuc) / sizeof(cacMuc[0])),
+            "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Quay lai"
+        );
 
-        cout << "========= DANG KY LOP TIN CHI =========\n";
-        cout << "1. Dang ky lop tin chi\n";
-        cout << "2. Huy dang ky lop tin chi\n";
-        cout << "3. Xem danh sach sinh vien dang ky\n";
-        cout << "0. Quay lai\n";
-        cout << "=======================================\n";
-        cout << "Nhap lua chon: ";
+        if (luaChon < 0 || luaChon == 3) {
+            return;
+        }
 
-        luaChon = nhapSoNguyenTrongKhoang(0, 3);
+        if (danhSachLopTinChiRong(dsLopTC)) {
+            choNhanPhim();
+            continue;
+        }
 
-        switch (luaChon) {
-
-        case 1:
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
+        if (luaChon == 0) {
             dangKyLopTinChi(dsLopTC, dsLop, rootMonHoc);
-            system("pause");
-            break;
-
-        case 2:
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
+        }
+        else if (luaChon == 1) {
             huyDangKyLopTinChi(dsLopTC);
-            system("pause");
-            break;
-
-        case 3: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
-            }
-
+        }
+        else if (luaChon == 2) {
             char maMH[MAX_MAMH];
             char nienKhoa[MAX_NIENKHOA];
             int hocKy = 0;
             int nhom = 0;
-
             nhapThongTinTimLopTinChi(
                 maMH,
                 nienKhoa,
@@ -537,129 +731,122 @@ void menuDangKy(
                     *dsLopTC.lopTC[viTri]
                 );
             }
-
-            system("pause");
-            break;
-        }
-        case 0:
-            break;
         }
 
-    } while (luaChon != 0);
+        choNhanPhim();
+    }
 }
-
 void menuChinh(
     PTRMH& root,
     DanhSachLop& dsLop,
     DanhSachLopTinChi& dsLopTC
 ) {
-    int luaChon;
+    const char* cacMuc[] = {
+        "Quan ly mon hoc",
+        "Quan ly lop va sinh vien",
+        "Quan ly lop tin chi",
+        "Dang ky lop tin chi",
+        "Nhap diem",
+        "Xem bang diem lop tin chi",
+        "In bang diem trung binh",
+        "In bang diem tong ket",
+        "[F2] Luu du lieu",
+        "Thoat"
+    };
 
-    do {
-        system("cls");
+    using HanhDong = void (*)(
+        PTRMH&,
+        DanhSachLop&,
+        DanhSachLopTinChi&
+    );
 
-        cout << "============= MENU CHINH =============\n";
-        cout << "1. Quan ly mon hoc\n";
-        cout << "2. Quan ly lop va sinh vien\n";
-        cout << "3. Quan ly lop tin chi\n";
-        cout << "4. Dang ky lop tin chi\n";
-        cout << "5. Nhap diem\n";
-        cout << "6. Xem bang diem lop tin chi\n";
-        cout << "7. In bang diem trung binh\n";
-        cout << "8. In bang diem tong ket\n";
-        cout << "0. Thoat\n";
-        cout << "=======================================\n";
-        cout << "Nhap lua chon: ";
-
-        luaChon = nhapSoNguyenTrongKhoang(0, 8);
-
-        switch (luaChon) {
-        case 1:
-            menuMonHoc(root);
-            break;
-
-        case 2:
-            menuLop(dsLop);
-            break;
-
-        case 3:
-            menuLopTinChi(dsLopTC, dsLop, root);
-            break;
-
-        case 4:
-            menuDangKy(dsLopTC, dsLop, root);
-            break;
-
-        case 5:
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
+    const HanhDong cacHanhDong[] = {
+        [](PTRMH& rootMenu, DanhSachLop&, DanhSachLopTinChi& dsLopTCMenu) {
+            menuMonHoc(rootMenu, dsLopTCMenu);
+        },
+        [](PTRMH&, DanhSachLop& dsLopMenu, DanhSachLopTinChi&) {
+            menuLop(dsLopMenu);
+        },
+        [](PTRMH& rootMenu, DanhSachLop& dsLopMenu, DanhSachLopTinChi& dsLopTCMenu) {
+            menuLopTinChi(dsLopTCMenu, dsLopMenu, rootMenu);
+        },
+        [](PTRMH& rootMenu, DanhSachLop& dsLopMenu, DanhSachLopTinChi& dsLopTCMenu) {
+            menuDangKy(dsLopTCMenu, dsLopMenu, rootMenu);
+        },
+        [](PTRMH&, DanhSachLop& dsLopMenu, DanhSachLopTinChi& dsLopTCMenu) {
+            if (!danhSachLopTinChiRong(dsLopTCMenu)) {
+                nhapDiem(dsLopTCMenu, dsLopMenu);
             }
-            nhapDiem(dsLopTC, dsLop);
-            system("pause");
-            break;
-
-        case 6: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
+            choNhanPhim();
+        },
+        [](PTRMH& rootMenu, DanhSachLop& dsLopMenu, DanhSachLopTinChi& dsLopTCMenu) {
+            if (!danhSachLopTinChiRong(dsLopTCMenu)) {
+                xemBangDiemLopTinChi(dsLopTCMenu, dsLopMenu, rootMenu);
             }
-            xemBangDiemLopTinChi(dsLopTC, dsLop, root);
-            system("pause");
-            break;
-        }
-
-        case 7: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
+            choNhanPhim();
+        },
+        [](PTRMH& rootMenu, DanhSachLop& dsLopMenu, DanhSachLopTinChi& dsLopTCMenu) {
+            if (danhSachLopTinChiRong(dsLopTCMenu)) {
+                choNhanPhim();
+                return;
             }
+
             char maLop[MAX_MALOP];
-
             cout << "Nhap ma lop: ";
             nhapMaBatBuoc(maLop, MAX_MALOP);
-
-            inBangDiemTrungBinh(
-                dsLop,
-                dsLopTC,
-                root,
-                maLop
-            );
-
-            system("pause");
-            break;
-        }
-
-        case 8: {
-            if (danhSachLopTinChiRong(dsLopTC)) {
-                system("pause");
-                break;
+            inBangDiemTrungBinh(dsLopMenu, dsLopTCMenu, rootMenu, maLop);
+            choNhanPhim();
+        },
+        [](PTRMH&, DanhSachLop& dsLopMenu, DanhSachLopTinChi& dsLopTCMenu) {
+            if (danhSachLopTinChiRong(dsLopTCMenu)) {
+                choNhanPhim();
+                return;
             }
-            char maLop[MAX_MALOP];
 
+            char maLop[MAX_MALOP];
             cout << "Nhap ma lop: ";
             nhapMaBatBuoc(maLop, MAX_MALOP);
-
-            int viTri = timLopTheoMa(dsLop, maLop);
+            const int viTri = timLopTheoMa(dsLopMenu, maLop);
 
             if (viTri == -1) {
                 cout << "Khong tim thay lop!\n";
             }
             else {
-                inBangDiemTongKet(
-                    dsLop.lop[viTri],
-                    dsLopTC
-                );
+                inBangDiemTongKet(dsLopMenu.lop[viTri], dsLopTCMenu);
             }
-            system("pause");
+            choNhanPhim();
+        },
+        [](PTRMH& rootMenu, DanhSachLop& dsLopMenu, DanhSachLopTinChi& dsLopTCMenu) {
+            const bool daLuuMonHoc = ghiFileMonHoc(rootMenu);
+            const bool daLuuLop = ghiFileLop(dsLopMenu);
+            const bool daLuuLopTC = ghiFileLopTinChi(dsLopTCMenu);
+
+            if (daLuuMonHoc && daLuuLop && daLuuLopTC) {
+                cout << "Da luu tat ca du lieu thanh cong.\n";
+            }
+            else {
+                cout << "Luu du lieu chua day du. Kiem tra quyen ghi va thu muc Data.\n";
+            }
+            choNhanPhim();
+        },
+        nullptr
+    };
+
+    const char* huongDan =
+        "[LEN/XUONG]: Di chuyen  |  [ENTER]: Chon  |  [ESC]: Thoat";
+
+    while (true) {
+        const int luaChon = chonMenuConsole(
+            "QUAN LY DIEM SINH VIEN THEO TIN CHI",
+            cacMuc,
+            static_cast<int>(sizeof(cacMuc) / sizeof(cacMuc[0])),
+            huongDan
+        );
+
+        if (luaChon < 0 || cacHanhDong[luaChon] == nullptr) {
             break;
         }
 
-        case 0:
-            break;
-        }
-
-    } while (luaChon != 0);
+        cacHanhDong[luaChon](root, dsLop, dsLopTC);
+    }
 }
-
-

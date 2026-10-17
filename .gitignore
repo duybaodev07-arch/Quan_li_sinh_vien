@@ -7,7 +7,6 @@ build/
 cmake-build-*/
 *.obj
 *.o
-*.exe
 *.dll
 *.pdb
 *.ilk
