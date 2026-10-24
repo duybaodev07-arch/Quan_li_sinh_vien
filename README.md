@@ -1,22 +1,19 @@
 # Quản lí sinh viên hệ tín chỉ
 
 ## Cấu trúc mã nguồn
-- `data`: các file dữ liệu đầu vào/đầu ra của chương trình.
-- `include/model`: cấu trúc dữ liệu và thao tác CTDL dùng chung.
-- `include/features`: khai báo các chức năng theo module.
-- `include/storage`: khai báo đọc/ghi dữ liệu.
-- `include/ui`: giao diện console đa nền tảng.
-- `src/features`: phần cài đặt chức năng.
-- `src/storage`: phần cài đặt đọc/ghi file.
-- `src/main.cpp`: khởi tạo dữ liệu, gọi menu và dọn bộ nhớ.
-- `src/ui/Menu.cpp`: vòng lặp menu và điều phối chức năng.
+- `data/`: các file dữ liệu đầu vào/đầu ra.
+- `include/model/` và `src/model/`: khai báo kiểu dữ liệu và cài đặt thao tác CTDL.
+- `include/features/` và `src/features/`: header khai báo API và source cài đặt theo module nghiệp vụ.
+- `include/storage/` và `src/storage/`: API và cài đặt đọc/ghi dữ liệu.
+- `include/ui/` và `src/ui/`: API và cài đặt giao diện console, menu.
+- `src/main.cpp`: khởi tạo, điều phối và giải phóng dữ liệu.
+
+Mỗi module có header `.h` để khai báo và source `.cpp` để cài đặt. Các hàm hỗ trợ giao diện/dữ liệu dùng chung được khai báo trong `include/features/HamDungChung.h` và cài đặt trong `src/features/HamDungChung.cpp`.
 
 ## Build và chạy
-- Windows: chạy `run.bat` (cần cài g++ và thêm vào PATH).
-- Linux: chạy `chmod +x run.sh` một lần, sau đó `./run.sh` (cần g++).
-- Hoặc dùng `make` để build và `make run` để chạy.
+- **VS Code:** mở thư mục gốc project rồi nhấn `Ctrl+Shift+B` để build. Cần cài MinGW-w64, `g++` và `mingw32-make` trong `PATH`.
+- **Windows:** chạy `run.bat` để build và chạy.
+- **Linux:** cài `g++` và `make`, sau đó chạy `chmod +x run.sh` một lần rồi `./run.sh`.
+- Có thể dùng `make` hoặc `mingw32-make` để build, `make run` để build và chạy, `make clean` để xóa executable.
 
-Build dùng C++17.
-
-
-
+Project dùng C++17.

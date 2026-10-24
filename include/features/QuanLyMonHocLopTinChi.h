@@ -1,10 +1,12 @@
 #pragma once
-#include "features/HamDungChung.h"
+#include "model/MonHoc.h"
+#include "model/Lop.h"
+#include "model/LopTinChi.h"
 
-void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DSLopTinChi& danhSachLopTinChi, const DSLop& danhSachLop);
-void chucNangB_InDSSVDangKyLopTC(PTRMH cayMonHoc, const DSLopTinChi& danhSachLopTinChi, const DSLop& danhSachLop);
-void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DSLop& danhSachLop, const DSLopTinChi& danhSachLopTinChi);
+void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi, const DanhSachLop& danhSachLop);
+void chucNangB_InDSSVDangKyLopTC(PTRMH cayMonHoc, const DanhSachLopTinChi& danhSachLopTinChi, const DanhSachLop& danhSachLop);
+void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi);
 void chucNangF_InDSMonHocTheoTen(PTRMH cayMonHoc);
-void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DSLop& danhSachLop, DSLopTinChi& danhSachLopTinChi);
-void chucNangH_HuyLopTinChi(PTRMH cayMonHoc, const DSLop& danhSachLop, DSLopTinChi& danhSachLopTinChi);
+void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi);
+void chucNangH_HuyLopTinChi(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi);
 

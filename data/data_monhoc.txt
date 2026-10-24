@@ -1,4 +1,4 @@
-20
+26
 INT1306|Cau truc du lieu va giai thuat|3|1
 INT1154|Tin hoc co so 2|2|1
 BAS1203|Giai tich 1|3|0
@@ -19,3 +19,9 @@ INT1503|Phat trien ung dung di dong|2|1
 INT1504|Kien truc may tinh|2|1
 INT1505|Xac suat thong ke|3|0
 INT1506|Ky thuat lap trinh|2|1
+INT1510|Lap trinh Python|2|1
+INT1511|Tri tue nhan tao|3|1
+INT1512|Phan tich du lieu|2|1
+INT1513|An toan thong tin nang cao|2|1
+INT1514|Dien toan dam may|2|1
+INT1515|Phat trien ung dung web nang cao|2|1

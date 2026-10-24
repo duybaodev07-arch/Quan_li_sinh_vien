@@ -117,7 +117,7 @@ public:
     static bool docByteCoThoiHan(unsigned char& c, int thoiGianChoMs);
 #endif
 
-    static void khoiTaoConsole(const char* tieuDe = "QUAN LY DIEM SINH VIEN THEO HE TIN CHI");
+    static void khoiTaoConsole(const char* tieuDe = "QUAN LY diem SINH VIEN THEO HE TIN CHI");
 
     static void batNhapChuot();
 

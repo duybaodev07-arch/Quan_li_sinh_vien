@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void chayMenu(PTRMH& cayMonHoc, DSLop& danhSachLop, DSLopTinChi& danhSachLopTinChi) {
+void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
     // Khởi tạo Menu chính bằng MẢNG ĐỘNG
     const int SO_MUC_MENU = 14;
     string* tieuDeMucMenu = new string[SO_MUC_MENU];
@@ -64,18 +64,18 @@ void chayMenu(PTRMH& cayMonHoc, DSLop& danhSachLop, DSLopTinChi& danhSachLopTinC
         GiaoDienConsole::veKhung(64, 2, 51, 24, XANH_NGOC_NHAT, DEN, "Dữ liệu hiện tại của hệ thống");
         int tongMH = demMonHoc(cayMonHoc);
         int tongSV = 0;
-        for (int i = 0; i < danhSachLop.n; ++i) tongSV += demSVTrongLop(danhSachLop.cacNutDuLieu[i].dssv);
+        for (int i = 0; i < danhSachLop.soLuong; ++i) tongSV += demSVTrongLop(danhSachLop.lop[i].dssv);
         int ltcDangMo = 0;
-        for (int i = 0; i < danhSachLopTinChi.n; ++i) if (!danhSachLopTinChi.cacNutDuLieu[i]->huyLop) ltcDangMo++;
+        for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) if (!danhSachLopTinChi.lopTC[i]->huyLop) ltcDangMo++;
 
         GiaoDienConsole::datMau(TRANG, DEN);
         GiaoDienConsole::diDenToaDo(67, 6);  cout << "- Số lượng Môn học     : "; GiaoDienConsole::datMau(VANG, DEN); cout << tongMH << " môn";
         GiaoDienConsole::datMau(TRANG, DEN);
-        GiaoDienConsole::diDenToaDo(67, 9);  cout << "- Số lượng Lớp học     : "; GiaoDienConsole::datMau(VANG, DEN); cout << danhSachLop.n << " lớp";
+        GiaoDienConsole::diDenToaDo(67, 9);  cout << "- Số lượng Lớp học     : "; GiaoDienConsole::datMau(VANG, DEN); cout << danhSachLop.soLuong << " lớp";
         GiaoDienConsole::datMau(TRANG, DEN);
         GiaoDienConsole::diDenToaDo(67, 12); cout << "- Tổng số Sinh viên    : "; GiaoDienConsole::datMau(VANG, DEN); cout << tongSV << " sinh viên";
         GiaoDienConsole::datMau(TRANG, DEN);
-        GiaoDienConsole::diDenToaDo(67, 15); cout << "- Tổng số Lớp tín chỉ  : "; GiaoDienConsole::datMau(VANG, DEN); cout << danhSachLopTinChi.n << " lớp (" << ltcDangMo << " đang mở)";
+        GiaoDienConsole::diDenToaDo(67, 15); cout << "- Tổng số Lớp tín chỉ  : "; GiaoDienConsole::datMau(VANG, DEN); cout << danhSachLopTinChi.soLuong << " lớp (" << ltcDangMo << " đang mở)";
 
         GiaoDienConsole::veThanhTrangThai("Chuột: Di chuyển & Click trái | Bàn phím: Mũi tên Lên/Xuống, Enter, ESC hoặc phím 'a' -> 'l'");
 

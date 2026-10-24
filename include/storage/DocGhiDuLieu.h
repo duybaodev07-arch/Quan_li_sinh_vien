@@ -1,12 +1,14 @@
 #pragma once
 #include <fstream>
 #include <sstream>
-#include "model/CauTrucDuLieu.h"
+#include "model/MonHoc.h"
+#include "model/Lop.h"
+#include "model/LopTinChi.h"
 using namespace std;
 
-void ghiMonHocNLR(PTRMH cay, ofstream& out);
-bool luuTatCaDuLieu(PTRMH cayMonHoc, const DSLop& danhSachLop, const DSLopTinChi& danhSachLopTinChi);
+void ghiMonHocNLR(PTRMH root, ofstream& out);
+bool luuTatCaDuLieu(PTRMH root, const DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi);
 int tachChuoi(const string& dong, char kyTuPhanCach, string* cacMuc, int soMucToiDa);
-void khoiTaoDuLieuMau(PTRMH& cayMonHoc, DSLop& danhSachLop, DSLopTinChi& danhSachLopTinChi);
-void docTatCaDuLieu(PTRMH& cayMonHoc, DSLop& danhSachLop, DSLopTinChi& danhSachLopTinChi);
+void khoiTaoDuLieuMau(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi);
+void docTatCaDuLieu(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi);
 

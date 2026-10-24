@@ -1,6 +1,8 @@
 #pragma once
-#include "features/HamDungChung.h"
+#include "model/MonHoc.h"
+#include "model/Lop.h"
+#include "model/LopTinChi.h"
 
-void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSLopTinChi& danhSachLopTinChi);
-void chucNangD_InDSSVTheoMaSV(DSLop& danhSachLop);
+void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi);
+void chucNangD_InDSSVTheoMaSV(DanhSachLop& danhSachLop);
 

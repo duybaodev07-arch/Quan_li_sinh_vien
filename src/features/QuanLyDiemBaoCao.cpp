@@ -1,23 +1,33 @@
+#include "ui/GiaoDienConsole.h"
 #include "features/QuanLyDiemBaoCao.h"
+#include "features/HamDungChung.h"
+
+#include "storage/DocGhiDuLieu.h"
+
+
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
 // ============================================================================
-void chucNangI_NhapDiem(PTRMH cayMonHoc, const DSLop& danhSachLop, DSLopTinChi& danhSachLopTinChi) {
+void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
     while (true) {
         int viTriLopTinChi = chonLopTinChiTheoThongTin(cayMonHoc, danhSachLopTinChi, "CHỨC NĂNG (i): NHẬP ĐIỂM LỚP TÍN CHỈ");
         if (viTriLopTinChi == -1) break;
 
-        LopTinChi* lopTinChi = danhSachLopTinChi.cacNutDuLieu[viTriLopTinChi];
+        LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
         if (lopTinChi->huyLop) {
             GiaoDienConsole::hopThongBao("CẢNH BÁO", "Lớp tín chỉ này đã bị hủy, không thể nhập điểm!", true);
             continue;
         }
 
-        NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->MAMH);
-        string tenMonHoc = mh ? mh->duLieu.TENMH : lopTinChi->MAMH;
+        NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->maMH);
+        string tenMonHoc = mh ? mh->mh.tenMH : lopTinChi->maMH;
 
-        int soDangKyHieuLuc = demSVDangKyHieuLuc(lopTinChi->dsSinhVienDangKy);
+        int soDangKyHieuLuc = demSVDangKyHieuLuc(lopTinChi->dssvdk);
         if (soDangKyHieuLuc == 0) {
             GiaoDienConsole::hopThongBao("THÔNG BÁO", "Lớp tín chỉ này chưa có sinh viên nào đăng ký còn hiệu lực!", true);
             continue;
@@ -33,14 +43,14 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DSLop& danhSachLop, DSLopTinChi& 
 
         BanGhiDiem* cacBanGhiDiem = new BanGhiDiem[soDangKyHieuLuc];
         int count = 0;
-        for (PTRDK p = lopTinChi->dsSinhVienDangKy; p != nullptr; p = p->tiepTheo) {
-            if (!p->duLieu.huyDangKy) {
-                NodeSV* sv = timSinhVienToanTruong(danhSachLop, p->duLieu.MASV);
+        for (PTRDK p = lopTinChi->dssvdk; p != nullptr; p = p->next) {
+            if (!p->dk.huyDangKy) {
+                NodeSV* sv = timSinhVienToanTruong(danhSachLop, p->dk.maSV);
                 cacBanGhiDiem[count].nutDangKy = p;
-                cacBanGhiDiem[count].maSV = p->duLieu.MASV;
-                cacBanGhiDiem[count].ho = sv ? sv->duLieu.HO : "(Không rõ)";
-                cacBanGhiDiem[count].ten = sv ? sv->duLieu.TEN : "";
-                cacBanGhiDiem[count].chuoiDiem = dinhDangDiem(p->duLieu.DIEM, true);
+                cacBanGhiDiem[count].maSV = p->dk.maSV;
+                cacBanGhiDiem[count].ho = sv ? sv->sv.ho : "(Không rõ)";
+                cacBanGhiDiem[count].ten = sv ? sv->sv.ten : "";
+                cacBanGhiDiem[count].chuoiDiem = dinhDangDiem(p->dk.diem, true);
                 count++;
             }
         }
@@ -113,10 +123,10 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DSLop& danhSachLop, DSLopTinChi& 
                 GiaoDienConsole::datMau(VANG, LAM);
                 GiaoDienConsole::diDenToaDo(4, 6);
                 cout << GiaoDienConsole::canPhai(" STT", 10)
-                     << GiaoDienConsole::canPhai("MASV", 20)
-                     << GiaoDienConsole::canPhai("HO", 38)
-                     << GiaoDienConsole::canPhai("TEN", 20)
-                     << GiaoDienConsole::canPhai("DIEM (0..10)", 18);
+                     << GiaoDienConsole::canPhai("maSV", 20)
+                     << GiaoDienConsole::canPhai("ho", 38)
+                     << GiaoDienConsole::canPhai("ten", 20)
+                     << GiaoDienConsole::canPhai("diem (0..10)", 18);
 
                 for (int r = 0; r < soDongMoiTrang; ++r) {
                     int i = viTriDau + r;
@@ -232,10 +242,10 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DSLop& danhSachLop, DSLopTinChi& 
                     for (int i = 0; i < count; ++i) {
                         string s = GiaoDienConsole::catKhoangTrang(cacBanGhiDiem[i].chuoiDiem);
                         if (s.empty()) {
-                            cacBanGhiDiem[i].nutDangKy->duLieu.DIEM = -1.0f;
+                            cacBanGhiDiem[i].nutDangKy->dk.diem = -1.0f;
                         } else {
                             float v = (float)atof(s.c_str());
-                            cacBanGhiDiem[i].nutDangKy->duLieu.DIEM = roundf(v * 100.0f) / 100.0f;
+                            cacBanGhiDiem[i].nutDangKy->dk.diem = roundf(v * 100.0f) / 100.0f;
                         }
                     }
                     luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
@@ -254,16 +264,16 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DSLop& danhSachLop, DSLopTinChi& 
 // ============================================================================
 
 // ============================================================================
-void chucNangJ_InBangDiemMonHoc(PTRMH cayMonHoc, const DSLop& danhSachLop, const DSLopTinChi& danhSachLopTinChi) {
+void chucNangJ_InBangDiemMonHoc(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
     while (true) {
         int viTriLopTinChi = chonLopTinChiTheoThongTin(cayMonHoc, danhSachLopTinChi, "CHỨC NĂNG (j): IN BẢNG ĐIỂM MÔN HỌC CỦA 1 LỚP TÍN CHỈ");
         if (viTriLopTinChi == -1) break;
 
-        LopTinChi* lopTinChi = danhSachLopTinChi.cacNutDuLieu[viTriLopTinChi];
-        NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->MAMH);
-        string tenMonHoc = mh ? mh->duLieu.TENMH : lopTinChi->MAMH;
+        LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
+        NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->maMH);
+        string tenMonHoc = mh ? mh->mh.tenMH : lopTinChi->maMH;
 
-        int soDangKyHieuLuc = demSVDangKyHieuLuc(lopTinChi->dsSinhVienDangKy);
+        int soDangKyHieuLuc = demSVDangKyHieuLuc(lopTinChi->dssvdk);
         struct DongDiemMonHoc {
             string maSV;
             string ho;
@@ -272,13 +282,13 @@ void chucNangJ_InBangDiemMonHoc(PTRMH cayMonHoc, const DSLop& danhSachLop, const
         };
         DongDiemMonHoc* cacDong = (soDangKyHieuLuc > 0) ? new DongDiemMonHoc[soDangKyHieuLuc] : nullptr;
         int soDong = 0;
-        for (PTRDK p = lopTinChi->dsSinhVienDangKy; p != nullptr; p = p->tiepTheo) {
-            if (!p->duLieu.huyDangKy) {
-                NodeSV* sv = timSinhVienToanTruong(danhSachLop, p->duLieu.MASV);
-                cacDong[soDong].maSV = p->duLieu.MASV;
-                cacDong[soDong].ho = sv ? sv->duLieu.HO : "(Không rõ)";
-                cacDong[soDong].ten = sv ? sv->duLieu.TEN : "";
-                cacDong[soDong].diem = p->duLieu.DIEM;
+        for (PTRDK p = lopTinChi->dssvdk; p != nullptr; p = p->next) {
+            if (!p->dk.huyDangKy) {
+                NodeSV* sv = timSinhVienToanTruong(danhSachLop, p->dk.maSV);
+                cacDong[soDong].maSV = p->dk.maSV;
+                cacDong[soDong].ho = sv ? sv->sv.ho : "(Không rõ)";
+                cacDong[soDong].ten = sv ? sv->sv.ten : "";
+                cacDong[soDong].diem = p->dk.diem;
                 soDong++;
             }
         }
@@ -301,10 +311,10 @@ void chucNangJ_InBangDiemMonHoc(PTRMH cayMonHoc, const DSLop& danhSachLop, const
                 GiaoDienConsole::datMau(VANG, LAM);
                 GiaoDienConsole::diDenToaDo(4, 6);
                 cout << GiaoDienConsole::canPhai("STT", 10)
-                     << GiaoDienConsole::canPhai("MASV", 22)
-                     << GiaoDienConsole::canPhai("HO", 38)
-                     << GiaoDienConsole::canPhai("TEN", 20)
-                     << GiaoDienConsole::canPhai("DIEM", 18);
+                     << GiaoDienConsole::canPhai("maSV", 22)
+                     << GiaoDienConsole::canPhai("ho", 38)
+                     << GiaoDienConsole::canPhai("ten", 20)
+                     << GiaoDienConsole::canPhai("diem", 18);
 
                 int viTriDau = trang * soDongMoiTrang;
                 int viTriCuoi = (viTriDau + soDongMoiTrang < soDong) ? (viTriDau + soDongMoiTrang) : soDong;
@@ -354,7 +364,7 @@ void chucNangJ_InBangDiemMonHoc(PTRMH cayMonHoc, const DSLop& danhSachLop, const
 // ============================================================================
 
 // ============================================================================
-void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DSLop& danhSachLop, const DSLopTinChi& danhSachLopTinChi) {
+void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
     int soMonHoc = demMonHoc(cayMonHoc);
     MonHoc* mangMonHoc = (soMonHoc > 0) ? new MonHoc[soMonHoc] : nullptr;
     int idxMH = 0;
@@ -366,7 +376,7 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DSLop& danhSachLop, const
 
         int viTriLop = timLop(danhSachLop, maLop);
         if (viTriLop == -1) continue;
-        Lop& lop = danhSachLop.cacNutDuLieu[viTriLop];
+        Lop& lop = danhSachLop.lop[viTriLop];
 
         int soSinhVien = demSVTrongLop(lop.dssv);
         struct DongDiemTrungBinh {
@@ -380,22 +390,22 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DSLop& danhSachLop, const
         float* diemCaoNhatTheoMon = (soMonHoc > 0) ? new float[soMonHoc] : nullptr;
 
         int viTriSinhVien = 0;
-        for (PTRSV p = lop.dssv; p != nullptr; p = p->tiepTheo) {
-            cacDong[viTriSinhVien].maSV = p->duLieu.MASV;
-            cacDong[viTriSinhVien].ho = p->duLieu.HO;
-            cacDong[viTriSinhVien].ten = p->duLieu.TEN;
+        for (PTRSV p = lop.dssv; p != nullptr; p = p->next) {
+            cacDong[viTriSinhVien].maSV = p->sv.maSV;
+            cacDong[viTriSinhVien].ho = p->sv.ho;
+            cacDong[viTriSinhVien].ten = p->sv.ten;
 
             for (int m = 0; m < soMonHoc; ++m) diemCaoNhatTheoMon[m] = -1.0f;
 
-            for (int l = 0; l < danhSachLopTinChi.n; ++l) {
-                LopTinChi* lopTinChi = danhSachLopTinChi.cacNutDuLieu[l];
+            for (int l = 0; l < danhSachLopTinChi.soLuong; ++l) {
+                LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[l];
                 if (lopTinChi->huyLop) continue;
-                NodeDK* dk = timDangKy(lopTinChi->dsSinhVienDangKy, p->duLieu.MASV);
-                if (dk != nullptr && !dk->duLieu.huyDangKy && dk->duLieu.DIEM >= 0.0f) {
+                NodeDK* dk = timDangKy(lopTinChi->dssvdk, p->sv.maSV);
+                if (dk != nullptr && !dk->dk.huyDangKy && dk->dk.diem >= 0.0f) {
                     for (int m = 0; m < soMonHoc; ++m) {
-                        if (strcmp(mangMonHoc[m].MAMH, lopTinChi->MAMH) == 0) {
-                            if (dk->duLieu.DIEM > diemCaoNhatTheoMon[m]) {
-                                diemCaoNhatTheoMon[m] = dk->duLieu.DIEM;
+                        if (strcmp(mangMonHoc[m].maMH, lopTinChi->maMH) == 0) {
+                            if (dk->dk.diem > diemCaoNhatTheoMon[m]) {
+                                diemCaoNhatTheoMon[m] = dk->dk.diem;
                             }
                             break;
                         }
@@ -407,7 +417,7 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DSLop& danhSachLop, const
             int tongSoTC = 0;
             for (int m = 0; m < soMonHoc; ++m) {
                 if (diemCaoNhatTheoMon[m] >= 0.0f) {
-                    int soTC = mangMonHoc[m].STCLT + mangMonHoc[m].STCTH;
+                    int soTC = mangMonHoc[m].soTCLT + mangMonHoc[m].soTCTH;
                     tongDiemNhanTC += diemCaoNhatTheoMon[m] * soTC;
                     tongSoTC += soTC;
                 }
@@ -438,14 +448,14 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DSLop& danhSachLop, const
 
                 GiaoDienConsole::datMau(TRANG, DEN);
                 GiaoDienConsole::diDenToaDo(4, 4);
-                cout << GiaoDienConsole::canGiua("Lớp : " + lop.MALOP + " - " + lop.TENLOP, 108);
+                cout << GiaoDienConsole::canGiua(string("Lớp : ") + lop.maLop + " - " + lop.tenLop, 108);
 
                 GiaoDienConsole::datMau(VANG, LAM);
                 GiaoDienConsole::diDenToaDo(4, 6);
                 cout << GiaoDienConsole::canPhai("STT", 10)
-                     << GiaoDienConsole::canPhai("MASV", 22)
-                     << GiaoDienConsole::canPhai("HO", 38)
-                     << GiaoDienConsole::canPhai("TEN", 20)
+                     << GiaoDienConsole::canPhai("maSV", 22)
+                     << GiaoDienConsole::canPhai("ho", 38)
+                     << GiaoDienConsole::canPhai("ten", 20)
                      << GiaoDienConsole::canPhai("Điểm TB", 18);
 
                 int viTriDau = trang * soDongMoiTrang;
@@ -495,7 +505,7 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DSLop& danhSachLop, const
 // ============================================================================
 
 // ============================================================================
-void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSLopTinChi& danhSachLopTinChi) {
+void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
     int soMonHoc = demMonHoc(cayMonHoc);
     MonHoc* mangMonHoc = (soMonHoc > 0) ? new MonHoc[soMonHoc] : nullptr;
     int idxMH = 0;
@@ -507,29 +517,29 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSL
 
         int viTriLop = timLop(danhSachLop, maLop);
         if (viTriLop == -1) continue;
-        Lop& lop = danhSachLop.cacNutDuLieu[viTriLop];
+        Lop& lop = danhSachLop.lop[viTriLop];
 
         int soSinhVien = demSVTrongLop(lop.dssv);
         SinhVien* mangSinhVien = (soSinhVien > 0) ? new SinhVien[soSinhVien] : nullptr;
         int viTriSinhVien = 0;
-        for (PTRSV p = lop.dssv; p != nullptr; p = p->tiepTheo) {
-            mangSinhVien[viTriSinhVien++] = p->duLieu;
+        for (PTRSV p = lop.dssv; p != nullptr; p = p->next) {
+            mangSinhVien[viTriSinhVien++] = p->sv;
         }
 
         float* diemCaoNhat = (soSinhVien > 0 && soMonHoc > 0) ? new float[soSinhVien * soMonHoc] : nullptr;
         for (int i = 0; i < soSinhVien * soMonHoc; ++i) diemCaoNhat[i] = -1.0f;
 
         for (int i = 0; i < soSinhVien; ++i) {
-            for (int l = 0; l < danhSachLopTinChi.n; ++l) {
-                LopTinChi* lopTinChi = danhSachLopTinChi.cacNutDuLieu[l];
+            for (int l = 0; l < danhSachLopTinChi.soLuong; ++l) {
+                LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[l];
                 if (lopTinChi->huyLop) continue;
-                NodeDK* dk = timDangKy(lopTinChi->dsSinhVienDangKy, mangSinhVien[i].MASV);
-                if (dk != nullptr && !dk->duLieu.huyDangKy && dk->duLieu.DIEM >= 0.0f) {
+                NodeDK* dk = timDangKy(lopTinChi->dssvdk, mangSinhVien[i].maSV);
+                if (dk != nullptr && !dk->dk.huyDangKy && dk->dk.diem >= 0.0f) {
                     for (int m = 0; m < soMonHoc; ++m) {
-                        if (strcmp(mangMonHoc[m].MAMH, lopTinChi->MAMH) == 0) {
+                        if (strcmp(mangMonHoc[m].maMH, lopTinChi->maMH) == 0) {
                             float& cell = diemCaoNhat[i * soMonHoc + m];
-                            if (dk->duLieu.DIEM > cell) {
-                                cell = dk->duLieu.DIEM;
+                            if (dk->dk.diem > cell) {
+                                cell = dk->dk.diem;
                             }
                             break;
                         }
@@ -547,9 +557,9 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSL
         int dongTrangTruoc = -1;
         int viTriCotTruoc = -1;
 
-        NutChuNhat nutTrai = { 18, 23, 20, 1, 0, "[ << CỘT TRƯỚC ]" };
+        NutChuNhat left = { 18, 23, 20, 1, 0, "[ << CỘT TRƯỚC ]" };
         NutChuNhat nutQuayLai = { 46, 23, 24, 1, 1, "[ QUAY LẠI (ESC) ]" };
-        NutChuNhat nutPhai = { 78, 23, 20, 1, 2, "[ CỘT TIẾP >> ]" };
+        NutChuNhat right = { 78, 23, 20, 1, 2, "[ CỘT TIẾP >> ]" };
 
         while (true) {
             if (dongDauTrang != dongTrangTruoc || viTriCotDau != viTriCotTruoc) {
@@ -558,7 +568,7 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSL
 
                 GiaoDienConsole::datMau(TRANG, DEN);
                 GiaoDienConsole::diDenToaDo(4, 4);
-                cout << GiaoDienConsole::canGiua("Lớp : " + lop.MALOP + " - " + lop.TENLOP, 108);
+                cout << GiaoDienConsole::canGiua(string("Lớp : ") + lop.maLop + " - " + lop.tenLop, 108);
 
                 GiaoDienConsole::datMau(VANG, LAM);
                 GiaoDienConsole::diDenToaDo(4, 6);
@@ -569,7 +579,7 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSL
                 for (int c = 0; c < soCotMoiTrang; ++c) {
                     int viTriMonHoc = viTriCotDau + c;
                     if (viTriMonHoc < soMonHoc) {
-                        cout << GiaoDienConsole::canGiua(mangMonHoc[viTriMonHoc].MAMH, 12);
+                        cout << GiaoDienConsole::canGiua(mangMonHoc[viTriMonHoc].maMH, 12);
                     } else {
                         cout << string(12, ' ');
                     }
@@ -583,9 +593,9 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSL
                     GiaoDienConsole::diDenToaDo(4, 8 + r);
                     if (i < dongKetThuc) {
                         GiaoDienConsole::datMau(TRANG, DEN);
-                        string hoTen = mangSinhVien[i].HO + " " + mangSinhVien[i].TEN;
+                        string hoTen = string(mangSinhVien[i].ho) + " " + mangSinhVien[i].ten;
                         cout << GiaoDienConsole::canPhai(to_string(i + 1), 6)
-                             << GiaoDienConsole::canPhai(mangSinhVien[i].MASV, 14)
+                             << GiaoDienConsole::canPhai(mangSinhVien[i].maSV, 14)
                              << GiaoDienConsole::canPhai(hoTen, 28);
                         for (int c = 0; c < soCotMoiTrang; ++c) {
                             int viTriMonHoc = viTriCotDau + c;
@@ -603,9 +613,9 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSL
                     }
                 }
 
-                GiaoDienConsole::veNut(nutTrai, false, TRANG, XAM_DAM, DEN, VANG);
+                GiaoDienConsole::veNut(left, false, TRANG, XAM_DAM, DEN, VANG);
                 GiaoDienConsole::veNut(nutQuayLai, true, TRANG, XAM_DAM, DEN, VANG);
-                GiaoDienConsole::veNut(nutPhai, false, TRANG, XAM_DAM, DEN, VANG);
+                GiaoDienConsole::veNut(right, false, TRANG, XAM_DAM, DEN, VANG);
 
                 GiaoDienConsole::veThanhTrangThai("Mũi tên Trái/Phải: Cuộn cột Mã MH | Lên/Xuống: Cuộn trang SV (" + to_string(dongDauTrang + 1) + "/" + to_string(tongSoTrangDong) + ") | ESC: Quay lại");
                 dongTrangTruoc = dongDauTrang;
@@ -616,8 +626,8 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DSLop& danhSachLop, const DSL
             if (suKien.type == SK_PHIM_ESC || suKien.type == SK_PHIM_ENTER) break;
             if (suKien.type == SK_CHUOT_TRAI) {
                 if (nutQuayLai.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) break;
-                if (nutTrai.contains(suKien.toaDoChuotX, suKien.toaDoChuotY) && viTriCotDau > 0) viTriCotDau--;
-                if (nutPhai.contains(suKien.toaDoChuotX, suKien.toaDoChuotY) && viTriCotDau + soCotMoiTrang < soMonHoc) viTriCotDau++;
+                if (left.contains(suKien.toaDoChuotX, suKien.toaDoChuotY) && viTriCotDau > 0) viTriCotDau--;
+                if (right.contains(suKien.toaDoChuotX, suKien.toaDoChuotY) && viTriCotDau + soCotMoiTrang < soMonHoc) viTriCotDau++;
             } else if (suKien.type == SK_PHIM_TRAI) {
                 if (viTriCotDau > 0) viTriCotDau--;
             } else if (suKien.type == SK_PHIM_PHAI) {
