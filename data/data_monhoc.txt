@@ -1,0 +1,21 @@
+20
+INT1306|Cau truc du lieu va giai thuat|3|1
+INT1154|Tin hoc co so 2|2|1
+BAS1203|Giai tich 1|3|0
+BAS1201|Dai so tuyen tinh|3|0
+CTDL|Cau truc du lieu|3|1
+INT1332|Lap trinh huong doi tuong|2|1
+INT1313|Co so du lieu|3|1
+INT1319|He dieu hanh|2|1
+INT1336|Mang may tinh|3|0
+INT3626|Cau truc du lieu|3|1
+INT1345|Lap trinh C++ nang cao|2|1
+INT1370|Tri tue nhan tao co so|2|1
+INT1390|Cong nghe phan mem|3|0
+INT1402|Phan tich va thiet ke he thong|3|0
+INT1501|An ninh mang|2|1
+INT1502|Phat trien ung dung web|2|1
+INT1503|Phat trien ung dung di dong|2|1
+INT1504|Kien truc may tinh|2|1
+INT1505|Xac suat thong ke|3|0
+INT1506|Ky thuat lap trinh|2|1
