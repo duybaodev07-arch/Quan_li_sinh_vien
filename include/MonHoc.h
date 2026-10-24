@@ -1,61 +1,30 @@
 #pragma once
 
-#include "Const.h"
+#include <string>
+#include <vector>
 
-struct MonHoc {
-    char maMH[MAX_MAMH];
-    char tenMH[MAX_TENMH];
-    int soTCLT;
-    int soTCTH;
+class MonHoc {
+private:
+    std::string maMH;
+    std::string tenMH;
+    unsigned soTCLT = 0;
+    unsigned soTCTH = 0;
+public:
+    MonHoc() = default;
+    MonHoc(std::string ma, std::string ten, unsigned tclt, unsigned tcth);
+    const std::string& getMaMH() const;
+    const std::string& getTenMH() const;
+    unsigned getSoTCLT() const;
+    unsigned getSoTCTH() const;
+    void setMaMH(const std::string& maMH);
+    void setTenMH(const std::string& tenMH);
+    void setSoTCLT(unsigned soTCLT);
+    void setSoTCTH(unsigned soTCTH);
 };
-struct NodeMH {
-    MonHoc mh;
-    NodeMH* left = nullptr;
-    NodeMH* right = nullptr;
-};
 
-typedef NodeMH* PTRMH;
-// LƯU Ý: CÂY SẮP XẾP THEO MÃ, IN THEO TÊN CẦN XỬ LÍ RIÊNG
-
-// KHỞI TẠO MÔN HỌC
-void khoiTaoDanhSachMonHoc(PTRMH& root);
-
-// TẠO NODE MÔN HỌC
-PTRMH taoNodeMonHoc(const MonHoc& mh);
-
-//TÌM MÔN HỌC THEO MÃ
-PTRMH timMonHocTheoMa(PTRMH root, const char* maMH);
-
-// NHẬP MÔN HỌC, NHẬP TT HIỆU CHỈNH, HÀM DÙNG CHO THÊM / HIỆU CHỈNH
-bool nhapMonHoc(MonHoc& mh);
-void nhapThongTinHieuChinh(MonHoc& mh);
-
-// THÊM, XÓA, HIỆU CHỈNH MÔN HỌC
-void themMonHoc(PTRMH& root);
-bool xoaMonHoc(PTRMH& root, const char* maMH);
-bool hieuChinhMonHoc(PTRMH root, const char* maMH);
-
-// IN 1 MÔN HỌC & IN DANH SÁCH MÔN HỌC THEO MÃ / TÊN
+bool themMonHoc(std::vector<MonHoc>& dsMonHoc, const MonHoc& mh);
+bool xoaMonHoc(std::vector<MonHoc>& dsMonHoc, const std::string& maMH);
+MonHoc* timMonHocTheoMa(std::vector<MonHoc>& dsMonHoc, const std::string& maMH);
+const MonHoc* timMonHocTheoMa(const std::vector<MonHoc>& dsMonHoc, const std::string& maMH);
 void inMonHoc(const MonHoc& mh);
-void inDanhSachMonHocTheoMa(PTRMH root);
-void inDanhSachMonHocTheoTen(PTRMH root);
-
-// ĐẾM SÀI ĐỆ QUY, CẦN TRUYỀN THAM CHIẾU ĐỂ ĐẾM
-void demSoMonHoc(PTRMH root, int& n);
-
-// GIẢI PHÓNG DANH SÁCH MÔN HỌC
-void giaiPhongMonHoc(PTRMH& root);
-
-// ĐỌC, GHI FILE
-bool ghiFileMonHoc(PTRMH root);
-enum class KetQuaDocMonHoc {
-    ThanhCong,
-    KhongTimThayFile,
-    KhongMoDuocFile,
-    SaiDinhDang,
-    MaMonHocTrung,
-    TinChiNgoaiKhoang,
-    LoiDocFile
-};
-
-KetQuaDocMonHoc docFileMonHoc(PTRMH& root);
+void inDanhSachMonHocTheoTen(const std::vector<MonHoc>& dsMonHoc);
