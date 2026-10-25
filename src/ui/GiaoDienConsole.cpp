@@ -8,159 +8,8 @@
 
 using namespace std;
 
-#ifdef _WIN32
-HANDLE GiaoDienConsole::hOut = nullptr;
-HANDLE GiaoDienConsole::hIn = nullptr;
-#else
-struct termios GiaoDienConsole::origTermios{};
-bool GiaoDienConsole::termInitialized = false;
-int GiaoDienConsole::pendingByte = -1;
-#endif
-int GiaoDienConsole::lastMouseX = -1;
-int GiaoDienConsole::lastMouseY = -1;
-
-#ifndef _WIN32
-void GiaoDienConsole::khoiPhucConsole() {
-        if (termInitialized) {
-            cout << "\033[?1003l\033[?1002l\033[?1000l\033[?1006l"
-                 << "\033[?25h\033[0m" << flush;
-            tcsetattr(STDIN_FILENO, TCSAFLUSH, &origTermios);
-            termInitialized = false;
-        }
-    }
-
-void GiaoDienConsole::xuLyTinHieu(int) {
-        khoiPhucConsole();
-        cout << "\033[2J\033[H" << flush;
-        _exit(0);
-    }
-
-bool GiaoDienConsole::docByteCoThoiHan(unsigned char& c, int thoiGianChoMs) {
-        if (pendingByte != -1) {
-            c = (unsigned char)pendingByte;
-            pendingByte = -1;
-            return true;
-        }
-        fd_set fds;
-        FD_ZERO(&fds);
-        FD_SET(STDIN_FILENO, &fds);
-        struct timeval tv;
-        tv.tv_sec = thoiGianChoMs / 1000;
-        tv.tv_usec = (thoiGianChoMs % 1000) * 1000;
-        int ketQua = select(STDIN_FILENO + 1, &fds, nullptr, nullptr, &tv);
-        if (ketQua > 0 && FD_ISSET(STDIN_FILENO, &fds)) {
-            return (read(STDIN_FILENO, &c, 1) == 1);
-        }
-        return false;
-    }
-#endif
-
-void GiaoDienConsole::khoiTaoConsole(const char* tieuDe) {
-#ifdef _WIN32
-        hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-        hIn = GetStdHandle(STD_INPUT_HANDLE);
-
-        SetConsoleOutputCP(65001);
-        SetConsoleCP(65001);
-        SetConsoleTitleA(tieuDe);
-
-        batNhapChuot();
-        hienConTro(false);
-        xoaManHinh();
-#else
-        if (!termInitialized) {
-            if (tcgetattr(STDIN_FILENO, &origTermios) == 0) {
-                termInitialized = true;
-                atexit(khoiPhucConsole);
-                signal(SIGINT, xuLyTinHieu);
-                signal(SIGTERM, xuLyTinHieu);
-
-                struct termios raw = origTermios;
-                raw.c_lflag &= ~(ICANON | ECHO);
-                raw.c_iflag &= ~(IXON | ICRNL);
-                raw.c_cc[VMIN] = 1;
-                raw.c_cc[VTIME] = 0;
-                tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-            }
-        }
-        // Đặt tiêu đề cửa sổ terminal và gợi ý kích thước 120x30 nếu terminal hỗ trợ
-        cout << "\033]0;" << tieuDe << "\007";
-        struct winsize ws;
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0) {
-            if (ws.ws_col < 120 || ws.ws_row < 30) {
-                cout << "\033[8;30;120t";
-            }
-        }
-        batNhapChuot();
-        hienConTro(false);
-        xoaManHinh();
-#endif
-    }
-
-void GiaoDienConsole::batNhapChuot() {
-#ifdef _WIN32
-        DWORD cheDoMoi = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
-        SetConsoleMode(hIn, cheDoMoi);
-#else
-        cout << "\033[?1000h\033[?1002h\033[?1003h\033[?1006h" << flush;
-#endif
-    }
-
-void GiaoDienConsole::hienConTro(bool dangHien) {
-#ifdef _WIN32
-        CONSOLE_CURSOR_INFO thongTinConTro;
-        GetConsoleCursorInfo(hOut, &thongTinConTro);
-        if ((thongTinConTro.bVisible == TRUE) != dangHien) {
-            thongTinConTro.bVisible = dangHien ? TRUE : FALSE;
-            thongTinConTro.dwSize = 20;
-            SetConsoleCursorInfo(hOut, &thongTinConTro);
-        }
-#else
-        cout << (dangHien ? "\033[?25h" : "\033[?25l") << flush;
-#endif
-    }
-
-void GiaoDienConsole::diDenToaDo(int x, int y) {
-        if (x < 0) x = 0;
-        if (y < 0) y = 0;
-#ifdef _WIN32
-        COORD coord = { (SHORT)x, (SHORT)y };
-        SetConsoleCursorPosition(hOut, coord);
-#else
-        cout << "\033[" << (y + 1) << ";" << (x + 1) << "H";
-#endif
-    }
-
-void GiaoDienConsole::datMau(int mauChu, int mauNen) {
-#ifdef _WIN32
-        SetConsoleTextAttribute(hOut, (WORD)((mauNen << 4) | (mauChu & 0x0F)));
-#else
-        static const int fgMap[16] = { 30, 34, 32, 36, 31, 35, 33, 37, 90, 94, 92, 96, 91, 95, 93, 97 };
-        static const int bgMap[16] = { 40, 44, 42, 46, 41, 45, 43, 47, 100, 104, 102, 106, 101, 105, 103, 107 };
-        cout << "\033[0;" << fgMap[mauChu & 0x0F] << ";" << bgMap[mauNen & 0x0F] << "m";
-#endif
-    }
-
 void GiaoDienConsole::datLaiMau() {
         datMau(XAM_NHAT, DEN);
-    }
-
-void GiaoDienConsole::xoaManHinh(int mauNen) {
-        hienConTro(false);
-        datMau(XAM_NHAT, mauNen);
-#ifdef _WIN32
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        if (GetConsoleScreenBufferInfo(hOut, &csbi)) {
-            DWORD soLuongO = csbi.dwSize.X * csbi.dwSize.Y;
-            DWORD count;
-            COORD toaDoBanDau = { 0, 0 };
-            FillConsoleOutputCharacterA(hOut, ' ', soLuongO, toaDoBanDau, &count);
-            FillConsoleOutputAttribute(hOut, csbi.wAttributes, soLuongO, toaDoBanDau, &count);
-            SetConsoleCursorPosition(hOut, toaDoBanDau);
-        }
-#else
-        cout << "\033[2J\033[H" << flush;
-#endif
     }
 
 void GiaoDienConsole::toMauVung(int x, int y, int w, int h, int mauChu, int mauNen, char ch) {
@@ -277,259 +126,6 @@ void GiaoDienConsole::veNut(const NutChuNhat& btn, bool dangHoatDong, int mauChu
             }
         }
         datLaiMau();
-    }
-
-SuKienNhap GiaoDienConsole::docSuKien() {
-#ifdef _WIN32
-        batNhapChuot();
-        INPUT_RECORD ir;
-        DWORD soLuongDaDoc;
-        while (true) {
-            if (!ReadConsoleInputA(hIn, &ir, 1, &soLuongDaDoc) || soLuongDaDoc == 0) {
-                continue;
-            }
-            if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown) {
-                WORD vk = ir.Event.KeyEvent.wVirtualKeyCode;
-                char ch = ir.Event.KeyEvent.uChar.AsciiChar;
-                SuKienNhap suKien = { SK_KHONG, 0, lastMouseX, lastMouseY };
-
-                switch (vk) {
-                    case VK_UP:     suKien.type = SK_PHIM_LEN; return suKien;
-                    case VK_DOWN:   suKien.type = SK_PHIM_XUONG; return suKien;
-                    case VK_LEFT:   suKien.type = SK_PHIM_TRAI; return suKien;
-                    case VK_RIGHT:  suKien.type = SK_PHIM_PHAI; return suKien;
-                    case VK_RETURN: suKien.type = SK_PHIM_ENTER; return suKien;
-                    case VK_ESCAPE: suKien.type = SK_PHIM_ESC; return suKien;
-                    case VK_TAB:    suKien.type = SK_PHIM_TAB; return suKien;
-                    case VK_BACK:   suKien.type = EVT_KEY_BACKSPACE; return suKien;
-                    case VK_DELETE: suKien.type = EVT_KEY_DELETE; return suKien;
-                    case VK_INSERT: suKien.type = EVT_KEY_INSERT; return suKien;
-                    case VK_HOME:   suKien.type = EVT_KEY_HOME; return suKien;
-                    case VK_END:    suKien.type = EVT_KEY_END; return suKien;
-                    case VK_PRIOR:  suKien.type = EVT_KEY_PGUP; return suKien;
-                    case VK_NEXT:   suKien.type = EVT_KEY_PGDN; return suKien;
-                    case VK_F1:     suKien.type = EVT_KEY_F1; return suKien;
-                    case VK_F2:     suKien.type = EVT_KEY_F2; return suKien;
-                    case VK_F3:     suKien.type = EVT_KEY_F3; return suKien;
-                    case VK_F4:     suKien.type = EVT_KEY_F4; return suKien;
-                    case VK_F5:     suKien.type = EVT_KEY_F5; return suKien;
-                    default:
-                        if (ch >= 32 && ch <= 126) {
-                            suKien.type = SK_KY_TU;
-                            suKien.ch = ch;
-                            return suKien;
-                        }
-                        break;
-                }
-            } else if (ir.EventType == MOUSE_EVENT) {
-                MOUSE_EVENT_RECORD mer = ir.Event.MouseEvent;
-                int toaDoX = mer.dwMousePosition.X;
-                int toaDoY = mer.dwMousePosition.Y;
-
-                if (mer.dwEventFlags == MOUSE_WHEELED) {
-                    short delta = (short)HIWORD(mer.dwButtonState);
-                    SuKienNhap suKien = { delta > 0 ? SK_CON_LAN_LEN : SK_CON_LAN_XUONG, 0, toaDoX, toaDoY };
-                    return suKien;
-                } else if (mer.dwEventFlags == 0) {
-                    lastMouseX = toaDoX;
-                    lastMouseY = toaDoY;
-                    if (mer.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) {
-                        SuKienNhap suKien = { SK_CHUOT_TRAI, 0, toaDoX, toaDoY };
-                        return suKien;
-                    } else if (mer.dwButtonState & RIGHTMOST_BUTTON_PRESSED) {
-                        SuKienNhap suKien = { SK_CHUOT_PHAI, 0, toaDoX, toaDoY };
-                        return suKien;
-                    }
-                } else if (mer.dwEventFlags == MOUSE_MOVED) {
-                    // Chỉ trả về sự kiện di chuyển chuột khi sang ô (X, Y) mới để chống nhấp nháy!
-                    if (toaDoX != lastMouseX || toaDoY != lastMouseY) {
-                        lastMouseX = toaDoX;
-                        lastMouseY = toaDoY;
-                        SuKienNhap suKien = { SK_CHUOT_DI_CHUYEN, 0, toaDoX, toaDoY };
-                        return suKien;
-                    }
-                }
-            }
-        }
-#else
-        cout.flush();
-        while (true) {
-            unsigned char ch = 0;
-            if (pendingByte != -1) {
-                ch = (unsigned char)pendingByte;
-                pendingByte = -1;
-            } else {
-                ssize_t n = read(STDIN_FILENO, &ch, 1);
-                if (n == 0) {
-                    khoiPhucConsole();
-                    exit(0);
-                }
-                if (n < 0) {
-                    continue;
-                }
-            }
-            SuKienNhap suKien = { SK_KHONG, 0, lastMouseX, lastMouseY };
-
-            if (ch == 27) { // ESC hoặc chuỗi thoát ANSI
-                unsigned char byteTiepTheo1 = 0;
-                if (!docByteCoThoiHan(byteTiepTheo1, 25)) {
-                    suKien.type = SK_PHIM_ESC;
-                    return suKien;
-                }
-                if (byteTiepTheo1 == '[') {
-                    unsigned char byteTiepTheo2 = 0;
-                    if (!docByteCoThoiHan(byteTiepTheo2, 25)) {
-                        suKien.type = SK_PHIM_ESC;
-                        return suKien;
-                    }
-                    if (byteTiepTheo2 == '<') {
-                        // Chuột SGR: \033[<b;x;yM hoặc \033[<b;x;ym
-                        string buf = "";
-                        unsigned char c = 0;
-                        char kyTuCuoi = 0;
-                        while (docByteCoThoiHan(c, 25)) {
-                            if (c == 'M' || c == 'm') {
-                                kyTuCuoi = (char)c;
-                                break;
-                            }
-                            buf += (char)c;
-                            if (buf.size() > 32) break;
-                        }
-                        if (kyTuCuoi == 'M') {
-                            int b = 0, x = 0, y = 0;
-                            char dauPhanCach1 = 0, dauPhanCach2 = 0;
-                            stringstream ss(buf);
-                            if (ss >> b >> dauPhanCach1 >> x >> dauPhanCach2 >> y) {
-                                int toaDoX = (x > 0) ? (x - 1) : 0;
-                                int toaDoY = (y > 0) ? (y - 1) : 0;
-                                if (b & 64) {
-                                    suKien.toaDoChuotX = toaDoX;
-                                    suKien.toaDoChuotY = toaDoY;
-                                    suKien.type = ((b & 3) == 0) ? SK_CON_LAN_LEN : SK_CON_LAN_XUONG;
-                                    return suKien;
-                                } else if (b & 32) {
-                                    if (toaDoX != lastMouseX || toaDoY != lastMouseY) {
-                                        lastMouseX = toaDoX;
-                                        lastMouseY = toaDoY;
-                                        suKien.type = SK_CHUOT_DI_CHUYEN;
-                                        suKien.toaDoChuotX = toaDoX;
-                                        suKien.toaDoChuotY = toaDoY;
-                                        return suKien;
-                                    }
-                                } else {
-                                    lastMouseX = toaDoX;
-                                    lastMouseY = toaDoY;
-                                    suKien.toaDoChuotX = toaDoX;
-                                    suKien.toaDoChuotY = toaDoY;
-                                    if ((b & 3) == 0) {
-                                        suKien.type = SK_CHUOT_TRAI;
-                                        return suKien;
-                                    } else if ((b & 3) == 2) {
-                                        suKien.type = SK_CHUOT_PHAI;
-                                        return suKien;
-                                    }
-                                }
-                            }
-                        }
-                        continue;
-                    } else if (byteTiepTheo2 == '[') {
-                        // Linux console F1..F5: \033[[A .. \033[[E
-                        unsigned char byteTiepTheo3 = 0;
-                        if (docByteCoThoiHan(byteTiepTheo3, 25)) {
-                            if (byteTiepTheo3 == 'A') { suKien.type = EVT_KEY_F1; return suKien; }
-                            if (byteTiepTheo3 == 'B') { suKien.type = EVT_KEY_F2; return suKien; }
-                            if (byteTiepTheo3 == 'C') { suKien.type = EVT_KEY_F3; return suKien; }
-                            if (byteTiepTheo3 == 'D') { suKien.type = EVT_KEY_F4; return suKien; }
-                            if (byteTiepTheo3 == 'E') { suKien.type = EVT_KEY_F5; return suKien; }
-                        }
-                        continue;
-                    } else {
-                        string seq = "";
-                        char byteCuoi = 0;
-                        if (byteTiepTheo2 >= 0x40 && byteTiepTheo2 <= 0x7E) {
-                            byteCuoi = (char)byteTiepTheo2;
-                        } else {
-                            seq += (char)byteTiepTheo2;
-                            unsigned char c = 0;
-                            while (docByteCoThoiHan(c, 25)) {
-                                if (c >= 0x40 && c <= 0x7E) {
-                                    byteCuoi = (char)c;
-                                    break;
-                                }
-                                seq += (char)c;
-                                if (seq.size() > 16) break;
-                            }
-                        }
-                        if (byteCuoi == 'A') { suKien.type = SK_PHIM_LEN; return suKien; }
-                        if (byteCuoi == 'B') { suKien.type = SK_PHIM_XUONG; return suKien; }
-                        if (byteCuoi == 'C') { suKien.type = SK_PHIM_PHAI; return suKien; }
-                        if (byteCuoi == 'D') { suKien.type = SK_PHIM_TRAI; return suKien; }
-                        if (byteCuoi == 'H') { suKien.type = EVT_KEY_HOME; return suKien; }
-                        if (byteCuoi == 'F') { suKien.type = EVT_KEY_END; return suKien; }
-                        if (byteCuoi == 'P') { suKien.type = EVT_KEY_F1; return suKien; }
-                        if (byteCuoi == 'Q') { suKien.type = EVT_KEY_F2; return suKien; }
-                        if (byteCuoi == 'R') { suKien.type = EVT_KEY_F3; return suKien; }
-                        if (byteCuoi == 'S') { suKien.type = EVT_KEY_F4; return suKien; }
-                        if (byteCuoi == '~') {
-                            int code = atoi(seq.c_str());
-                            switch (code) {
-                                case 1:
-                                case 7:  suKien.type = EVT_KEY_HOME; return suKien;
-                                case 2:  suKien.type = EVT_KEY_INSERT; return suKien;
-                                case 3:  suKien.type = EVT_KEY_DELETE; return suKien;
-                                case 4:
-                                case 8:  suKien.type = EVT_KEY_END; return suKien;
-                                case 5:  suKien.type = EVT_KEY_PGUP; return suKien;
-                                case 6:  suKien.type = EVT_KEY_PGDN; return suKien;
-                                case 11: suKien.type = EVT_KEY_F1; return suKien;
-                                case 12: suKien.type = EVT_KEY_F2; return suKien;
-                                case 13: suKien.type = EVT_KEY_F3; return suKien;
-                                case 14: suKien.type = EVT_KEY_F4; return suKien;
-                                case 15: suKien.type = EVT_KEY_F5; return suKien;
-                                default: break;
-                            }
-                        }
-                        continue;
-                    }
-                } else if (byteTiepTheo1 == 'O') {
-                    unsigned char byteTiepTheo2 = 0;
-                    if (docByteCoThoiHan(byteTiepTheo2, 25)) {
-                        switch (byteTiepTheo2) {
-                            case 'A': suKien.type = SK_PHIM_LEN; return suKien;
-                            case 'B': suKien.type = SK_PHIM_XUONG; return suKien;
-                            case 'C': suKien.type = SK_PHIM_PHAI; return suKien;
-                            case 'D': suKien.type = SK_PHIM_TRAI; return suKien;
-                            case 'H': suKien.type = EVT_KEY_HOME; return suKien;
-                            case 'F': suKien.type = EVT_KEY_END; return suKien;
-                            case 'P': suKien.type = EVT_KEY_F1; return suKien;
-                            case 'Q': suKien.type = EVT_KEY_F2; return suKien;
-                            case 'R': suKien.type = EVT_KEY_F3; return suKien;
-                            case 'S': suKien.type = EVT_KEY_F4; return suKien;
-                            default: break;
-                        }
-                    }
-                    continue;
-                } else {
-                    pendingByte = byteTiepTheo1;
-                    suKien.type = SK_PHIM_ESC;
-                    return suKien;
-                }
-            } else if (ch == '\r' || ch == '\n') {
-                suKien.type = SK_PHIM_ENTER;
-                return suKien;
-            } else if (ch == '\t') {
-                suKien.type = SK_PHIM_TAB;
-                return suKien;
-            } else if (ch == 127 || ch == 8) {
-                suKien.type = EVT_KEY_BACKSPACE;
-                return suKien;
-            } else if (ch >= 32 && ch <= 126) {
-                suKien.type = SK_KY_TU;
-                suKien.ch = (char)ch;
-                return suKien;
-            }
-        }
-#endif
     }
 
 bool GiaoDienConsole::hopXacNhan(const string& tieuDe, const string& cauHoi, const string& chiTiet) {
@@ -665,8 +261,18 @@ string GiaoDienConsole::vietHoaDauTu(const string& s) {
         return res;
     }
 
-bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string& thongBaoLoi, const string& nhanNutLuu, const string& nhanNutHuy) {
+bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string& thongBaoLoi, const string& nhanNutLuu, const string& nhanNutHuy, const string& nhanNutXoa, bool* daChonXoa, const string& nhanNutF1, bool* daNhanF1) {
     GiaoDienConsole::hienConTro(false);
+    bool coNutXoa = !nhanNutXoa.empty() && daChonXoa != nullptr;
+    bool coNutF1 = !nhanNutF1.empty() && daNhanF1 != nullptr;
+    if (daChonXoa != nullptr) *daChonXoa = false;
+    if (daNhanF1 != nullptr) *daNhanF1 = false;
+    int soNutHanhDong = 2 + (coNutXoa ? 1 : 0) + (coNutF1 ? 1 : 0);
+    int viTriNutLuu = soTruong;
+    int viTriNutXoa = coNutXoa ? soTruong + 1 : -1;
+    int viTriNutF1 = coNutF1 ? soTruong + 1 + (coNutXoa ? 1 : 0) : -1;
+    int viTriNutHuy = soTruong + soNutHanhDong - 1;
+    int soMucDieuHuong = soTruong + soNutHanhDong;
     int chieuRongBieuMau = 76;
     int chieuCaoBieuMau = soTruong * 2 + 7;
     int toaDoXBieuMau = (CHIEU_RONG_GIAO_DIEN - chieuRongBieuMau) / 2;
@@ -684,8 +290,18 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
         cout << GiaoDienConsole::canPhai(fields[i].label + ":", 23);
     }
 
-    NutChuNhat nutLuu = { toaDoXBieuMau + 16, toaDoYBieuMau + chieuCaoBieuMau - 2, 18, 1, 1, nhanNutLuu };
-    NutChuNhat nutHuy = { toaDoXBieuMau + 42, toaDoYBieuMau + chieuCaoBieuMau - 2, 18, 1, 0, nhanNutHuy };
+    int toaDoNutY = toaDoYBieuMau + chieuCaoBieuMau - 2;
+    bool baNutHanhDong = soNutHanhDong == 3;
+    bool bonNutHanhDong = soNutHanhDong == 4;
+    int nutRong = bonNutHanhDong ? 17 : (baNutHanhDong ? 20 : 18);
+    int xNutLuu = bonNutHanhDong ? 1 : (baNutHanhDong ? 2 : 16);
+    int xNutPhu = bonNutHanhDong ? 20 : 28;
+    int xNutF1 = bonNutHanhDong ? 39 : 28;
+    int xNutHuy = bonNutHanhDong ? 58 : (baNutHanhDong ? 54 : 42);
+    NutChuNhat nutLuu = { toaDoXBieuMau + xNutLuu, toaDoNutY, nutRong, 1, 1, nhanNutLuu };
+    NutChuNhat nutXoa = { toaDoXBieuMau + xNutPhu, toaDoNutY, nutRong, 1, 2, nhanNutXoa };
+    NutChuNhat nutF1 = { toaDoXBieuMau + xNutF1, toaDoNutY, nutRong, 1, 3, nhanNutF1 };
+    NutChuNhat nutHuy = { toaDoXBieuMau + xNutHuy, toaDoNutY, nutRong, 1, 0, nhanNutHuy };
 
     auto veMotTruong = [&](int i, bool dangHoatDong) {
         if (i < 0 || i >= soTruong) return;
@@ -707,7 +323,10 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
             cout << GiaoDienConsole::canGiua(thongBaoLoi, chieuRongBieuMau - 4);
         } else {
             GiaoDienConsole::datMau(XAM_DAM, DEN);
-            cout << GiaoDienConsole::canGiua("Click chuột vào ô hoặc dùng phím Lên/Xuống/Tab để di chuyển", chieuRongBieuMau - 4);
+            string huongDan = coNutF1
+                ? "F1 hoặc nút Chọn môn: mở danh sách môn học | Tab/Lên/Xuống: di chuyển"
+                : "Click chuột vào ô hoặc dùng phím Lên/Xuống/Tab để di chuyển";
+            cout << GiaoDienConsole::canGiua(huongDan, chieuRongBieuMau - 4);
         }
     };
 
@@ -721,8 +340,10 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
     for (int i = 0; i < soTruong; ++i) {
         veMotTruong(i, i == viTriTruongDangChon);
     }
-    GiaoDienConsole::veNut(nutLuu, viTriTruongDangChon == soTruong, TRANG, XANH_LA, DEN, VANG);
-    GiaoDienConsole::veNut(nutHuy, viTriTruongDangChon == soTruong + 1, TRANG, DO, DEN, VANG);
+    GiaoDienConsole::veNut(nutLuu, viTriTruongDangChon == viTriNutLuu, TRANG, XANH_LA, DEN, VANG);
+    if (coNutXoa) GiaoDienConsole::veNut(nutXoa, viTriTruongDangChon == viTriNutXoa, TRANG, DO_NHAT, DEN, VANG);
+    if (coNutF1) GiaoDienConsole::veNut(nutF1, viTriTruongDangChon == viTriNutF1, TRANG, XANH_NGOC, DEN, VANG);
+    GiaoDienConsole::veNut(nutHuy, viTriTruongDangChon == viTriNutHuy, TRANG, DO, DEN, VANG);
     veDongThongBao();
 
     int viTriTruongTruoc = viTriTruongDangChon;
@@ -738,12 +359,16 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
         if (viTriTruongDangChon != viTriTruongTruoc) {
             GiaoDienConsole::hienConTro(false);
             if (viTriTruongTruoc < soTruong) veMotTruong(viTriTruongTruoc, false);
-            else if (viTriTruongTruoc == soTruong) GiaoDienConsole::veNut(nutLuu, false, TRANG, XANH_LA, DEN, VANG);
-            else if (viTriTruongTruoc == soTruong + 1) GiaoDienConsole::veNut(nutHuy, false, TRANG, DO, DEN, VANG);
+            else if (viTriTruongTruoc == viTriNutLuu) GiaoDienConsole::veNut(nutLuu, false, TRANG, XANH_LA, DEN, VANG);
+            else if (coNutXoa && viTriTruongTruoc == viTriNutXoa) GiaoDienConsole::veNut(nutXoa, false, TRANG, DO_NHAT, DEN, VANG);
+            else if (coNutF1 && viTriTruongTruoc == viTriNutF1) GiaoDienConsole::veNut(nutF1, false, TRANG, XANH_NGOC, DEN, VANG);
+            else if (viTriTruongTruoc == viTriNutHuy) GiaoDienConsole::veNut(nutHuy, false, TRANG, DO, DEN, VANG);
 
             if (viTriTruongDangChon < soTruong) veMotTruong(viTriTruongDangChon, true);
-            else if (viTriTruongDangChon == soTruong) GiaoDienConsole::veNut(nutLuu, true, TRANG, XANH_LA, DEN, VANG);
-            else if (viTriTruongDangChon == soTruong + 1) GiaoDienConsole::veNut(nutHuy, true, TRANG, DO, DEN, VANG);
+            else if (viTriTruongDangChon == viTriNutLuu) GiaoDienConsole::veNut(nutLuu, true, TRANG, XANH_LA, DEN, VANG);
+            else if (coNutXoa && viTriTruongDangChon == viTriNutXoa) GiaoDienConsole::veNut(nutXoa, true, TRANG, DO_NHAT, DEN, VANG);
+            else if (coNutF1 && viTriTruongDangChon == viTriNutF1) GiaoDienConsole::veNut(nutF1, true, TRANG, XANH_NGOC, DEN, VANG);
+            else if (viTriTruongDangChon == viTriNutHuy) GiaoDienConsole::veNut(nutHuy, true, TRANG, DO, DEN, VANG);
 
             viTriTruongTruoc = viTriTruongDangChon;
             giaTriDaSua = false;
@@ -770,25 +395,40 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
         } else if (suKien.type == SK_PHIM_LEN) {
             int viTriTiepTheo = viTriTruongDangChon;
             do {
-                viTriTiepTheo = (viTriTiepTheo - 1 + soTruong + 2) % (soTruong + 2);
+                viTriTiepTheo = (viTriTiepTheo - 1 + soMucDieuHuong) % soMucDieuHuong;
             } while (viTriTiepTheo < soTruong && fields[viTriTiepTheo].mode == TRUONG_CHI_DOC);
             viTriTruongDangChon = viTriTiepTheo;
         } else if (suKien.type == SK_PHIM_XUONG || suKien.type == SK_PHIM_TAB) {
             int viTriTiepTheo = viTriTruongDangChon;
             do {
-                viTriTiepTheo = (viTriTiepTheo + 1) % (soTruong + 2);
+                viTriTiepTheo = (viTriTiepTheo + 1) % soMucDieuHuong;
             } while (viTriTiepTheo < soTruong && fields[viTriTiepTheo].mode == TRUONG_CHI_DOC);
             viTriTruongDangChon = viTriTiepTheo;
         } else if ((suKien.type == SK_PHIM_TRAI || suKien.type == SK_PHIM_PHAI) && viTriTruongDangChon >= soTruong) {
-            viTriTruongDangChon = (viTriTruongDangChon == soTruong) ? soTruong + 1 : soTruong;
+            int buoc = (suKien.type == SK_PHIM_TRAI) ? -1 : 1;
+            int viTriNut = viTriTruongDangChon - soTruong;
+            viTriNut = (viTriNut + buoc + soNutHanhDong) % soNutHanhDong;
+            viTriTruongDangChon = soTruong + viTriNut;
+        } else if (coNutF1 && suKien.type == EVT_KEY_F1) {
+            *daNhanF1 = true;
+            GiaoDienConsole::hienConTro(false);
+            return false;
         } else if (suKien.type == EVT_KEY_F2) {
             GiaoDienConsole::hienConTro(false);
             return true;
         } else if (suKien.type == SK_PHIM_ENTER) {
-            if (viTriTruongDangChon == soTruong + 1) {
+            if (viTriTruongDangChon == viTriNutHuy) {
                 GiaoDienConsole::hienConTro(false);
                 return false;
-            } else if (viTriTruongDangChon == soTruong) {
+            } else if (coNutXoa && viTriTruongDangChon == viTriNutXoa) {
+                *daChonXoa = true;
+                GiaoDienConsole::hienConTro(false);
+                return false;
+            } else if (coNutF1 && viTriTruongDangChon == viTriNutF1) {
+                *daNhanF1 = true;
+                GiaoDienConsole::hienConTro(false);
+                return false;
+            } else if (viTriTruongDangChon == viTriNutLuu) {
                 GiaoDienConsole::hienConTro(false);
                 return true;
             } else {
@@ -855,13 +495,25 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
                 GiaoDienConsole::hienConTro(false);
                 return true;
             }
+            if (coNutXoa && nutXoa.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) {
+                *daChonXoa = true;
+                GiaoDienConsole::hienConTro(false);
+                return false;
+            }
+            if (coNutF1 && nutF1.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) {
+                *daNhanF1 = true;
+                GiaoDienConsole::hienConTro(false);
+                return false;
+            }
             if (nutHuy.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) {
                 GiaoDienConsole::hienConTro(false);
                 return false;
             }
         } else if (suKien.type == SK_CHUOT_DI_CHUYEN) {
-            if (nutLuu.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = soTruong;
-            else if (nutHuy.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = soTruong + 1;
+            if (nutLuu.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutLuu;
+            else if (coNutXoa && nutXoa.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutXoa;
+            else if (coNutF1 && nutF1.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutF1;
+            else if (nutHuy.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutHuy;
         }
     }
 }

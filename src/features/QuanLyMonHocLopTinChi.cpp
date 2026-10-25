@@ -16,30 +16,35 @@ using namespace std;
 
 // ============================================================================
 void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi, const DanhSachLop& danhSachLop) {
+    string tuKhoaNienKhoa, tuKhoaHocKy, tuKhoaMaMonHoc, tuKhoaTenMonHoc, tuKhoaNhom;
+    int truongLocDangChon = 0;
+    size_t viTriConTroOLoc[5] = {0, 0, 0, 0, 0};
+    int* cacLopTinChiLoc = new int[MAX_LOP_TC];
+    int soLopTinChiLoc = 0;
     int mucDangChon = 0;
     int soDongMoiTrang = 14;
     string thongBao = "";
     bool coLoi = false;
     bool canVeLaiToanBo = true;
+    bool canVeLaiCacOLoc = true;
+    bool canVeLaiBang = true;
     int mucChonTruoc = -1;
     int trangTruoc = -1;
     int nutDangTro = -1;
     int nutTruocDo = -1;
 
-    int soNut = 4;
+    int soNut = 2;
     NutChuNhat* cacNut = new NutChuNhat[soNut];
-    cacNut[0] = { 6,  23, 24, 1, 0, "[ + THÊM MỚI (Ins) ]" };
-    cacNut[1] = { 34, 23, 24, 1, 1, "[ HIỆU CHỈNH (Enter) ]" };
-    cacNut[2] = { 62, 23, 22, 1, 2, "[ XÓA LỚP (Del) ]" };
-    cacNut[3] = { 88, 23, 22, 1, 3, "[ QUAY LẠI (ESC) ]" };
+    cacNut[0] = { 20, 23, 28, 1, 0, "[ + THÊM MỚI (Ins) ]" };
+    cacNut[1] = { 68, 23, 28, 1, 3, "[ QUAY LẠI (ESC) ]" };
 
     auto veMotDong = [&](int idx, int viTriDau, bool dangDuocChon) {
         int r = idx - viTriDau;
         if (r < 0 || r >= soDongMoiTrang) return;
         int toaDoDong = 7 + r;
         GiaoDienConsole::diDenToaDo(4, toaDoDong);
-        if (idx >= 0 && idx < danhSachLopTinChi.soLuong) {
-            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[idx];
+        if (idx >= 0 && idx < soLopTinChiLoc) {
+            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[cacLopTinChiLoc[idx]];
             NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->maMH);
             string tenMonHoc = mh ? mh->mh.tenMH : "(Không rõ)";
             int soDangKy = demSVDangKyHieuLuc(lopTinChi->dssvdk);
@@ -60,18 +65,65 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
         }
     };
 
+    auto veCacOLoc = [&]() {
+        const int viTriOLoc[] = {4, 28, 38, 57, 93};
+        const int chieuRongOLoc[] = {22, 8, 17, 34, 19};
+        const string nhanOLoc[] = {"Niên khóa", "HK", "Mã MH", "Tên MH", "Nhóm"};
+        string* giaTriOLoc[] = {&tuKhoaNienKhoa, &tuKhoaHocKy, &tuKhoaMaMonHoc, &tuKhoaTenMonHoc, &tuKhoaNhom};
+        for (int i = 0; i < 5; ++i) {
+            GiaoDienConsole::diDenToaDo(viTriOLoc[i], 4);
+            GiaoDienConsole::datMau(truongLocDangChon == i ? DEN : TRANG, truongLocDangChon == i ? VANG : XANH_NGOC);
+            int doRongNhan = GiaoDienConsole::doDaiUtf8(nhanOLoc[i] + ": ");
+            string noiDung = nhanOLoc[i] + ": " + giaTriOLoc[i]->substr(0, max(0, chieuRongOLoc[i] - doRongNhan));
+            int doDai = GiaoDienConsole::doDaiUtf8(noiDung);
+            cout << noiDung << string(max(0, chieuRongOLoc[i] - doDai), ' ');
+        }
+    };
+
+    auto datViTriConTroOLoc = [&]() {
+        const int viTriOLoc[] = {4, 28, 38, 57, 93};
+        const int chieuRongOLoc[] = {22, 8, 17, 34, 19};
+        const string nhanOLoc[] = {"Niên khóa", "HK", "Mã MH", "Tên MH", "Nhóm"};
+        int soKyTuHienThi = max(0, chieuRongOLoc[truongLocDangChon] - GiaoDienConsole::doDaiUtf8(nhanOLoc[truongLocDangChon] + ": "));
+        int viTriDauNhap = viTriOLoc[truongLocDangChon] + GiaoDienConsole::doDaiUtf8(nhanOLoc[truongLocDangChon] + ": ");
+        int viTriConTro = viTriDauNhap + static_cast<int>(min(viTriConTroOLoc[truongLocDangChon], static_cast<size_t>(soKyTuHienThi)));
+        GiaoDienConsole::diDenToaDo(viTriConTro, 4);
+        GiaoDienConsole::hienConTro(true);
+    };
+
     while (true) {
-        if (mucDangChon >= danhSachLopTinChi.soLuong) mucDangChon = (danhSachLopTinChi.soLuong > 0) ? danhSachLopTinChi.soLuong - 1 : 0;
-        int tongSoTrang = (danhSachLopTinChi.soLuong == 0) ? 1 : (danhSachLopTinChi.soLuong + soDongMoiTrang - 1) / soDongMoiTrang;
+        soLopTinChiLoc = 0;
+        string khoaNienKhoa = GiaoDienConsole::vietHoa(tuKhoaNienKhoa);
+        string khoaMaMH = GiaoDienConsole::vietHoa(tuKhoaMaMonHoc);
+        string khoaTenMH = GiaoDienConsole::vietHoa(tuKhoaTenMonHoc);
+        for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) {
+            LopTinChi* lop = danhSachLopTinChi.lopTC[i];
+            if (!khoaNienKhoa.empty() && GiaoDienConsole::vietHoa(lop->nienKhoa).find(khoaNienKhoa) == string::npos) continue;
+            if (!tuKhoaHocKy.empty() && to_string(lop->hocKy).find(tuKhoaHocKy) == string::npos) continue;
+            if (!khoaMaMH.empty()) {
+                if (GiaoDienConsole::vietHoa(lop->maMH).find(khoaMaMH) == string::npos) continue;
+            }
+            if (!khoaTenMH.empty()) {
+                NodeMH* mon = timMonHoc(cayMonHoc, lop->maMH);
+                string tenMon = mon ? GiaoDienConsole::vietHoa(mon->mh.tenMH) : string();
+                if (tenMon.find(khoaTenMH) == string::npos) continue;
+            }
+            if (!tuKhoaNhom.empty() && to_string(lop->nhom).find(tuKhoaNhom) == string::npos) continue;
+            cacLopTinChiLoc[soLopTinChiLoc++] = i;
+        }
+        if (mucDangChon >= soLopTinChiLoc) mucDangChon = soLopTinChiLoc > 0 ? soLopTinChiLoc - 1 : 0;
+        int tongSoTrang = (soLopTinChiLoc == 0) ? 1 : (soLopTinChiLoc + soDongMoiTrang - 1) / soDongMoiTrang;
         int trangHienTai = mucDangChon / soDongMoiTrang;
         int viTriDau = trangHienTai * soDongMoiTrang;
-        int viTriCuoi = (viTriDau + soDongMoiTrang < danhSachLopTinChi.soLuong) ? (viTriDau + soDongMoiTrang) : danhSachLopTinChi.soLuong;
+        int viTriCuoi = min(viTriDau + soDongMoiTrang, soLopTinChiLoc);
 
         if (trangHienTai != trangTruoc) canVeLaiToanBo = true;
 
         if (canVeLaiToanBo) {
             GiaoDienConsole::xoaManHinh();
             GiaoDienConsole::veKhung(1, 2, 114, 24, XANH_NGOC_NHAT, DEN, "DANH SÁCH LỚP TÍN CHỈ");
+
+            veCacOLoc();
 
             GiaoDienConsole::datMau(VANG, LAM);
             GiaoDienConsole::diDenToaDo(4, 5);
@@ -90,18 +142,45 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                 int idx = viTriDau + r;
                 veMotDong(idx, viTriDau, idx == mucDangChon);
             }
+            if (soLopTinChiLoc == 0) {
+                GiaoDienConsole::diDenToaDo(4, 10);
+                GiaoDienConsole::datMau(DO_NHAT, DEN);
+                cout << GiaoDienConsole::canGiua("Không tìm thấy lớp tín chỉ phù hợp với điều kiện lọc.", 108);
+            }
 
             for (int i = 0; i < soNut; ++i) {
                 GiaoDienConsole::veNut(cacNut[i], i == nutDangTro, TRANG, XAM_DAM, DEN, VANG);
             }
 
-            GiaoDienConsole::veThanhTrangThai("Ins: Mở lớp mới | Enter: Sửa lớp đang chọn | Del: Xóa lớp | Trang " + to_string(trangHienTai + 1) + "/" + to_string(tongSoTrang) + " | ESC: Quay lại", thongBao, coLoi);
+            GiaoDienConsole::veThanhTrangThai("Gõ để lọc | Tab/←/→: đổi ô | Home/End: đầu/cuối ô | Enter: hiệu chỉnh | Ins: mở lớp | Trang " + to_string(trangHienTai + 1) + "/" + to_string(tongSoTrang) + " | ESC: Quay lại", thongBao, coLoi);
             thongBao = "";
             canVeLaiToanBo = false;
+            canVeLaiCacOLoc = false;
+            canVeLaiBang = false;
             mucChonTruoc = mucDangChon;
             trangTruoc = trangHienTai;
             nutTruocDo = nutDangTro;
         } else {
+            if (canVeLaiCacOLoc) {
+                veCacOLoc();
+                canVeLaiCacOLoc = false;
+            }
+            if (canVeLaiBang) {
+                GiaoDienConsole::diDenToaDo(4, 7);
+                GiaoDienConsole::datMau(XAM_NHAT, DEN);
+                cout << string(108, ' ');
+                for (int r = 0; r < soDongMoiTrang; ++r) {
+                    int idx = viTriDau + r;
+                    veMotDong(idx, viTriDau, idx == mucDangChon);
+                }
+                if (soLopTinChiLoc == 0) {
+                    GiaoDienConsole::diDenToaDo(4, 10);
+                    GiaoDienConsole::datMau(DO_NHAT, DEN);
+                    cout << GiaoDienConsole::canGiua("Không tìm thấy lớp tín chỉ phù hợp với điều kiện lọc.", 108);
+                }
+                mucChonTruoc = mucDangChon;
+                canVeLaiBang = false;
+            }
             if (mucDangChon != mucChonTruoc) {
                 veMotDong(mucChonTruoc, viTriDau, false);
                 veMotDong(mucDangChon, viTriDau, true);
@@ -115,6 +194,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
             }
         }
 
+        datViTriConTroOLoc();
         SuKienNhap suKien = GiaoDienConsole::docSuKien();
         int hanhDong = -1;
 
@@ -138,6 +218,18 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                     break;
                 }
             }
+            if (suKien.toaDoChuotY == 4) {
+                const int dauOLoc[] = {4, 28, 38, 57, 93};
+                const int rongOLoc[] = {22, 8, 17, 34, 19};
+                string* giaTriOLoc[] = {&tuKhoaNienKhoa, &tuKhoaHocKy, &tuKhoaMaMonHoc, &tuKhoaTenMonHoc, &tuKhoaNhom};
+                for (int i = 0; i < 5; ++i) {
+                    if (suKien.toaDoChuotX >= dauOLoc[i] && suKien.toaDoChuotX < dauOLoc[i] + rongOLoc[i]) {
+                        truongLocDangChon = i;
+                        viTriConTroOLoc[i] = giaTriOLoc[i]->size();
+                        canVeLaiCacOLoc = true;
+                    }
+                }
+            }
             if (hanhDong == -1 && suKien.toaDoChuotX >= 4 && suKien.toaDoChuotX < 112 && suKien.toaDoChuotY >= 7 && suKien.toaDoChuotY < 7 + soDongMoiTrang) {
                 int idx = viTriDau + (suKien.toaDoChuotY - 7);
                 if (idx < viTriCuoi) {
@@ -148,13 +240,57 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
         }
 
         if (suKien.type == SK_PHIM_ESC || hanhDong == 3) {
+            GiaoDienConsole::hienConTro(false);
             luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
             delete[] cacNut;
+            delete[] cacLopTinChiLoc;
             break;
         } else if (suKien.type == SK_PHIM_LEN || suKien.type == SK_CON_LAN_LEN) {
-            if (danhSachLopTinChi.soLuong > 0) mucDangChon = (mucDangChon - 1 + danhSachLopTinChi.soLuong) % danhSachLopTinChi.soLuong;
+            if (soLopTinChiLoc > 0) mucDangChon = (mucDangChon - 1 + soLopTinChiLoc) % soLopTinChiLoc;
         } else if (suKien.type == SK_PHIM_XUONG || suKien.type == SK_CON_LAN_XUONG) {
-            if (danhSachLopTinChi.soLuong > 0) mucDangChon = (mucDangChon + 1) % danhSachLopTinChi.soLuong;
+            if (soLopTinChiLoc > 0) mucDangChon = (mucDangChon + 1) % soLopTinChiLoc;
+        } else if (suKien.type == SK_PHIM_TAB) {
+            truongLocDangChon = (truongLocDangChon + 1) % 5;
+            canVeLaiCacOLoc = true;
+        } else if (suKien.type == SK_PHIM_TRAI || suKien.type == SK_PHIM_PHAI) {
+            int buoc = suKien.type == SK_PHIM_TRAI ? -1 : 1;
+            truongLocDangChon = (truongLocDangChon + buoc + 5) % 5;
+            canVeLaiCacOLoc = true;
+        } else if (suKien.type == EVT_KEY_HOME) {
+            viTriConTroOLoc[truongLocDangChon] = 0;
+        } else if (suKien.type == EVT_KEY_END) {
+            string* giaTriOLoc[] = {&tuKhoaNienKhoa, &tuKhoaHocKy, &tuKhoaMaMonHoc, &tuKhoaTenMonHoc, &tuKhoaNhom};
+            viTriConTroOLoc[truongLocDangChon] = giaTriOLoc[truongLocDangChon]->size();
+        } else if (suKien.type == EVT_KEY_BACKSPACE) {
+            string* giaTriOLoc[] = {&tuKhoaNienKhoa, &tuKhoaHocKy, &tuKhoaMaMonHoc, &tuKhoaTenMonHoc, &tuKhoaNhom};
+            if (viTriConTroOLoc[truongLocDangChon] > 0) {
+                giaTriOLoc[truongLocDangChon]->erase(viTriConTroOLoc[truongLocDangChon] - 1, 1);
+                --viTriConTroOLoc[truongLocDangChon];
+            }
+            mucDangChon = 0;
+            canVeLaiCacOLoc = true;
+            canVeLaiBang = true;
+        } else if (suKien.type == SK_KY_TU) {
+            string* giaTriOLoc[] = {&tuKhoaNienKhoa, &tuKhoaHocKy, &tuKhoaMaMonHoc, &tuKhoaTenMonHoc, &tuKhoaNhom};
+            const int doDaiToiDa[] = {11, 1, 10, 50, 2};
+            char kyTu = suKien.ch;
+            bool kyTuHopLe = false;
+            if (truongLocDangChon == 1 || truongLocDangChon == 4) {
+                kyTuHopLe = kyTu >= '0' && kyTu <= '9';
+            } else {
+                kyTuHopLe = (kyTu >= 'a' && kyTu <= 'z') || (kyTu >= 'A' && kyTu <= 'Z') ||
+                    (kyTu >= '0' && kyTu <= '9') || kyTu == '-' || kyTu == '_';
+                if (truongLocDangChon == 3 && kyTu == ' ') kyTuHopLe = true;
+            }
+            string& giaTri = *giaTriOLoc[truongLocDangChon];
+            if (kyTuHopLe && static_cast<int>(giaTri.size()) < doDaiToiDa[truongLocDangChon]) {
+                if (truongLocDangChon != 3 && kyTu >= 'a' && kyTu <= 'z') kyTu = static_cast<char>(kyTu - 'a' + 'A');
+                giaTri.insert(viTriConTroOLoc[truongLocDangChon], 1, kyTu);
+                ++viTriConTroOLoc[truongLocDangChon];
+            }
+            mucDangChon = 0;
+            canVeLaiCacOLoc = true;
+            canVeLaiBang = true;
         } else if (suKien.type == EVT_KEY_INSERT || hanhDong == 0) {
             if (danhSachLopTinChi.soLuong >= MAX_LOP_TC) {
                 thongBao = "Danh sách lớp tín chỉ đã đầy (tối đa 10000 lớp)!";
@@ -173,7 +309,19 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
 
             string thongBaoLoi = "";
             while (true) {
-                if (!chayBieuMau("MỞ LỚP TÍN CHỈ MỚI", f, 7, thongBaoLoi)) break;
+                bool daNhanF1 = false;
+                bool daLuu = chayBieuMau("MỞ LỚP TÍN CHỈ MỚI", f, 7, thongBaoLoi,
+                    "[ LƯU (Enter) ]", "[ HỦY (ESC) ]", "", nullptr,
+                    "[ F1: CHỌN MÔN ]", &daNhanF1);
+                if (daNhanF1) {
+                    string maMonHocDuocChon = chonMonHocNhanh(cayMonHoc);
+                    if (!maMonHocDuocChon.empty()) {
+                        f[1].value = maMonHocDuocChon;
+                        thongBaoLoi.clear();
+                    }
+                    continue;
+                }
+                if (!daLuu) break;
 
                 string maMH = GiaoDienConsole::vietHoa(f[1].value);
                 string nienKhoa = GiaoDienConsole::catKhoangTrang(f[2].value);
@@ -217,6 +365,10 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                 lopTinChi->maxSV = soSinhVienToiDa;
                 lopTinChi->huyLop = false;
                 danhSachLopTinChi.lopTC[danhSachLopTinChi.soLuong++] = lopTinChi;
+                tuKhoaNienKhoa.clear();
+                tuKhoaHocKy.clear();
+                tuKhoaMaMonHoc.clear();
+                tuKhoaNhom.clear();
                 mucDangChon = danhSachLopTinChi.soLuong - 1;
                 luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
                 thongBao = "Đã mở lớp tín chỉ mã " + to_string(lopTinChi->maLopTC) + " thành công!";
@@ -225,9 +377,11 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
             }
             delete[] f;
             canVeLaiToanBo = true;
-        } else if ((suKien.type == SK_PHIM_ENTER || hanhDong == 1) && danhSachLopTinChi.soLuong > 0) {
-            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[mucDangChon];
+        } else if ((suKien.type == SK_PHIM_ENTER || hanhDong == 1) && soLopTinChiLoc > 0) {
+            int viTriLopTinChiThat = cacLopTinChiLoc[mucDangChon];
+            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChiThat];
             TruongNhap* f = new TruongNhap[8];
+            bool lopDaBiXoa = false;
             f[0] = { "Mã Lớp TC (Cố định)", to_string(lopTinChi->maLopTC), 10, TRUONG_CHI_DOC, 0, 0, 0 };
             f[1] = { "Mã môn học", lopTinChi->maMH, 10, TRUONG_MA, 0, 0, 0 };
             f[2] = { "Niên khóa", lopTinChi->nienKhoa, 11, TRUONG_MA, 0, 0, 0 };
@@ -239,7 +393,33 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
 
             string thongBaoLoi = "";
             while (true) {
-                if (!chayBieuMau("HIỆU CHỈNH LỚP TÍN CHỈ #" + to_string(lopTinChi->maLopTC), f, 8, thongBaoLoi)) break;
+                bool daChonXoa = false;
+                bool daLuuBieuMau = chayBieuMau("HIỆU CHỈNH LỚP TÍN CHỈ #" + to_string(lopTinChi->maLopTC), f, 8, thongBaoLoi, "[ LƯU (Enter) ]", "[ HỦY (ESC) ]", "[ XÓA LỚP ]", &daChonXoa);
+                if (daChonXoa) {
+                    int soDangKy = demTongDangKy(lopTinChi->dssvdk);
+                    if (soDangKy > 0) {
+                        thongBaoLoi = "Không thể xóa lớp vì đã có " + to_string(soDangKy) + " sinh viên đăng ký!";
+                        continue;
+                    }
+                    if (!GiaoDienConsole::hopXacNhan("XÁC NHẬN XÓA LỚP TÍN CHỈ",
+                        "Bạn có chắc chắn muốn xóa Lớp tín chỉ #" + to_string(lopTinChi->maLopTC) + " (" + string(lopTinChi->maMH) + ")?")) {
+                        continue;
+                    }
+                    int maLopTCDaXoa = lopTinChi->maLopTC;
+                    giaiPhongDSDK(lopTinChi->dssvdk);
+                    delete lopTinChi;
+                    for (int i = viTriLopTinChiThat; i < danhSachLopTinChi.soLuong - 1; ++i) {
+                        danhSachLopTinChi.lopTC[i] = danhSachLopTinChi.lopTC[i + 1];
+                    }
+                    danhSachLopTinChi.lopTC[--danhSachLopTinChi.soLuong] = nullptr;
+                    if (mucDangChon >= soLopTinChiLoc - 1 && mucDangChon > 0) --mucDangChon;
+                    luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                    thongBao = "Đã xóa lớp tín chỉ #" + to_string(maLopTCDaXoa) + " thành công!";
+                    coLoi = false;
+                    lopDaBiXoa = true;
+                    break;
+                }
+                if (!daLuuBieuMau) break;
 
                 string maMH = GiaoDienConsole::vietHoa(f[1].value);
                 string nienKhoa = GiaoDienConsole::catKhoangTrang(f[2].value);
@@ -267,7 +447,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                     continue;
                 }
                 int viTriBiTrung = timLopTinChiTheoThamSo(danhSachLopTinChi, nienKhoa.c_str(), hocKy, maMH.c_str(), nhom);
-                if (viTriBiTrung != -1 && viTriBiTrung != mucDangChon) {
+                if (viTriBiTrung != -1 && viTriBiTrung != viTriLopTinChiThat) {
                     thongBaoLoi = "Bộ (Mã MH, Niên khóa, Học kỳ, Nhóm) bị trùng với Lớp TC #" + to_string(danhSachLopTinChi.lopTC[viTriBiTrung]->maLopTC) + "!";
                     continue;
                 }
@@ -287,28 +467,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
             }
             delete[] f;
             canVeLaiToanBo = true;
-        } else if ((suKien.type == EVT_KEY_DELETE || hanhDong == 2) && danhSachLopTinChi.soLuong > 0) {
-            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[mucDangChon];
-            int soDangKy = demTongDangKy(lopTinChi->dssvdk);
-            if (soDangKy > 0) {
-                thongBao = "Không thể xóa Lớp TC #" + to_string(lopTinChi->maLopTC) + " vì đã có " + to_string(soDangKy) + " sinh viên đăng ký!";
-                coLoi = true;
-                canVeLaiToanBo = true;
-                continue;
-            }
-            if (GiaoDienConsole::hopXacNhan("XÁC NHẬN XÓA LỚP TÍN CHỈ",
-                                         "Bạn có chắc chắn muốn xóa Lớp tín chỉ #" + to_string(lopTinChi->maLopTC) + " (" + string(lopTinChi->maMH) + ")?")) {
-                giaiPhongDSDK(lopTinChi->dssvdk);
-                delete lopTinChi;
-                for (int i = mucDangChon; i < danhSachLopTinChi.soLuong - 1; ++i) {
-                    danhSachLopTinChi.lopTC[i] = danhSachLopTinChi.lopTC[i + 1];
-                }
-                danhSachLopTinChi.lopTC[--danhSachLopTinChi.soLuong] = nullptr;
-                luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
-                thongBao = "Đã xóa lớp tín chỉ thành công!";
-                coLoi = false;
-            }
-            canVeLaiToanBo = true;
+            if (lopDaBiXoa) continue;
         }
     }
 }
@@ -331,7 +490,7 @@ void chucNangB_InDSSVDangKyLopTC(PTRMH cayMonHoc, const DanhSachLopTinChi& danhS
         struct DongDangKy {
             string maSV;
             string hoTen;
-            string trangThai;
+            string trangThaiSinhVien;
             bool daHuy;
         };
         DongDangKy* cacDong = (tongSoDangKy > 0) ? new DongDangKy[tongSoDangKy] : nullptr;
@@ -342,71 +501,239 @@ void chucNangB_InDSSVDangKyLopTC(PTRMH cayMonHoc, const DanhSachLopTinChi& danhS
             cacDong[soDong].maSV = p->dk.maSV;
             cacDong[soDong].hoTen = hoTen;
             cacDong[soDong].daHuy = p->dk.huyDangKy;
-            cacDong[soDong].trangThai = p->dk.huyDangKy ? "Đã hủy đăng ký" : "Còn đăng ký";
+            cacDong[soDong].trangThaiSinhVien = p->dk.huyDangKy ? "Đã hủy" : "Đã đăng ký";
             soDong++;
         }
 
+        int* cacDongLoc = tongSoDangKy > 0 ? new int[tongSoDangKy] : nullptr;
+        string tuKhoaMaSV, tuKhoaHoTen, tuKhoaTrangThai;
+        string* cacTuKhoa[] = {&tuKhoaMaSV, &tuKhoaHoTen, &tuKhoaTrangThai};
+        size_t viTriConTro[3] = {};
+        int oLocDangChon = 0;
+        int soDongLoc = 0;
         int trang = 0;
         int soDongMoiTrang = 13;
-        int tongSoTrang = (soDong == 0) ? 1 : (soDong + soDongMoiTrang - 1) / soDongMoiTrang;
         int trangTruoc = -1;
+        int dongDangTro = -1;
+        int cacDongGocDaVe[13];
+        bool cacDongDaTroDaVe[13] = {};
+        for (int i = 0; i < 13; ++i) cacDongGocDaVe[i] = -1;
+        bool daVeThongBaoKhongKetQua = false;
+        bool canVeLaiBang = true;
+        bool canVeLaiBoLoc = true;
         NutChuNhat nutQuayLai = { 46, 23, 24, 1, 0, "[ QUAY LẠI (ESC) ]" };
 
+        auto apDungBoLocSinhVien = [&]() {
+            soDongLoc = 0;
+            for (int i = 0; i < soDong; ++i) {
+                string ma = GiaoDienConsole::vietHoa(cacDong[i].maSV);
+                string hoTen = GiaoDienConsole::vietHoa(cacDong[i].hoTen);
+                string trangThai = GiaoDienConsole::vietHoa(cacDong[i].trangThaiSinhVien);
+                string tuKhoaTrangThaiKhongDau = GiaoDienConsole::vietHoa(tuKhoaTrangThai);
+                string trangThaiKhongDau = cacDong[i].daHuy ? "HUY DA HUY HUY DANG KY" : "DANG KY DA DANG KY CON DANG KY DK";
+                if ((!tuKhoaMaSV.empty() && ma.find(GiaoDienConsole::vietHoa(tuKhoaMaSV)) == string::npos) ||
+                    (!tuKhoaHoTen.empty() && hoTen.find(GiaoDienConsole::vietHoa(tuKhoaHoTen)) == string::npos) ||
+                    (!tuKhoaTrangThai.empty() && trangThai.find(tuKhoaTrangThaiKhongDau) == string::npos &&
+                     trangThaiKhongDau.find(tuKhoaTrangThaiKhongDau) == string::npos)) continue;
+                cacDongLoc[soDongLoc++] = i;
+            }
+            if (dongDangTro >= soDongLoc) dongDangTro = -1;
+        };
+        auto veCacOLocSinhVien = [&]() {
+            const int toaDoX[] = {4, 32, 79};
+            const int chieuRong[] = {25, 44, 33};
+            const string nhan[] = {"Mã SV: ", "Họ/Tên: ", "Trạng thái: "};
+            for (int i = 0; i < 3; ++i) {
+                GiaoDienConsole::diDenToaDo(toaDoX[i], 6);
+                GiaoDienConsole::datMau(oLocDangChon == i ? DEN : TRANG, oLocDangChon == i ? VANG : XANH_NGOC);
+                int doRongNhan = GiaoDienConsole::doDaiUtf8(nhan[i]);
+                string hienThi = nhan[i] + cacTuKhoa[i]->substr(0, max(0, chieuRong[i] - doRongNhan));
+                int doDai = GiaoDienConsole::doDaiUtf8(hienThi);
+                cout << hienThi << string(max(0, chieuRong[i] - doDai), ' ');
+            }
+        };
+        auto datViTriConTroTimSV = [&]() {
+            const int toaDoX[] = {4, 32, 79};
+            const int chieuRong[] = {25, 44, 33};
+            const string nhan[] = {"Mã SV: ", "Họ/Tên: ", "Trạng thái: "};
+            int doRongNhan = GiaoDienConsole::doDaiUtf8(nhan[oLocDangChon]);
+            int soKyTuHienThi = max(0, chieuRong[oLocDangChon] - doRongNhan);
+            int x = toaDoX[oLocDangChon] + doRongNhan
+                + static_cast<int>(min(viTriConTro[oLocDangChon], static_cast<size_t>(soKyTuHienThi)));
+            x = min(x, toaDoX[oLocDangChon] + chieuRong[oLocDangChon] - 1);
+            GiaoDienConsole::diDenToaDo(x, 6);
+            GiaoDienConsole::hienConTro(true);
+        };
+
+        auto veDongDangKy = [&](int chiSoDong, int trangHienTai, bool dangTro) {
+            int viTriDau = trangHienTai * soDongMoiTrang;
+            int viTriCuoi = min(viTriDau + soDongMoiTrang, soDongLoc);
+            if (chiSoDong < viTriDau || chiSoDong >= viTriCuoi) return;
+            GiaoDienConsole::diDenToaDo(4, 9 + chiSoDong - viTriDau);
+            const DongDangKy& dong = cacDong[cacDongLoc[chiSoDong]];
+            GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
+            cout << GiaoDienConsole::canPhai(" " + to_string(chiSoDong + 1), 7);
+            GiaoDienConsole::datMau(dangTro ? DEN : XANH_NGOC, dangTro ? VANG : DEN); cout << "|";
+            GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
+            cout << GiaoDienConsole::canPhai(dong.maSV, 20);
+            GiaoDienConsole::datMau(dangTro ? DEN : XANH_NGOC, dangTro ? VANG : DEN); cout << "|";
+            GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
+            cout << GiaoDienConsole::canPhai(dong.hoTen, 48);
+            GiaoDienConsole::datMau(dangTro ? DEN : XANH_NGOC, dangTro ? VANG : DEN); cout << "|";
+            GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
+            cout << GiaoDienConsole::canPhai(dong.trangThaiSinhVien, 30);
+        };
+
         while (true) {
-            if (trang != trangTruoc) {
+            apDungBoLocSinhVien();
+            int tongSoTrang = soDongLoc == 0 ? 1 : (soDongLoc + soDongMoiTrang - 1) / soDongMoiTrang;
+            if (trang >= tongSoTrang) trang = tongSoTrang - 1;
+            if (trang != trangTruoc) canVeLaiBang = true;
+            int viTriDau = trang * soDongMoiTrang;
+            int viTriCuoi = min(viTriDau + soDongMoiTrang, soDongLoc);
+
+            if (trangTruoc == -1) {
                 GiaoDienConsole::xoaManHinh();
-                GiaoDienConsole::veKhung(1, 2, 114, 24, XANH_NGOC_NHAT, DEN, "DANH SÁCH SINH VIÊN ĐĂNG KÝ LỚP TÍN CHỈ");
+                GiaoDienConsole::veKhung(1, 2, 114, 24, XANH_NGOC_NHAT, DEN,
+                    string("DANH SÁCH SINH VIÊN ĐĂNG KÝ LỚP TÍN CHỈ") + (lopTinChi->huyLop ? " - LỚP ĐÃ HỦY" : ""));
 
                 GiaoDienConsole::datMau(VANG, DEN);
                 GiaoDienConsole::diDenToaDo(4, 4);
                 cout << "Môn học: " << tenMonHoc << " (" << lopTinChi->maMH << ")  |  Niên khóa: " << lopTinChi->nienKhoa
                      << "  |  Học kỳ: " << lopTinChi->hocKy << "  |  Nhóm: " << lopTinChi->nhom;
 
+                GiaoDienConsole::diDenToaDo(4, 5);
+                GiaoDienConsole::datMau(lopTinChi->huyLop ? DO_NHAT : XANH_LA_NHAT, DEN);
+                cout << "Trạng thái lớp: " << (lopTinChi->huyLop ? "Đã hủy" : "Đang mở");
+
+                veCacOLocSinhVien();
+
+                GiaoDienConsole::diDenToaDo(4, 7);
                 GiaoDienConsole::datMau(VANG, LAM);
-                GiaoDienConsole::diDenToaDo(4, 6);
-                cout << GiaoDienConsole::canPhai(" STT", 10)
-                     << GiaoDienConsole::canPhai("MÃ SINH VIÊN", 22)
-                     << GiaoDienConsole::canPhai("HỌ VÀ TÊN SINH VIÊN", 48)
-                     << GiaoDienConsole::canPhai("TRẠNG THÁI", 28);
+                cout << GiaoDienConsole::canPhai(" STT", 7);
+                GiaoDienConsole::datMau(XANH_NGOC, LAM); cout << "|";
+                GiaoDienConsole::datMau(VANG, LAM);
+                cout << GiaoDienConsole::canPhai("MÃ SINH VIÊN", 20);
+                GiaoDienConsole::datMau(XANH_NGOC, LAM); cout << "|";
+                GiaoDienConsole::datMau(VANG, LAM);
+                cout << GiaoDienConsole::canPhai("HỌ VÀ TÊN SINH VIÊN", 48);
+                GiaoDienConsole::datMau(XANH_NGOC, LAM); cout << "|";
+                GiaoDienConsole::datMau(VANG, LAM);
+                cout << GiaoDienConsole::canPhai("TRẠNG THÁI SV", 30);
 
-                int viTriDau = trang * soDongMoiTrang;
-                int viTriCuoi = (viTriDau + soDongMoiTrang < soDong) ? (viTriDau + soDongMoiTrang) : soDong;
+                GiaoDienConsole::diDenToaDo(4, 8);
+                GiaoDienConsole::datMau(XANH_NGOC, DEN);
+                cout << string(108, '-');
 
-                if (soDong == 0) {
+                if (soDongLoc == 0) {
                     GiaoDienConsole::datMau(DO_NHAT, DEN);
                     GiaoDienConsole::diDenToaDo(4, 10);
-                    cout << GiaoDienConsole::canGiua("Chưa có sinh viên nào đăng ký lớp tín chỉ này!", 108);
+                    cout << GiaoDienConsole::canGiua(soDong == 0 ? "Chưa có sinh viên nào đăng ký lớp tín chỉ này!" : "Không tìm thấy sinh viên phù hợp với điều kiện tìm kiếm.", 108);
                 } else {
                     for (int r = 0; r < soDongMoiTrang; ++r) {
                         int i = viTriDau + r;
-                        GiaoDienConsole::diDenToaDo(4, 8 + r);
-                        if (i < viTriCuoi) {
-                            GiaoDienConsole::datMau(cacDong[i].daHuy ? DO_NHAT : TRANG, DEN);
-                            cout << GiaoDienConsole::canPhai(" " + to_string(i + 1), 10)
-                                 << GiaoDienConsole::canPhai(cacDong[i].maSV, 22)
-                                 << GiaoDienConsole::canPhai(cacDong[i].hoTen, 48)
-                                 << GiaoDienConsole::canPhai(cacDong[i].trangThai, 28);
-                        } else {
-                            cout << string(108, ' ');
-                        }
+                        GiaoDienConsole::diDenToaDo(4, 9 + r);
+                        if (i < viTriCuoi) veDongDangKy(i, trang, i == dongDangTro);
+                        else { GiaoDienConsole::datMau(XAM_NHAT, DEN); cout << string(108, ' '); }
+                        cacDongGocDaVe[r] = i < viTriCuoi ? cacDongLoc[i] : -1;
+                        cacDongDaTroDaVe[r] = i < viTriCuoi && i == dongDangTro;
                     }
                 }
+                daVeThongBaoKhongKetQua = soDongLoc == 0;
 
                 GiaoDienConsole::veNut(nutQuayLai, true, TRANG, XAM_DAM, DEN, VANG);
-                GiaoDienConsole::veThanhTrangThai("Mũi tên Lên/Xuống hoặc Cuộn chuột để chuyển trang | Trang " + to_string(trang + 1) + "/" + to_string(tongSoTrang) + " | ESC/Enter: Quay lại");
+                GiaoDienConsole::veThanhTrangThai("Gõ để tìm mã/họ tên/trạng thái | Tab/←→: đổi ô | Lên/Xuống/Cuộn: chuyển dòng | Trang " + to_string(trang + 1) + "/" + to_string(tongSoTrang) + " | ESC/Enter: Quay lại");
                 trangTruoc = trang;
+                canVeLaiBang = false;
+                canVeLaiBoLoc = false;
+            } else {
+                if (canVeLaiBoLoc) {
+                    veCacOLocSinhVien();
+                    canVeLaiBoLoc = false;
+                }
+                if (canVeLaiBang) {
+                    for (int r = 0; r < soDongMoiTrang; ++r) {
+                        int i = viTriDau + r;
+                        int dongGocMoi = i < viTriCuoi ? cacDongLoc[i] : -1;
+                        bool dangTroMoi = i < viTriCuoi && i == dongDangTro;
+                        if (dongGocMoi != cacDongGocDaVe[r] || dangTroMoi != cacDongDaTroDaVe[r] ||
+                            (r == 1 && daVeThongBaoKhongKetQua != (soDongLoc == 0))) {
+                            GiaoDienConsole::diDenToaDo(4, 9 + r);
+                            GiaoDienConsole::datMau(XAM_NHAT, DEN);
+                            cout << string(108, ' ');
+                            if (i < viTriCuoi) veDongDangKy(i, trang, dangTroMoi);
+                            cacDongGocDaVe[r] = dongGocMoi;
+                            cacDongDaTroDaVe[r] = dangTroMoi;
+                        }
+                    }
+                    if (soDongLoc == 0) {
+                        GiaoDienConsole::diDenToaDo(4, 10);
+                        GiaoDienConsole::datMau(DO_NHAT, DEN);
+                        cout << GiaoDienConsole::canGiua(soDong == 0 ? "Chưa có sinh viên nào đăng ký lớp tín chỉ này!" : "Không tìm thấy sinh viên phù hợp với điều kiện tìm kiếm.", 108);
+                    }
+                    daVeThongBaoKhongKetQua = soDongLoc == 0;
+                    GiaoDienConsole::veThanhTrangThai("Gõ để tìm mã/họ tên/trạng thái | Tab/←→: đổi ô | Lên/Xuống/Cuộn: chuyển dòng | Trang " + to_string(trang + 1) + "/" + to_string(tongSoTrang) + " | ESC/Enter: Quay lại");
+                    trangTruoc = trang;
+                    canVeLaiBang = false;
+                }
             }
 
+            datViTriConTroTimSV();
             SuKienNhap suKien = GiaoDienConsole::docSuKien();
+            if (suKien.type == SK_CHUOT_DI_CHUYEN) {
+                int dongMoi = -1;
+                int viTriDau = trang * soDongMoiTrang;
+                int viTriCuoi = min(viTriDau + soDongMoiTrang, soDongLoc);
+                if (suKien.toaDoChuotX >= 4 && suKien.toaDoChuotX < 112 && suKien.toaDoChuotY >= 9 && suKien.toaDoChuotY < 9 + soDongMoiTrang) {
+                    int viTri = viTriDau + suKien.toaDoChuotY - 9;
+                    if (viTri < viTriCuoi) dongMoi = viTri;
+                }
+                if (dongMoi != dongDangTro) {
+                    if (dongDangTro >= 0) {
+                        veDongDangKy(dongDangTro, trang, false);
+                        cacDongDaTroDaVe[dongDangTro % soDongMoiTrang] = false;
+                    }
+                    if (dongMoi >= 0) {
+                        veDongDangKy(dongMoi, trang, true);
+                        cacDongDaTroDaVe[dongMoi % soDongMoiTrang] = true;
+                    }
+                    dongDangTro = dongMoi;
+                }
+                continue;
+            }
             if (suKien.type == SK_PHIM_ESC || suKien.type == SK_PHIM_ENTER) break;
             if (suKien.type == SK_CHUOT_TRAI && nutQuayLai.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) break;
-            if (suKien.type == EVT_KEY_PGDN || suKien.type == SK_PHIM_XUONG || suKien.type == SK_CON_LAN_XUONG) {
+            if (suKien.type == SK_CHUOT_TRAI && suKien.toaDoChuotY == 6) {
+                if (suKien.toaDoChuotX >= 4 && suKien.toaDoChuotX < 29) oLocDangChon = 0;
+                else if (suKien.toaDoChuotX >= 32 && suKien.toaDoChuotX < 76) oLocDangChon = 1;
+                else if (suKien.toaDoChuotX >= 79 && suKien.toaDoChuotX < 112) oLocDangChon = 2;
+                canVeLaiBoLoc = true;
+            } else if (suKien.type == SK_PHIM_TAB || suKien.type == SK_PHIM_TRAI || suKien.type == SK_PHIM_PHAI) {
+                int buoc = suKien.type == SK_PHIM_TRAI ? -1 : 1;
+                oLocDangChon = (oLocDangChon + buoc + 3) % 3;
+                canVeLaiBoLoc = true;
+            } else if (suKien.type == EVT_KEY_BACKSPACE) {
+                if (viTriConTro[oLocDangChon] > 0) {
+                    cacTuKhoa[oLocDangChon]->erase(viTriConTro[oLocDangChon] - 1, 1);
+                    --viTriConTro[oLocDangChon];
+                }
+                trang = 0; dongDangTro = -1; canVeLaiBoLoc = true; canVeLaiBang = true;
+            } else if (suKien.type == SK_KY_TU) {
+                char kyTu = suKien.ch;
+                if (kyTu >= 32 && kyTu <= 126 && cacTuKhoa[oLocDangChon]->size() < (oLocDangChon == 0 ? 15u : 50u)) {
+                    if (oLocDangChon == 0 && kyTu >= 'a' && kyTu <= 'z') kyTu = static_cast<char>(kyTu - 'a' + 'A');
+                    cacTuKhoa[oLocDangChon]->insert(viTriConTro[oLocDangChon], 1, kyTu);
+                    ++viTriConTro[oLocDangChon];
+                }
+                trang = 0; dongDangTro = -1; canVeLaiBoLoc = true; canVeLaiBang = true;
+            } else if (suKien.type == EVT_KEY_PGDN || suKien.type == SK_PHIM_XUONG || suKien.type == SK_CON_LAN_XUONG) {
                 if (trang + 1 < tongSoTrang) trang++;
             } else if (suKien.type == EVT_KEY_PGUP || suKien.type == SK_PHIM_LEN || suKien.type == SK_CON_LAN_LEN) {
                 if (trang > 0) trang--;
             }
         }
 
+        if (cacDongLoc != nullptr) delete[] cacDongLoc;
         if (cacDong != nullptr) delete[] cacDong;
     }
 }

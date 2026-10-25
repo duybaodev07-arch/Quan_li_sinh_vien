@@ -6,6 +6,7 @@
 - `include/features/` và `src/features/`: header khai báo API và source cài đặt theo module nghiệp vụ.
 - `include/storage/` và `src/storage/`: API và cài đặt đọc/ghi dữ liệu.
 - `include/ui/` và `src/ui/`: API và cài đặt giao diện console, menu.
+- `src/ui/GiaoDienConsole.cpp`: phần giao diện dùng chung; `GiaoDienConsole_Windows.cpp` và `GiaoDienConsole_Linux.cpp`: phần thao tác console riêng cho từng hệ điều hành. Makefile tự chọn đúng file nền tảng khi build.
 - `src/main.cpp`: khởi tạo, điều phối và giải phóng dữ liệu.
 
 Mỗi module có header `.h` để khai báo và source `.cpp` để cài đặt. Các hàm hỗ trợ giao diện/dữ liệu dùng chung được khai báo trong `include/features/HamDungChung.h` và cài đặt trong `src/features/HamDungChung.cpp`.

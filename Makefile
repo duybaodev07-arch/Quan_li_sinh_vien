@@ -7,13 +7,16 @@ HEADERS := $(call rwildcard,include,*.h)
 
 ifeq ($(OS),Windows_NT)
 TARGET := QuanLyDiemSV.exe
+PLATFORM_SOURCE := src/ui/GiaoDienConsole_Windows.cpp
 RUN := ./$(TARGET)
 RM := del /Q /F
 else
 TARGET := QuanLyDiemSV
+PLATFORM_SOURCE := src/ui/GiaoDienConsole_Linux.cpp
 RUN := ./$(TARGET)
 RM := rm -f
 endif
+SOURCES := $(filter-out src/ui/GiaoDienConsole_Windows.cpp src/ui/GiaoDienConsole_Linux.cpp,$(SOURCES)) $(PLATFORM_SOURCE)
 
 .PHONY: all run clean
 all: $(TARGET)

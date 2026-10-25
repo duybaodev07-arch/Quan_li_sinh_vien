@@ -1,15 +1,7 @@
 #ifndef CONSOLE_UI_H
 #define CONSOLE_UI_H
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#include <termios.h>
-#include <sys/select.h>
-#include <sys/ioctl.h>
-#include <csignal>
-#include <cstdlib>
+#ifndef _WIN32
 #include <strings.h>
 
 inline int _stricmp(const char* a, const char* b) {
@@ -23,8 +15,6 @@ inline int _stricmp(const char* a, const char* b) {
 #include <iomanip>
 #include <sstream>
 #include <cmath>
-
-using namespace std;
 
 // Kích thước chuẩn an toàn tuyệt đối cho mọi cửa sổ Windows Terminal / CMD (mặc định 120x30)
 // Không bao giờ vẽ chạm cột 119 hay dòng 29 để tránh tự động xuống dòng (wrap) và cuộn màn hình (scroll)
@@ -89,7 +79,7 @@ struct SuKienNhap {
 struct NutChuNhat {
     int x, y, w, h;
     int id;
-    string label;
+    std::string label;
 
     bool contains(int toaDoX, int toaDoY) const {
         return (toaDoX >= x && toaDoX < x + w && toaDoY >= y && toaDoY < y + h);
@@ -98,24 +88,6 @@ struct NutChuNhat {
 
 class GiaoDienConsole {
 public:
-#ifdef _WIN32
-    static HANDLE hOut;
-    static HANDLE hIn;
-#else
-    static struct termios origTermios;
-    static bool termInitialized;
-    static int pendingByte;
-#endif
-    static int lastMouseX;
-    static int lastMouseY;
-
-#ifndef _WIN32
-    static void khoiPhucConsole();
-
-    static void xuLyTinHieu(int);
-
-    static bool docByteCoThoiHan(unsigned char& c, int thoiGianChoMs);
-#endif
 
     static void khoiTaoConsole(const char* tieuDe = "QUAN LY diem SINH VIEN THEO HE TIN CHI");
 
@@ -133,21 +105,21 @@ public:
 
     static void toMauVung(int x, int y, int w, int h, int mauChu = XAM_NHAT, int mauNen = DEN, char ch = ' ');
 
-    static int doDaiUtf8(const string& str);
+    static int doDaiUtf8(const std::string& str);
 
-    static string catChuoiUtf8(const string& str, int soKyTuToiDa);
+    static std::string catChuoiUtf8(const std::string& str, int soKyTuToiDa);
 
-    static string canPhai(const string& str, int chieuRong);
+    static std::string canPhai(const std::string& str, int chieuRong);
 
-    static string canGiua(const string& str, int chieuRong);
+    static std::string canGiua(const std::string& str, int chieuRong);
 
-    static void veKhung(int x, int y, int w, int h, int mauChu = XANH_NGOC_NHAT, int mauNen = DEN, const string& tieuDe = "");
+    static void veKhung(int x, int y, int w, int h, int mauChu = XANH_NGOC_NHAT, int mauNen = DEN, const std::string& tieuDe = "");
 
     // Header gọn gàng (dòng 0, rộng 114 cột tại x=1)
-    static void veTieuDe(const string& tieuDePhu = "");
+    static void veTieuDe(const std::string& tieuDePhu = "");
 
     // Thanh trạng thái cố định ở dòng 26 & 27 (không bao giờ vượt quá dòng 27)
-    static void veThanhTrangThai(const string& goiY, const string& thongBao = "", bool coLoi = false);
+    static void veThanhTrangThai(const std::string& goiY, const std::string& thongBao = "", bool coLoi = false);
 
     static void veNut(const NutChuNhat& btn, bool dangHoatDong, int mauChuThuong = TRANG, int mauNenThuong = XAM_DAM, int mauChuChon = DEN, int mauNenChon = VANG);
 
@@ -155,15 +127,15 @@ public:
     static SuKienNhap docSuKien();
 
     // Hộp thoại xác nhận Yes/No: Chỉ vẽ khung 1 lần, chỉ vẽ lại nút khi đổi lựa chọn
-    static bool hopXacNhan(const string& tieuDe, const string& cauHoi, const string& chiTiet = "");
+    static bool hopXacNhan(const std::string& tieuDe, const std::string& cauHoi, const std::string& chiTiet = "");
 
-    static void hopThongBao(const string& tieuDe, const string& msg, bool coLoi = false);
+    static void hopThongBao(const std::string& tieuDe, const std::string& msg, bool coLoi = false);
 
-    static string catKhoangTrang(const string& s);
+    static std::string catKhoangTrang(const std::string& s);
 
-    static string vietHoa(const string& s);
+    static std::string vietHoa(const std::string& s);
 
-    static string vietHoaDauTu(const string& s);
+    static std::string vietHoaDauTu(const std::string& s);
 };
 
 enum KieuTruongNhap {
@@ -176,15 +148,15 @@ enum KieuTruongNhap {
 };
 
 struct TruongNhap {
-    string label;
-    string value;
+    std::string label;
+    std::string value;
     int maxLen;
     KieuTruongNhap mode;
     int x, y, w;
 };
 
 // Form nhập liệu KHÔNG NHẤP NHÁY: Chỉ vẽ khung 1 lần, chỉ vẽ lại đúng ô đang gõ hoặc khi chuyển ô
-bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string& thongBaoLoi, const string& nhanNutLuu = "[ LƯU (Enter) ]", const string& nhanNutHuy = "[ HỦY (ESC) ]");
+bool chayBieuMau(const std::string& tieuDe, TruongNhap* fields, int soTruong, std::string& thongBaoLoi, const std::string& nhanNutLuu = "[ LƯU (Enter) ]", const std::string& nhanNutHuy = "[ HỦY (ESC) ]", const std::string& nhanNutXoa = "", bool* daChonXoa = nullptr, const std::string& nhanNutF1 = "", bool* daNhanF1 = nullptr);
 
 
 #endif // CONSOLE_UI_H

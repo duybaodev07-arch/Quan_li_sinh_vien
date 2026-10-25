@@ -19,7 +19,7 @@ typedef NodeSV* PTRSV;
 
 SinhVien taoSinhVien(const std::string& maSV, const std::string& ho, const std::string& ten, const std::string& phai, const std::string& soDT);
 int soSanhTenSV(const SinhVien& sinhVienA, const SinhVien& sinhVienB);
-void themSVCoThuTu(PTRSV& dauDanhSach, const SinhVien& sinhVien);
-bool xoaSVTheoMa(PTRSV& dauDanhSach, const std::string& maSV);
-int demSVTrongLop(PTRSV dauDanhSach);
-void giaiPhongDSSV(PTRSV& dauDanhSach);
+void themSVCoThuTu(PTRSV& root, const SinhVien& sv);
+bool xoaSVTheoMa(PTRSV& root, const std::string& maSV);
+int demSVTrongLop(PTRSV root);
+void giaiPhongDSSV(PTRSV& root);
