@@ -205,7 +205,7 @@ void docTatCaDuLieu(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& da
         for (int i = 0; i < soMH; ++i) {
             if (!getline(tepMonHoc, dong) || dong.empty()) break;
             if (tachChuoi(dong, '|', cacMuc, 10) >= 4) {
-                MonHoc mh = taoMonHoc(cacMuc[0], cacMuc[1], atoi(cacMuc[2].c_str()), atoi(cacMuc[3].c_str()));
+                MonHoc mh = taoMonHoc(cacMuc[0].c_str(), cacMuc[1].c_str(), atoi(cacMuc[2].c_str()), atoi(cacMuc[3].c_str()));
                 themMonHoc(root, mh);
             }
         }
@@ -222,11 +222,11 @@ void docTatCaDuLieu(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& da
                 string tenLop = cacMuc[1];
                 int soSV = atoi(cacMuc[2].c_str());
                 int idx = danhSachLop.soLuong++;
-                danhSachLop.lop[idx] = taoLop(maLop, tenLop);
+                danhSachLop.lop[idx] = taoLop(maLop.c_str(), tenLop.c_str());
                 for (int j = 0; j < soSV; ++j) {
                     if (!getline(tepLop, dong) || dong.empty()) break;
                     if (tachChuoi(dong, '|', cacMuc, 10) >= 5) {
-                        SinhVien sv = taoSinhVien(cacMuc[0], cacMuc[1], cacMuc[2], cacMuc[3], cacMuc[4]);
+                        SinhVien sv = taoSinhVien(cacMuc[0].c_str(), cacMuc[1].c_str(), cacMuc[2].c_str(), cacMuc[3].c_str(), cacMuc[4].c_str());
                         themSVCoThuTu(danhSachLop.lop[idx].dssv, sv);
                     }
                 }
@@ -262,11 +262,11 @@ void docTatCaDuLieu(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& da
                             bool huy = (atoi(cacMuc[2].c_str()) != 0);
                             // Nối vào cuối DSLK
                             if (lopTinChi->dssvdk == nullptr) {
-                                lopTinChi->dssvdk = new NodeDK{taoDangKy(maSV, diem, huy), nullptr};
+                                lopTinChi->dssvdk = new NodeDK{taoDangKy(maSV.c_str(), diem, huy), nullptr};
                             } else {
                                 PTRDK p = lopTinChi->dssvdk;
                                 while (p->next != nullptr) p = p->next;
-                                p->next = new NodeDK{taoDangKy(maSV, diem, huy), nullptr};
+                                p->next = new NodeDK{taoDangKy(maSV.c_str(), diem, huy), nullptr};
                             }
                         }
                     }

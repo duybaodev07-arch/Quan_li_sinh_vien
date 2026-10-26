@@ -3,6 +3,7 @@
 #include "features/HamDungChung.h"
 
 #include "storage/DocGhiDuLieu.h"
+#include "model/SoSanhChuoi.h"
 
 
 #include <cstdlib>
@@ -1062,7 +1063,7 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
             thongBaoLoiSinhVien = "Mã sinh viên không được để trống!";
             continue;
         }
-        nutSinhVien = timSinhVienToanTruong(danhSachLop, maSV, &viTriLop);
+        nutSinhVien = timSinhVienToanTruong(danhSachLop, maSV.c_str(), &viTriLop);
         if (nutSinhVien == nullptr) {
             thongBaoLoiSinhVien = "Không tìm thấy sinh viên có mã '" + maSV + "'!";
             continue;
@@ -1102,7 +1103,7 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
         int soMucPhuHop = 0;
         for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) {
             if (!danhSachLopTinChi.lopTC[i]->huyLop &&
-                _stricmp(danhSachLopTinChi.lopTC[i]->nienKhoa, nienKhoa.c_str()) == 0 &&
+                soSanhKhongPhanBietHoaThuong(danhSachLopTinChi.lopTC[i]->nienKhoa, nienKhoa.c_str()) == 0 &&
                 danhSachLopTinChi.lopTC[i]->hocKy == hocKy) {
                 viTriLopTinChiDaLoc[soMucPhuHop++] = i;
             }
@@ -1305,7 +1306,7 @@ void chucNangH_HuyLopTinChi(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, Dan
         for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) {
             LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[i];
             if (!lopTinChi->huyLop &&
-                _stricmp(lopTinChi->nienKhoa, nienKhoa.c_str()) == 0 &&
+                soSanhKhongPhanBietHoaThuong(lopTinChi->nienKhoa, nienKhoa.c_str()) == 0 &&
                 lopTinChi->hocKy == hocKy) {
                 int soDangKy = demSVDangKyHieuLuc(lopTinChi->dssvdk);
                 if (soDangKy < lopTinChi->minSV) {

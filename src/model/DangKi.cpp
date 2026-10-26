@@ -2,9 +2,9 @@
 
 #include <cstring>
 
-DangKy taoDangKy(const std::string& maSV, float diem, bool huyDangKy) {
+DangKy taoDangKy(const char* maSV, float diem, bool huyDangKy) {
     DangKy dangKy{};
-    std::strncpy(dangKy.maSV, maSV.c_str(), MAX_MASV - 1);
+    std::strncpy(dangKy.maSV, maSV, MAX_MASV - 1);
     dangKy.diem = diem;
     dangKy.huyDangKy = huyDangKy;
     return dangKy;
@@ -31,9 +31,9 @@ bool themDangKy(PTRDK& dauDanhSach, const DangKy& dangKy) {
     return true;
 }
 
-NodeDK* timDangKy(PTRDK dauDanhSach, const std::string& maSV) {
+NodeDK* timDangKy(PTRDK dauDanhSach, const char* maSV) {
     for (NodeDK* nut = dauDanhSach; nut != nullptr; nut = nut->next) {
-        if (std::strcmp(nut->dk.maSV, maSV.c_str()) == 0) return nut;
+        if (std::strcmp(nut->dk.maSV, maSV) == 0) return nut;
     }
     return nullptr;
 }

@@ -2,25 +2,25 @@
 
 #include <cstring>
 
-Lop taoLop(const std::string& maLop, const std::string& tenLop) {
+Lop taoLop(const char* maLop, const char* tenLop) {
     Lop lop{};
-    std::strncpy(lop.maLop, maLop.c_str(), MAX_MALOP - 1);
-    std::strncpy(lop.tenLop, tenLop.c_str(), MAX_TENLOP - 1);
+    std::strncpy(lop.maLop, maLop, MAX_MALOP - 1);
+    std::strncpy(lop.tenLop, tenLop, MAX_TENLOP - 1);
     lop.dssv = nullptr;
     return lop;
 }
 
-int timLop(const DanhSachLop& danhSachLop, const std::string& maLop) {
+int timLop(const DanhSachLop& danhSachLop, const char* maLop) {
     for (int i = 0; i < danhSachLop.soLuong; ++i) {
-        if (std::strcmp(danhSachLop.lop[i].maLop, maLop.c_str()) == 0) return i;
+        if (std::strcmp(danhSachLop.lop[i].maLop, maLop) == 0) return i;
     }
     return -1;
 }
 
-NodeSV* timSinhVienToanTruong(const DanhSachLop& danhSachLop, const std::string& maSV, int* viTriLopTraVe) {
+NodeSV* timSinhVienToanTruong(const DanhSachLop& danhSachLop, const char* maSV, int* viTriLopTraVe) {
     for (int i = 0; i < danhSachLop.soLuong; ++i) {
         for (NodeSV* nut = danhSachLop.lop[i].dssv; nut != nullptr; nut = nut->next) {
-            if (std::strcmp(nut->sv.maSV, maSV.c_str()) == 0) {
+            if (std::strcmp(nut->sv.maSV, maSV) == 0) {
                 if (viTriLopTraVe != nullptr) *viTriLopTraVe = i;
                 return nut;
             }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "model/DangKi.h"
 #include "model/Lop.h"
 #include "model/MonHoc.h"
@@ -26,6 +25,6 @@ struct DanhSachLopTinChi {
 int timLopTinChiTheoThamSo(const DanhSachLopTinChi& danhSachLopTinChi, const char* nienKhoa, int hocKy, const char* maMH, int nhom);
 int timLopTinChiTheoMa(const DanhSachLopTinChi& danhSachLopTinChi, int maLopTC);
 bool kiemTraMonHocDaMoLop(const DanhSachLopTinChi& danhSachLopTinChi, const char* maMH);
-bool kiemTraSVDaDangKyLTC(const DanhSachLopTinChi& danhSachLopTinChi, const std::string& maSV);
+bool kiemTraSVDaDangKyLTC(const DanhSachLopTinChi& danhSachLopTinChi, const char* maSV);
 int layMaLopTCKeTiep(const DanhSachLopTinChi& danhSachLopTinChi);
 void giaiPhongDanhSachLopTinChi(DanhSachLopTinChi& danhSachLopTinChi);

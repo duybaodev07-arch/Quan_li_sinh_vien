@@ -1,12 +1,13 @@
 #include "model/LopTinChi.h"
+#include "model/SoSanhChuoi.h"
 
 #include <cstring>
 
 int timLopTinChiTheoThamSo(const DanhSachLopTinChi& danhSachLopTinChi, const char* nienKhoa, int hocKy, const char* maMH, int nhom) {
     for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) {
         const LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[i];
-        if (_stricmp(lopTinChi->nienKhoa, nienKhoa) == 0 && lopTinChi->hocKy == hocKy &&
-            _stricmp(lopTinChi->maMH, maMH) == 0 && lopTinChi->nhom == nhom) return i;
+        if (soSanhKhongPhanBietHoaThuong(lopTinChi->nienKhoa, nienKhoa) == 0 && lopTinChi->hocKy == hocKy &&
+            soSanhKhongPhanBietHoaThuong(lopTinChi->maMH, maMH) == 0 && lopTinChi->nhom == nhom) return i;
     }
     return -1;
 }
@@ -25,7 +26,7 @@ bool kiemTraMonHocDaMoLop(const DanhSachLopTinChi& danhSachLopTinChi, const char
     return false;
 }
 
-bool kiemTraSVDaDangKyLTC(const DanhSachLopTinChi& danhSachLopTinChi, const std::string& maSV) {
+bool kiemTraSVDaDangKyLTC(const DanhSachLopTinChi& danhSachLopTinChi, const char* maSV) {
     for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) {
         if (timDangKy(danhSachLopTinChi.lopTC[i]->dssvdk, maSV) != nullptr) return true;
     }

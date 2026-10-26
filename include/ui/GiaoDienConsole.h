@@ -1,14 +1,6 @@
 #ifndef CONSOLE_UI_H
 #define CONSOLE_UI_H
 
-#ifndef _WIN32
-#include <strings.h>
-
-inline int _stricmp(const char* a, const char* b) {
-    return strcasecmp(a, b);
-}
-#endif
-
 #include <iostream>
 #include <string>
 #include <cstring>

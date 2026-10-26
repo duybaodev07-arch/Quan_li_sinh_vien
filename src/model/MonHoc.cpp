@@ -1,11 +1,12 @@
 #include "model/MonHoc.h"
+#include "model/SoSanhChuoi.h"
 
 #include <cstring>
 
-MonHoc taoMonHoc(const std::string& maMH, const std::string& tenMH, int soTCLT, int soTCTH) {
+MonHoc taoMonHoc(const char* maMH, const char* tenMH, int soTCLT, int soTCTH) {
     MonHoc monHoc{};
-    std::strncpy(monHoc.maMH, maMH.c_str(), MAX_MAMH - 1);
-    std::strncpy(monHoc.tenMH, tenMH.c_str(), MAX_TENMH - 1);
+    std::strncpy(monHoc.maMH, maMH, MAX_MAMH - 1);
+    std::strncpy(monHoc.tenMH, tenMH, MAX_TENMH - 1);
     monHoc.soTCLT = soTCLT;
     monHoc.soTCTH = soTCTH;
     return monHoc;
@@ -69,7 +70,7 @@ void bstSangMang(PTRMH root, MonHoc* mangMonHoc, int& viTri) {
 void sapXepMonHocTheoTen(MonHoc* mangMonHoc, int soLuong) {
     for (int i = 0; i < soLuong - 1; ++i) {
         for (int j = i + 1; j < soLuong; ++j) {
-            int ketQua = _stricmp(mangMonHoc[i].tenMH, mangMonHoc[j].tenMH);
+            int ketQua = soSanhKhongPhanBietHoaThuong(mangMonHoc[i].tenMH, mangMonHoc[j].tenMH);
             if (ketQua > 0 || (ketQua == 0 && std::strcmp(mangMonHoc[i].maMH, mangMonHoc[j].maMH) > 0)) {
                 MonHoc monHocTam = mangMonHoc[i];
                 mangMonHoc[i] = mangMonHoc[j];

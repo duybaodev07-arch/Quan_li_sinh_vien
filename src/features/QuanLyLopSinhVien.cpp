@@ -3,6 +3,7 @@
 #include "features/HamDungChung.h"
 
 #include "storage/DocGhiDuLieu.h"
+#include "model/SoSanhChuoi.h"
 
 
 #include <cstdlib>
@@ -18,7 +19,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
         string maLop = chonLopNhanh(danhSachLop, true);
         if (maLop.empty()) break;
 
-        int viTriLop = timLop(danhSachLop, maLop);
+        int viTriLop = timLop(danhSachLop, maLop.c_str());
         if (viTriLop == -1) continue;
         Lop& lop = danhSachLop.lop[viTriLop];
 
@@ -298,7 +299,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
                             thongBaoLoi = "Họ và Tên sinh viên không được để trống!";
                             continue;
                         }
-                        if (_stricmp(phai.c_str(), "Nam") != 0 && _stricmp(phai.c_str(), "Nu") != 0 && _stricmp(phai.c_str(), "Nữ") != 0) {
+                        if (soSanhKhongPhanBietHoaThuong(phai.c_str(), "Nam") != 0 && soSanhKhongPhanBietHoaThuong(phai.c_str(), "Nu") != 0 && soSanhKhongPhanBietHoaThuong(phai.c_str(), "Nữ") != 0) {
                             thongBaoLoi = "Phái chỉ nhận giá trị 'Nam' hoặc 'Nu'!";
                             continue;
                         }
@@ -307,12 +308,12 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
                             continue;
                         }
                         int viTriLopDaCo = -1;
-                        if (timSinhVienToanTruong(danhSachLop, maSV, &viTriLopDaCo) != nullptr) {
+                        if (timSinhVienToanTruong(danhSachLop, maSV.c_str(), &viTriLopDaCo) != nullptr) {
                             thongBaoLoi = "Mã SV '" + maSV + "' đã tồn tại ở lớp " + danhSachLop.lop[viTriLopDaCo].maLop + "!";
                             continue;
                         }
 
-                        themSVCoThuTu(lop.dssv, taoSinhVien(maSV, ho, ten, phai, sdt));
+                        themSVCoThuTu(lop.dssv, taoSinhVien(maSV.c_str(), ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str()));
                         soLuongDaThem++;
                         luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
                         break;
@@ -383,7 +384,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
                         thongBaoLoi = "Họ và Tên sinh viên không được để trống!";
                         continue;
                     }
-                    if (_stricmp(phai.c_str(), "Nam") != 0 && _stricmp(phai.c_str(), "Nu") != 0 && _stricmp(phai.c_str(), "Nữ") != 0) {
+                    if (soSanhKhongPhanBietHoaThuong(phai.c_str(), "Nam") != 0 && soSanhKhongPhanBietHoaThuong(phai.c_str(), "Nu") != 0 && soSanhKhongPhanBietHoaThuong(phai.c_str(), "Nữ") != 0) {
                         thongBaoLoi = "Phái chỉ nhận giá trị 'Nam' hoặc 'Nu'!";
                         continue;
                     }
@@ -393,7 +394,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
                     }
 
                     xoaSVTheoMa(lop.dssv, sinhVienCu.maSV);
-                    themSVCoThuTu(lop.dssv, taoSinhVien(sinhVienCu.maSV, ho, ten, phai, sdt));
+                    themSVCoThuTu(lop.dssv, taoSinhVien(sinhVienCu.maSV, ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str()));
                     luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
                     thongBao = string("Đã hiệu chỉnh sinh viên ") + sinhVienCu.maSV + " và sắp xếp lại theo Tên!";
                     coLoi = false;
@@ -419,7 +420,7 @@ void chucNangD_InDSSVTheoMaSV(DanhSachLop& danhSachLop) {
         string maLop = chonLopNhanh(danhSachLop, false);
         if (maLop.empty()) break;
 
-        int viTriLop = timLop(danhSachLop, maLop);
+        int viTriLop = timLop(danhSachLop, maLop.c_str());
         if (viTriLop == -1) continue;
         Lop& lop = danhSachLop.lop[viTriLop];
 
@@ -432,7 +433,7 @@ void chucNangD_InDSSVTheoMaSV(DanhSachLop& danhSachLop) {
 
         for (int i = 0; i < soSinhVien - 1; ++i) {
             for (int j = i + 1; j < soSinhVien; ++j) {
-                if (_stricmp(danhSachSinhVien[i].maSV, danhSachSinhVien[j].maSV) > 0) {
+                if (soSanhKhongPhanBietHoaThuong(danhSachSinhVien[i].maSV, danhSachSinhVien[j].maSV) > 0) {
                     SinhVien sinhVienTam = danhSachSinhVien[i];
                     danhSachSinhVien[i] = danhSachSinhVien[j];
                     danhSachSinhVien[j] = sinhVienTam;

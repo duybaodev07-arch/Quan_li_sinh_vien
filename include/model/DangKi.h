@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "model/HangSo.h"
 
 struct DangKy {
@@ -15,9 +14,9 @@ struct NodeDK {
 };
 typedef NodeDK* PTRDK;
 
-DangKy taoDangKy(const std::string& maSV, float diem = -1.0f, bool huyDangKy = false);
+DangKy taoDangKy(const char* maSV, float diem = -1.0f, bool huyDangKy = false);
 bool themDangKy(PTRDK& dauDanhSach, const DangKy& dangKy);
-NodeDK* timDangKy(PTRDK dauDanhSach, const std::string& maSV);
+NodeDK* timDangKy(PTRDK dauDanhSach, const char* maSV);
 int demSVDangKyHieuLuc(PTRDK dauDanhSach);
 int demTongDangKy(PTRDK dauDanhSach);
 void giaiPhongDSDK(PTRDK& dauDanhSach);

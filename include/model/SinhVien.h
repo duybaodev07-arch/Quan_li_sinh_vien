@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "model/HangSo.h"
 
 struct SinhVien {
@@ -17,9 +16,9 @@ struct NodeSV {
 };
 typedef NodeSV* PTRSV;
 
-SinhVien taoSinhVien(const std::string& maSV, const std::string& ho, const std::string& ten, const std::string& phai, const std::string& soDT);
+SinhVien taoSinhVien(const char* maSV, const char* ho, const char* ten, const char* phai, const char* soDT);
 int soSanhTenSV(const SinhVien& sinhVienA, const SinhVien& sinhVienB);
 void themSVCoThuTu(PTRSV& root, const SinhVien& sv);
-bool xoaSVTheoMa(PTRSV& root, const std::string& maSV);
+bool xoaSVTheoMa(PTRSV& root, const char* maSV);
 int demSVTrongLop(PTRSV root);
 void giaiPhongDSSV(PTRSV& root);

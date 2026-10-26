@@ -374,7 +374,7 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DanhSachLop& danhSachLop,
         string maLop = chonLopNhanh(danhSachLop, false);
         if (maLop.empty()) break;
 
-        int viTriLop = timLop(danhSachLop, maLop);
+        int viTriLop = timLop(danhSachLop, maLop.c_str());
         if (viTriLop == -1) continue;
         Lop& lop = danhSachLop.lop[viTriLop];
 
@@ -515,7 +515,7 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
         string maLop = chonLopNhanh(danhSachLop, false);
         if (maLop.empty()) break;
 
-        int viTriLop = timLop(danhSachLop, maLop);
+        int viTriLop = timLop(danhSachLop, maLop.c_str());
         if (viTriLop == -1) continue;
         Lop& lop = danhSachLop.lop[viTriLop];
 

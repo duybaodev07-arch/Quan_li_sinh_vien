@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "model/HangSo.h"
 
 struct MonHoc {
@@ -27,12 +26,12 @@ enum class KetQuaDocMonHoc {
     LoiDocFile
 };
 
-MonHoc taoMonHoc(const std::string& maMH, const std::string& tenMH, int soTCLT, int soTCTH);
-NodeMH* timMonHoc(PTRMH cayMonHoc, const char* maMH);
-bool themMonHoc(PTRMH& cayMonHoc, const MonHoc& monHoc);
+MonHoc taoMonHoc(const char* maMH, const char* tenMH, int soTCLT, int soTCTH);
+NodeMH* timMonHoc(PTRMH root, const char* maMH);
+bool themMonHoc(PTRMH& root, const MonHoc& monHoc);
 void timNutTheMang(PTRMH& nutCanXoa, PTRMH& nutThayThe);
-bool xoaMonHoc(PTRMH& cayMonHoc, const char* maMH);
-int demMonHoc(PTRMH cayMonHoc);
-void bstSangMang(PTRMH cayMonHoc, MonHoc* mangMonHoc, int& viTri);
+bool xoaMonHoc(PTRMH& root, const char* maMH);
+int demMonHoc(PTRMH root);
+void bstSangMang(PTRMH root, MonHoc* mangMonHoc, int& viTri);
 void sapXepMonHocTheoTen(MonHoc* mangMonHoc, int soLuong);
-void giaiPhongBST(PTRMH& cayMonHoc);
+void giaiPhongBST(PTRMH& root);

@@ -493,11 +493,11 @@ string chonLopNhanh(DanhSachLop& danhSachLop, bool choPhepTaoMoi) {
                     thongBaoLoi = "Vui lòng nhập đầy đủ Mã Lớp và Tên Lớp!";
                     continue;
                 }
-                if (timLop(danhSachLop, ma) != -1) {
+                if (timLop(danhSachLop, ma.c_str()) != -1) {
                     thongBaoLoi = "Mã lớp '" + ma + "' đã tồn tại!";
                     continue;
                 }
-                danhSachLop.lop[danhSachLop.soLuong++] = taoLop(ma, ten);
+                danhSachLop.lop[danhSachLop.soLuong++] = taoLop(ma.c_str(), ten.c_str());
                 mucDangChon = danhSachLop.soLuong - 1;
                 break;
             }
