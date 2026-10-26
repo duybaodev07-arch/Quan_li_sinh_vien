@@ -12,7 +12,7 @@ using namespace std;
 
 void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
     // Khởi tạo Menu chính bằng MẢNG ĐỘNG
-    const int SO_MUC_MENU = 14;
+    const int SO_MUC_MENU = 13;
     string* tieuDeMucMenu = new string[SO_MUC_MENU];
 
     tieuDeMucMenu[0]  = "a. Mở lớp tín chỉ (Thêm / Xóa / Hiệu chỉnh)";
@@ -27,10 +27,9 @@ void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& dan
     tieuDeMucMenu[9]  = "j. In bảng điểm môn học của 1 lớp tín chỉ";
     tieuDeMucMenu[10] = "k. In điểm TB kết thúc khóa học theo tín chỉ";
     tieuDeMucMenu[11] = "l. In bảng điểm tổng kết các môn của 1 lớp";
-    tieuDeMucMenu[12] = "s. Lưu toàn bộ danh sách vào File";
-    tieuDeMucMenu[13] = "0. Lưu dữ liệu và Thoát chương trình";
+    tieuDeMucMenu[12] = "0. Lưu dữ liệu và Thoát chương trình";
 
-    // Mảng động các vùng nút bấm của Menu chính (Mỗi mục cao 1 dòng từ y=5 đến y=18)
+    // Mảng động các vùng nút bấm của Menu chính (Mỗi mục cao 1 dòng từ y=5 đến y=17)
     NutChuNhat* vungNutMenu = new NutChuNhat[SO_MUC_MENU];
     for (int i = 0; i < SO_MUC_MENU; ++i) {
         vungNutMenu[i] = { 3, 5 + i, 58, 1, i, tieuDeMucMenu[i] };
@@ -104,19 +103,16 @@ void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& dan
             } else if (suKien.type == SK_PHIM_ENTER) {
                 luaChonKichHoat = mucDangChon;
             } else if (suKien.type == SK_PHIM_ESC) {
-                luaChonKichHoat = 13;
+                luaChonKichHoat = 12;
             } else if (suKien.type == SK_KY_TU) {
                 char c = suKien.ch;
                 if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';
                 if (c >= 'a' && c <= 'l') {
                     mucDangChon = c - 'a';
                     luaChonKichHoat = mucDangChon;
-                } else if (c == 's') {
+                } else if (c == '0') {
                     mucDangChon = 12;
                     luaChonKichHoat = 12;
-                } else if (c == '0') {
-                    mucDangChon = 13;
-                    luaChonKichHoat = 13;
                 }
             } else if (suKien.type == SK_CHUOT_DI_CHUYEN) {
                 for (int i = 0; i < SO_MUC_MENU; ++i) {
@@ -150,13 +146,6 @@ void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& dan
                     case 10: chucNangK_InDiemTrungBinhKhoaHoc(cayMonHoc, danhSachLop, danhSachLopTinChi); break;
                     case 11: chucNangL_BangDiemTongKetLop(cayMonHoc, danhSachLop, danhSachLopTinChi); break;
                     case 12:
-                        if (luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi)) {
-                            GiaoDienConsole::hopThongBao("LƯU DỮ LIỆU THÀNH CÔNG", "Đã lưu toàn bộ các danh sách vào file thành công!");
-                        } else {
-                            GiaoDienConsole::hopThongBao("LỖI LƯU FILE", "Không thể ghi dữ liệu ra file!", true);
-                        }
-                        break;
-                    case 13:
                         if (GiaoDienConsole::hopXacNhan("XÁC NHẬN THOÁT CHƯƠNG TRÌNH",
                                                      "Bạn có muốn lưu toàn bộ dữ liệu và thoát chương trình không?")) {
                             luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);

@@ -390,7 +390,6 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
 
         SuKienNhap suKien = GiaoDienConsole::docSuKien();
         if (suKien.type == SK_PHIM_ESC) {
-            GiaoDienConsole::hienConTro(false);
             return false;
         } else if (suKien.type == SK_PHIM_LEN) {
             int viTriTiepTheo = viTriTruongDangChon;
@@ -411,25 +410,19 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
             viTriTruongDangChon = soTruong + viTriNut;
         } else if (coNutF1 && suKien.type == EVT_KEY_F1) {
             *daNhanF1 = true;
-            GiaoDienConsole::hienConTro(false);
             return false;
         } else if (suKien.type == EVT_KEY_F2) {
-            GiaoDienConsole::hienConTro(false);
             return true;
         } else if (suKien.type == SK_PHIM_ENTER) {
             if (viTriTruongDangChon == viTriNutHuy) {
-                GiaoDienConsole::hienConTro(false);
                 return false;
             } else if (coNutXoa && viTriTruongDangChon == viTriNutXoa) {
                 *daChonXoa = true;
-                GiaoDienConsole::hienConTro(false);
                 return false;
             } else if (coNutF1 && viTriTruongDangChon == viTriNutF1) {
                 *daNhanF1 = true;
-                GiaoDienConsole::hienConTro(false);
                 return false;
             } else if (viTriTruongDangChon == viTriNutLuu) {
-                GiaoDienConsole::hienConTro(false);
                 return true;
             } else {
                 int nextIdx = viTriTruongDangChon + 1;
@@ -437,7 +430,6 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
                 if (nextIdx < soTruong) {
                     viTriTruongDangChon = nextIdx;
                 } else {
-                    GiaoDienConsole::hienConTro(false);
                     return true;
                 }
             }

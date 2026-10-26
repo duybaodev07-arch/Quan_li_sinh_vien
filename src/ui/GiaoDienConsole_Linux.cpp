@@ -224,6 +224,7 @@ SuKienNhap GiaoDienConsole::docSuKien() {
                         if (byteCuoi == 'B') { suKien.type = SK_PHIM_XUONG; return suKien; }
                         if (byteCuoi == 'C') { suKien.type = SK_PHIM_PHAI; return suKien; }
                         if (byteCuoi == 'D') { suKien.type = SK_PHIM_TRAI; return suKien; }
+                        if (byteCuoi == 'Z') { suKien.type = SK_PHIM_SHIFT_TAB; return suKien; }
                         if (byteCuoi == 'H') { suKien.type = EVT_KEY_HOME; return suKien; }
                         if (byteCuoi == 'F') { suKien.type = EVT_KEY_END; return suKien; }
                         if (byteCuoi == 'P') { suKien.type = EVT_KEY_F1; return suKien; }

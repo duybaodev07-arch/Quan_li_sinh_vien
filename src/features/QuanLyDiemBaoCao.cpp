@@ -61,6 +61,7 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
         int trangTruoc = -1;
         bool canVeLaiToanBo = true;
         bool oDiemDaSua = false;
+        bool coThayDoiChuaLuu = false;
         string thongBao = "";
         bool coLoi = false;
 
@@ -192,7 +193,12 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
             };
 
             if (suKien.type == SK_PHIM_ESC || nutDuocBam == 1) {
-                break;
+                if (!coThayDoiChuaLuu || GiaoDienConsole::hopXacNhan(
+                        "THOÁT KHÔNG LƯU", "Bạn có muốn thoát và bỏ các điểm chưa lưu?",
+                        "Các thay đổi từ lần lưu gần nhất sẽ bị mất.")) {
+                    break;
+                }
+                canVeLaiToanBo = true;
             } else if (suKien.type == SK_PHIM_LEN || suKien.type == SK_CON_LAN_LEN) {
                 if (kiemTraDiemHienTai()) {
                     dongDangChon = (dongDangChon - 1 + count) % count;
@@ -205,10 +211,12 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
                 if (!cacBanGhiDiem[dongDangChon].chuoiDiem.empty()) {
                     cacBanGhiDiem[dongDangChon].chuoiDiem.pop_back();
                     oDiemDaSua = true;
+                    coThayDoiChuaLuu = true;
                 }
             } else if (suKien.type == EVT_KEY_DELETE) {
                 cacBanGhiDiem[dongDangChon].chuoiDiem = "";
                 oDiemDaSua = true;
+                coThayDoiChuaLuu = true;
             } else if (suKien.type == SK_KY_TU) {
                 char c = suKien.ch;
                 string& s = cacBanGhiDiem[dongDangChon].chuoiDiem;
@@ -216,10 +224,12 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
                     if (c >= '0' && c <= '9') {
                         s += c;
                         oDiemDaSua = true;
+                        coThayDoiChuaLuu = true;
                     } else if ((c == '.' || c == ',') && s.find('.') == string::npos) {
                         if (s.empty()) s = "0.";
                         else s += '.';
                         oDiemDaSua = true;
+                        coThayDoiChuaLuu = true;
                     }
                 }
             } else if (suKien.type == EVT_KEY_F2 || nutDuocBam == 0) {
@@ -250,7 +260,10 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
                     }
                     luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
                     GiaoDienConsole::hopThongBao("THÀNH CÔNG", "Đã lưu bảng điểm lớp tín chỉ thành công!");
-                    break;
+                    coThayDoiChuaLuu = false;
+                    thongBao.clear();
+                    coLoi = false;
+                    canVeLaiToanBo = true;
                 }
             }
         }
@@ -371,7 +384,7 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DanhSachLop& danhSachLop,
     bstSangMang(cayMonHoc, mangMonHoc, idxMH);
 
     while (true) {
-        string maLop = chonLopNhanh(danhSachLop, false);
+        string maLop = chonLopNhanh(danhSachLop, false, true);
         if (maLop.empty()) break;
 
         int viTriLop = timLop(danhSachLop, maLop.c_str());
@@ -512,7 +525,7 @@ void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
     bstSangMang(cayMonHoc, mangMonHoc, idxMH);
 
     while (true) {
-        string maLop = chonLopNhanh(danhSachLop, false);
+        string maLop = chonLopNhanh(danhSachLop, false, true);
         if (maLop.empty()) break;
 
         int viTriLop = timLop(danhSachLop, maLop.c_str());

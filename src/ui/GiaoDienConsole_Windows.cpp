@@ -88,7 +88,7 @@ SuKienNhap GiaoDienConsole::docSuKien() {
                     case VK_RIGHT:  suKien.type = SK_PHIM_PHAI; return suKien;
                     case VK_RETURN: suKien.type = SK_PHIM_ENTER; return suKien;
                     case VK_ESCAPE: suKien.type = SK_PHIM_ESC; return suKien;
-                    case VK_TAB:    suKien.type = SK_PHIM_TAB; return suKien;
+                    case VK_TAB:    suKien.type = (ir.Event.KeyEvent.dwControlKeyState & SHIFT_PRESSED) ? SK_PHIM_SHIFT_TAB : SK_PHIM_TAB; return suKien;
                     case VK_BACK:   suKien.type = EVT_KEY_BACKSPACE; return suKien;
                     case VK_DELETE: suKien.type = EVT_KEY_DELETE; return suKien;
                     case VK_INSERT: suKien.type = EVT_KEY_INSERT; return suKien;

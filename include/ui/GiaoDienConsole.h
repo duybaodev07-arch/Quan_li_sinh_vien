@@ -41,6 +41,7 @@ enum LoaiSuKienNhap {
     SK_PHIM_ENTER,
     SK_PHIM_ESC,
     SK_PHIM_TAB,
+    SK_PHIM_SHIFT_TAB,
     EVT_KEY_BACKSPACE,
     EVT_KEY_DELETE,
     EVT_KEY_INSERT,
@@ -86,6 +87,8 @@ public:
     static void batNhapChuot();
 
     static void hienConTro(bool dangHien);
+
+    // Tạm lưu màn hình nền khi mở form và phục hồi nguyên trạng khi đóng form.
 
     static void diDenToaDo(int x, int y);
 

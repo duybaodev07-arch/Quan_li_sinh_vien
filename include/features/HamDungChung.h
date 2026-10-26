@@ -6,6 +6,6 @@
 #include "model/LopTinChi.h"
 
 std::string dinhDangDiem(float diem, bool deTrongNeuChuaCo = false);
-std::string chonLopNhanh(DanhSachLop& danhSachLop, bool choPhepTaoMoi = false);
+std::string chonLopNhanh(DanhSachLop& danhSachLop, bool choPhepTaoMoi = false, bool cachBoLocVoiTieuDe = false);
 std::string chonMonHocNhanh(PTRMH cayMonHoc);
-int chonLopTinChiTheoThongTin(PTRMH cayMonHoc, const DanhSachLopTinChi& danhSachLopTinChi, const std::string& tieuDeManHinh);
+int chonLopTinChiTheoThongTin(PTRMH cayMonHoc, const DanhSachLopTinChi& danhSachLopTinChi, const std::string& tieuDeManHinh, bool chiHienLopDuoiSiSoToiThieu = false);
