@@ -21,19 +21,19 @@ string dinhDangDiem(float diem, bool deTrongNeuChuaCo) {
         s.pop_back();
     }
     if (!s.empty() && s.back() == '.') s.pop_back();
-    return s;
+    return s;   
 }
 
 // ============================================================================
 // HỘP THOẠI CHỌN MÔN HỌC, TÌM NHÚNG THEO MÃ HOẶC TÊN
 // ============================================================================
-string chonMonHocNhanh(PTRMH cayMonHoc) {
-    int soMonHoc = demMonHoc(cayMonHoc);
+string chonMonHocNhanh(PTRMH root) {
+    int soMonHoc = demMonHoc(root);
     if (soMonHoc <= 0) return "";
 
     MonHoc* cacMonHoc = new MonHoc[soMonHoc];
     int viTriGhi = 0;
-    bstSangMang(cayMonHoc, cacMonHoc, viTriGhi);
+    bstSangMang(root, cacMonHoc, viTriGhi);
     int* cacMonHocLoc = new int[soMonHoc];
     string tuKhoa;
     size_t viTriConTro = 0;
@@ -545,7 +545,7 @@ string chonLopNhanh(DanhSachLop& danhSachLop, bool choPhepTaoMoi, bool cachBoLoc
 // ============================================================================
 // TRA CỨU VÀ CHỌN LỚP TÍN CHỈ TRỰC TIẾP TRÊN BẢNG
 // ============================================================================
-int chonLopTinChiTheoThongTin(PTRMH cayMonHoc, const DanhSachLopTinChi& danhSachLopTinChi, const string& tieuDeManHinh, bool chiHienLopDuoiSiSoToiThieu) {
+int chonLopTinChiTheoThongTin(PTRMH root, const DanhSachLopTinChi& danhSachLopTinChi, const string& tieuDeManHinh, bool chiHienLopDuoiSiSoToiThieu) {
     string tuKhoaNienKhoa;
     string tuKhoaHocKy;
     string tuKhoaMaMonHoc;
@@ -587,7 +587,7 @@ int chonLopTinChiTheoThongTin(PTRMH cayMonHoc, const DanhSachLopTinChi& danhSach
                 if (GiaoDienConsole::vietHoa(lopTinChi->maMH).find(maMonHocCanTim) == string::npos) continue;
             }
             if (!tenMonHocCanTim.empty()) {
-                NodeMH* monHoc = timMonHoc(cayMonHoc, lopTinChi->maMH);
+                NodeMH* monHoc = timMonHoc(root, lopTinChi->maMH);
                 string tenMonHoc = monHoc ? GiaoDienConsole::vietHoa(monHoc->mh.tenMH) : string();
                 if (tenMonHoc.find(tenMonHocCanTim) == string::npos) continue;
             }
@@ -635,7 +635,7 @@ int chonLopTinChiTheoThongTin(PTRMH cayMonHoc, const DanhSachLopTinChi& danhSach
         if (viTriLoc >= 0 && viTriLoc < soViTriLopTinChi) {
             int viTriThat = cacViTriLopTinChi[viTriLoc];
             LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriThat];
-            NodeMH* monHoc = timMonHoc(cayMonHoc, lopTinChi->maMH);
+            NodeMH* monHoc = timMonHoc(root, lopTinChi->maMH);
             string tenMonHoc = monHoc ? monHoc->mh.tenMH : "(Không rõ)";
             int soSinhVienDangKy = demSVDangKyHieuLuc(lopTinChi->dssvdk);
             GiaoDienConsole::datMau(dangDuocChon ? DEN : (lopTinChi->huyLop ? DO_NHAT : TRANG), dangDuocChon ? VANG : DEN);

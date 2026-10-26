@@ -32,13 +32,14 @@ bool themMonHoc(PTRMH& root, const MonHoc& monHoc) {
     return ketQua < 0 ? themMonHoc(root->left, monHoc) : themMonHoc(root->right, monHoc);
 }
 
-void timNutTheMang(PTRMH& nutCanXoa, PTRMH& nutThayThe) {
+void timNutThayThe(PTRMH& nutCanXoa, PTRMH& nutThayThe) {
+    // tìm min right
     if (nutThayThe->left != nullptr) {
-        timNutTheMang(nutCanXoa, nutThayThe->left);
+        timNutThayThe(nutCanXoa, nutThayThe->left);
     } else {
         nutCanXoa->mh = nutThayThe->mh;
         nutCanXoa = nutThayThe;
-        nutThayThe = nutThayThe->right;
+        nutThayThe = nutThayThe->right; // liên kết con phải 
     }
 }
 
@@ -50,7 +51,7 @@ bool xoaMonHoc(PTRMH& root, const char* maMH) {
     NodeMH* nutXoa = root;
     if (root->left == nullptr) root = root->right;
     else if (root->right == nullptr) root = root->left;
-    else timNutTheMang(nutXoa, root->right);
+    else timNutThayThe(nutXoa, root->right);
     delete nutXoa;
     return true;
 }

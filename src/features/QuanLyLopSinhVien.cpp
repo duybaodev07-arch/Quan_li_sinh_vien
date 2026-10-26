@@ -14,7 +14,7 @@
 
 using namespace std;
 
-void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
+void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
     while (true) {
         string maLop = chonLopNhanh(danhSachLop, true);
         if (maLop.empty()) break;
@@ -286,7 +286,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
 
             if (suKien.type == SK_PHIM_ESC || hanhDong == 3) {
                 if (mangSinhVien) delete[] mangSinhVien;
-                luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                 break;
             } else if (suKien.type == SK_PHIM_LEN || suKien.type == SK_CON_LAN_LEN) {
                 if (soSinhVien > 0) mucDangChon = (mucDangChon - 1 + soSinhVien) % soSinhVien;
@@ -340,7 +340,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
 
                         themSVCoThuTu(lop.dssv, taoSinhVien(maSV.c_str(), ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str()));
                         soLuongDaThem++;
-                        luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                        luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                         break;
                     }
                     delete[] f;
@@ -402,7 +402,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
                             }
                             if (GiaoDienConsole::hopXacNhan("XÁC NHẬN XÓA SINH VIÊN", "Xóa sinh viên " + string(sinhVienCu.maSV) + " khỏi lớp " + lop.maLop + "?")) {
                                 xoaSVTheoMa(lop.dssv, sinhVienCu.maSV);
-                                luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                                luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                                 thongBao = "Đã xóa sinh viên " + string(sinhVienCu.maSV) + " thành công!";
                                 coLoi = false;
                             }
@@ -431,7 +431,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, con
 
                     xoaSVTheoMa(lop.dssv, sinhVienCu.maSV);
                     themSVCoThuTu(lop.dssv, taoSinhVien(sinhVienCu.maSV, ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str()));
-                    luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                    luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                     thongBao = string("Đã hiệu chỉnh sinh viên ") + sinhVienCu.maSV + " và sắp xếp lại theo Tên!";
                     coLoi = false;
                     break;

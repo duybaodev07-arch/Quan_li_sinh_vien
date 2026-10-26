@@ -13,9 +13,9 @@
 using namespace std;
 
 // ============================================================================
-void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
+void chucNangI_NhapDiem(PTRMH root, const DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
     while (true) {
-        int viTriLopTinChi = chonLopTinChiTheoThongTin(cayMonHoc, danhSachLopTinChi, "CHỨC NĂNG (i): NHẬP ĐIỂM LỚP TÍN CHỈ");
+        int viTriLopTinChi = chonLopTinChiTheoThongTin(root, danhSachLopTinChi, "CHỨC NĂNG (i): NHẬP ĐIỂM LỚP TÍN CHỈ");
         if (viTriLopTinChi == -1) break;
 
         LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
@@ -24,7 +24,7 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
             continue;
         }
 
-        NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->maMH);
+        NodeMH* mh = timMonHoc(root, lopTinChi->maMH);
         string tenMonHoc = mh ? mh->mh.tenMH : lopTinChi->maMH;
 
         int soDangKyHieuLuc = demSVDangKyHieuLuc(lopTinChi->dssvdk);
@@ -258,7 +258,7 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
                             cacBanGhiDiem[i].nutDangKy->dk.diem = roundf(v * 100.0f) / 100.0f;
                         }
                     }
-                    luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                    luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                     GiaoDienConsole::hopThongBao("THÀNH CÔNG", "Đã lưu bảng điểm lớp tín chỉ thành công!");
                     coThayDoiChuaLuu = false;
                     thongBao.clear();
@@ -277,13 +277,13 @@ void chucNangI_NhapDiem(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSac
 // ============================================================================
 
 // ============================================================================
-void chucNangJ_InBangDiemMonHoc(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
+void chucNangJ_InBangDiemMonHoc(PTRMH root, const DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
     while (true) {
-        int viTriLopTinChi = chonLopTinChiTheoThongTin(cayMonHoc, danhSachLopTinChi, "CHỨC NĂNG (j): IN BẢNG ĐIỂM MÔN HỌC CỦA 1 LỚP TÍN CHỈ");
+        int viTriLopTinChi = chonLopTinChiTheoThongTin(root, danhSachLopTinChi, "CHỨC NĂNG (j): IN BẢNG ĐIỂM MÔN HỌC CỦA 1 LỚP TÍN CHỈ");
         if (viTriLopTinChi == -1) break;
 
         LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
-        NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->maMH);
+        NodeMH* mh = timMonHoc(root, lopTinChi->maMH);
         string tenMonHoc = mh ? mh->mh.tenMH : lopTinChi->maMH;
 
         int soDangKyHieuLuc = demSVDangKyHieuLuc(lopTinChi->dssvdk);
@@ -377,11 +377,11 @@ void chucNangJ_InBangDiemMonHoc(PTRMH cayMonHoc, const DanhSachLop& danhSachLop,
 // ============================================================================
 
 // ============================================================================
-void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
-    int soMonHoc = demMonHoc(cayMonHoc);
+void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH root, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
+    int soMonHoc = demMonHoc(root);
     MonHoc* mangMonHoc = (soMonHoc > 0) ? new MonHoc[soMonHoc] : nullptr;
     int idxMH = 0;
-    bstSangMang(cayMonHoc, mangMonHoc, idxMH);
+    bstSangMang(root, mangMonHoc, idxMH);
 
     while (true) {
         string maLop = chonLopNhanh(danhSachLop, false, true);
@@ -518,11 +518,11 @@ void chucNangK_InDiemTrungBinhKhoaHoc(PTRMH cayMonHoc, DanhSachLop& danhSachLop,
 // ============================================================================
 
 // ============================================================================
-void chucNangL_BangDiemTongKetLop(PTRMH cayMonHoc, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
-    int soMonHoc = demMonHoc(cayMonHoc);
+void chucNangL_BangDiemTongKetLop(PTRMH root, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
+    int soMonHoc = demMonHoc(root);
     MonHoc* mangMonHoc = (soMonHoc > 0) ? new MonHoc[soMonHoc] : nullptr;
     int idxMH = 0;
-    bstSangMang(cayMonHoc, mangMonHoc, idxMH);
+    bstSangMang(root, mangMonHoc, idxMH);
 
     while (true) {
         string maLop = chonLopNhanh(danhSachLop, false, true);

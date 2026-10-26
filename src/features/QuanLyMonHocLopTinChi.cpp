@@ -17,7 +17,7 @@
 using namespace std;
 
 // ============================================================================
-void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi, const DanhSachLop& danhSachLop) {
+void chucNangA_MoLopTinChi(PTRMH root, DanhSachLopTinChi& danhSachLopTinChi, const DanhSachLop& danhSachLop) {
     string tuKhoaNienKhoa, tuKhoaHocKy, tuKhoaMaMonHoc, tuKhoaTenMonHoc, tuKhoaNhom;
     int truongLocDangChon = 0;
     size_t viTriConTroOLoc[5] = {0, 0, 0, 0, 0};
@@ -46,8 +46,8 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
         int toaDoDong = 7 + r;
         GiaoDienConsole::diDenToaDo(4, toaDoDong);
         if (idx >= 0 && idx < soLopTinChiLoc) {
-            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[cacLopTinChiLoc[idx]];
-            NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->maMH);
+            PTRLTC lopTinChi = danhSachLopTinChi.lopTC[cacLopTinChiLoc[idx]];
+            PTRMH mh = timMonHoc(root, lopTinChi->maMH);
             string tenMonHoc = mh ? mh->mh.tenMH : "(Không rõ)";
             int soDangKy = demSVDangKyHieuLuc(lopTinChi->dssvdk);
             GiaoDienConsole::datMau(dangDuocChon ? DEN : (lopTinChi->huyLop ? DO_NHAT : TRANG), dangDuocChon ? VANG : DEN);
@@ -99,14 +99,14 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
         string khoaMaMH = GiaoDienConsole::vietHoa(tuKhoaMaMonHoc);
         string khoaTenMH = GiaoDienConsole::vietHoa(tuKhoaTenMonHoc);
         for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) {
-            LopTinChi* lop = danhSachLopTinChi.lopTC[i];
+            PTRLTC lop = danhSachLopTinChi.lopTC[i];
             if (!khoaNienKhoa.empty() && GiaoDienConsole::vietHoa(lop->nienKhoa).find(khoaNienKhoa) == string::npos) continue;
             if (!tuKhoaHocKy.empty() && to_string(lop->hocKy).find(tuKhoaHocKy) == string::npos) continue;
             if (!khoaMaMH.empty()) {
                 if (GiaoDienConsole::vietHoa(lop->maMH).find(khoaMaMH) == string::npos) continue;
             }
             if (!khoaTenMH.empty()) {
-                NodeMH* mon = timMonHoc(cayMonHoc, lop->maMH);
+                PTRMH mon = timMonHoc(root, lop->maMH);
                 string tenMon = mon ? GiaoDienConsole::vietHoa(mon->mh.tenMH) : string();
                 if (tenMon.find(khoaTenMH) == string::npos) continue;
             }
@@ -243,7 +243,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
 
         if (suKien.type == SK_PHIM_ESC || hanhDong == 3) {
             GiaoDienConsole::hienConTro(false);
-            luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+            luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
             delete[] cacNut;
             delete[] cacLopTinChiLoc;
             break;
@@ -319,7 +319,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                     "[ LƯU (Enter) ]", "[ HỦY (ESC) ]", "", nullptr,
                     "[ F1: CHỌN MÔN ]", &daNhanF1);
                 if (daNhanF1) {
-                    string maMonHocDuocChon = chonMonHocNhanh(cayMonHoc);
+                    string maMonHocDuocChon = chonMonHocNhanh(root);
                     if (!maMonHocDuocChon.empty()) {
                         f[1].value = maMonHocDuocChon;
                         thongBaoLoi.clear();
@@ -339,7 +339,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                     thongBaoLoi = "Mã môn học và Niên khóa không được để trống!";
                     continue;
                 }
-                if (timMonHoc(cayMonHoc, maMH.c_str()) == nullptr) {
+                if (timMonHoc(root, maMH.c_str()) == nullptr) {
                     thongBaoLoi = "Mã môn học '" + maMH + "' không tồn tại trong danh sách môn học!";
                     continue;
                 }
@@ -360,7 +360,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                     continue;
                 }
 
-                LopTinChi* lopTinChi = new LopTinChi();
+                PTRLTC lopTinChi = new LopTinChi();
                 lopTinChi->maLopTC = layMaLopTCKeTiep(danhSachLopTinChi);
                 strncpy(lopTinChi->maMH, maMH.c_str(), MAX_MAMH - 1); lopTinChi->maMH[MAX_MAMH - 1] = '\0';
                 strncpy(lopTinChi->nienKhoa, nienKhoa.c_str(), MAX_NIENKHOA - 1); lopTinChi->nienKhoa[MAX_NIENKHOA - 1] = '\0';
@@ -375,7 +375,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                 tuKhoaMaMonHoc.clear();
                 tuKhoaNhom.clear();
                 mucDangChon = danhSachLopTinChi.soLuong - 1;
-                luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                 thongBao = "Đã mở lớp tín chỉ mã " + to_string(lopTinChi->maLopTC) + " thành công!";
                 coLoi = false;
                 break;
@@ -384,7 +384,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
             canVeLaiToanBo = true;
         } else if ((suKien.type == SK_PHIM_ENTER || hanhDong == 1) && soLopTinChiLoc > 0) {
             int viTriLopTinChiThat = cacLopTinChiLoc[mucDangChon];
-            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChiThat];
+            PTRLTC lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChiThat];
             TruongNhap* f = new TruongNhap[8];
             bool lopDaBiXoa = false;
             f[0] = { "Mã Lớp TC (Cố định)", to_string(lopTinChi->maLopTC), 10, TRUONG_CHI_DOC, 0, 0, 0 };
@@ -418,7 +418,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                     }
                     danhSachLopTinChi.lopTC[--danhSachLopTinChi.soLuong] = nullptr;
                     if (mucDangChon >= soLopTinChiLoc - 1 && mucDangChon > 0) --mucDangChon;
-                    luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                    luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                     thongBao = "Đã xóa lớp tín chỉ #" + to_string(maLopTCDaXoa) + " thành công!";
                     coLoi = false;
                     lopDaBiXoa = true;
@@ -439,7 +439,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                     thongBaoLoi = "Mã môn học và Niên khóa không được để trống!";
                     continue;
                 }
-                if (timMonHoc(cayMonHoc, maMH.c_str()) == nullptr) {
+                if (timMonHoc(root, maMH.c_str()) == nullptr) {
                     thongBaoLoi = "Mã môn học '" + maMH + "' không tồn tại!";
                     continue;
                 }
@@ -465,7 +465,7 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
                 lopTinChi->maxSV = soSinhVienToiDa;
                 lopTinChi->huyLop = (huy != 0);
 
-                luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                 thongBao = "Đã cập nhật Lớp tín chỉ #" + to_string(lopTinChi->maLopTC) + " thành công!";
                 coLoi = false;
                 break;
@@ -482,13 +482,13 @@ void chucNangA_MoLopTinChi(PTRMH cayMonHoc, DanhSachLopTinChi& danhSachLopTinChi
 // ============================================================================
 
 // ============================================================================
-void chucNangB_InDSSVDangKyLopTC(PTRMH cayMonHoc, const DanhSachLopTinChi& danhSachLopTinChi, const DanhSachLop& danhSachLop) {
+void chucNangB_InDSSVDangKyLopTC(PTRMH root, const DanhSachLopTinChi& danhSachLopTinChi, const DanhSachLop& danhSachLop) {
     while (true) {
-        int viTriLopTinChi = chonLopTinChiTheoThongTin(cayMonHoc, danhSachLopTinChi, "CHỨC NĂNG (b): IN DSSV ĐÃ ĐĂNG KÝ LỚP TÍN CHỈ");
+        int viTriLopTinChi = chonLopTinChiTheoThongTin(root, danhSachLopTinChi, "CHỨC NĂNG (b): IN DSSV ĐÃ ĐĂNG KÝ LỚP TÍN CHỈ");
         if (viTriLopTinChi == -1) break;
 
-        LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
-        NodeMH* mh = timMonHoc(cayMonHoc, lopTinChi->maMH);
+        PTRLTC lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
+        PTRMH mh = timMonHoc(root, lopTinChi->maMH);
         string tenMonHoc = mh ? mh->mh.tenMH : lopTinChi->maMH;
 
         int tongSoDangKy = demTongDangKy(lopTinChi->dssvdk);
@@ -773,7 +773,7 @@ void chucNangB_InDSSVDangKyLopTC(PTRMH cayMonHoc, const DanhSachLopTinChi& danhS
 // ============================================================================
 
 // ============================================================================
-void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
+void chucNangE_CapNhatMonHoc(PTRMH& root, const DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
     const int soDongMoiTrang = 14;
     const int toaDoX[] = {4, 43};
     const int chieuRong[] = {36, 69};
@@ -818,10 +818,10 @@ void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, c
     };
 
     while (true) {
-        const int soMonHoc = demMonHoc(cayMonHoc);
+        const int soMonHoc = demMonHoc(root);
         MonHoc* mangMonHoc = soMonHoc > 0 ? new MonHoc[soMonHoc] : nullptr;
         int viTriMonHoc = 0;
-        bstSangMang(cayMonHoc, mangMonHoc, viTriMonHoc);
+        bstSangMang(root, mangMonHoc, viTriMonHoc);
         int* monHocLoc = soMonHoc > 0 ? new int[soMonHoc] : nullptr;
         int soMonHocLoc = 0;
         string khoaMa = GiaoDienConsole::vietHoa(tuKhoa[0]);
@@ -946,7 +946,7 @@ void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, c
             GiaoDienConsole::hienConTro(false);
             delete[] monHocLoc;
             delete[] mangMonHoc;
-            luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+            luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
             return;
         } else if (suKien.type == SK_PHIM_TAB || suKien.type == SK_PHIM_SHIFT_TAB) {
             int buoc = suKien.type == SK_PHIM_SHIFT_TAB ? -1 : 1;
@@ -1009,10 +1009,10 @@ void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, c
                 int tinChiLyThuyet = atoi(f[2].value.c_str());
                 int tinChiThucHanh = atoi(f[3].value.c_str());
                 if (ma.empty() || ten.empty()) { loi = "Mã môn học và Tên môn học không được để trống!"; continue; }
-                if (timMonHoc(cayMonHoc, ma.c_str()) != nullptr) { loi = "Mã môn học '" + ma + "' đã tồn tại!"; continue; }
+                if (timMonHoc(root, ma.c_str()) != nullptr) { loi = "Mã môn học '" + ma + "' đã tồn tại!"; continue; }
                 if (tinChiLyThuyet < 0 || tinChiThucHanh < 0 || tinChiLyThuyet + tinChiThucHanh <= 0) { loi = "Tổng số tín chỉ phải lớn hơn 0!"; continue; }
-                themMonHoc(cayMonHoc, taoMonHoc(ma.c_str(), ten.c_str(), tinChiLyThuyet, tinChiThucHanh));
-                luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                themMonHoc(root, taoMonHoc(ma.c_str(), ten.c_str(), tinChiLyThuyet, tinChiThucHanh));
+                luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                 thongBao = "Đã thêm môn học " + ma + " thành công!";
                 break;
             }
@@ -1039,8 +1039,8 @@ void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, c
                         continue;
                     }
                     if (GiaoDienConsole::hopXacNhan("XÁC NHẬN XÓA MÔN HỌC", "Xóa môn học " + string(monHocHienTai.maMH) + "?")) {
-                        xoaMonHoc(cayMonHoc, monHocHienTai.maMH);
-                        luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                        xoaMonHoc(root, monHocHienTai.maMH);
+                        luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                         thongBao = "Đã xóa môn học " + string(monHocHienTai.maMH) + ".";
                     }
                     break;
@@ -1051,13 +1051,13 @@ void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, c
                 int tinChiThucHanh = atoi(f[3].value.c_str());
                 if (ten.empty()) { loi = "Tên môn học không được để trống!"; continue; }
                 if (tinChiLyThuyet < 0 || tinChiThucHanh < 0 || tinChiLyThuyet + tinChiThucHanh <= 0) { loi = "Tổng số tín chỉ phải lớn hơn 0!"; continue; }
-                NodeMH* nutMonHoc = timMonHoc(cayMonHoc, monHocHienTai.maMH);
+                PTRMH nutMonHoc = timMonHoc(root, monHocHienTai.maMH);
                 if (nutMonHoc != nullptr) {
                     strncpy(nutMonHoc->mh.tenMH, ten.c_str(), MAX_TENMH - 1);
                     nutMonHoc->mh.tenMH[MAX_TENMH - 1] = '\0';
                     nutMonHoc->mh.soTCLT = tinChiLyThuyet;
                     nutMonHoc->mh.soTCTH = tinChiThucHanh;
-                    luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                    luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                     thongBao = "Đã cập nhật môn học " + string(monHocHienTai.maMH) + ".";
                 }
                 break;
@@ -1081,7 +1081,7 @@ void chucNangE_CapNhatMonHoc(PTRMH& cayMonHoc, const DanhSachLop& danhSachLop, c
 // ============================================================================
 
 // ============================================================================
-void chucNangF_InDSMonHocTheoTen(PTRMH cayMonHoc) {
+void chucNangF_InDSMonHocTheoTen(PTRMH root) {
     const int soDongMoiTrang = 14;
     const int toaDoX[] = {4, 31, 75, 94};
     const int chieuRong[] = {26, 43, 18, 18};
@@ -1151,10 +1151,10 @@ void chucNangF_InDSMonHocTheoTen(PTRMH cayMonHoc) {
     cout << string(108, '-');
 
     while (true) {
-        int soMonHoc = demMonHoc(cayMonHoc);
+        int soMonHoc = demMonHoc(root);
         MonHoc* mangMonHoc = soMonHoc > 0 ? new MonHoc[soMonHoc] : nullptr;
         int viTriMonHoc = 0;
-        bstSangMang(cayMonHoc, mangMonHoc, viTriMonHoc);
+        bstSangMang(root, mangMonHoc, viTriMonHoc);
         sapXepMonHocTheoTen(mangMonHoc, soMonHoc);
 
         int* monHocLoc = soMonHoc > 0 ? new int[soMonHoc] : nullptr;
@@ -1328,7 +1328,7 @@ void chucNangF_InDSMonHocTheoTen(PTRMH cayMonHoc) {
 // ============================================================================
 
 // ============================================================================
-void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
+void chucNangG_DangKyLopTinChi(PTRMH root, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
     auto canTrai = [](const string& vanBan, int chieuRong) {
         string ketQua = vanBan;
         while (!ketQua.empty() && GiaoDienConsole::doDaiUtf8(ketQua) > chieuRong) {
@@ -1452,9 +1452,9 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
         string khoaTenMH = GiaoDienConsole::vietHoa(tuKhoa[3]);
         string khoaNhom = tuKhoa[4];
         for (int i = 0; i < danhSachLopTinChi.soLuong; ++i) {
-            LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[i];
+            PTRLTC lopTinChi = danhSachLopTinChi.lopTC[i];
             if (lopTinChi == nullptr || lopTinChi->huyLop) continue;
-            NodeMH* monHoc = timMonHoc(cayMonHoc, lopTinChi->maMH);
+            PTRMH monHoc = timMonHoc(root, lopTinChi->maMH);
             string maMH = GiaoDienConsole::vietHoa(lopTinChi->maMH);
             string tenMH = monHoc ? GiaoDienConsole::vietHoa(monHoc->mh.tenMH) : maMH;
             if ((!khoaNienKhoa.empty() && GiaoDienConsole::vietHoa(lopTinChi->nienKhoa).find(khoaNienKhoa) == string::npos) ||
@@ -1469,8 +1469,8 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
 
     auto veMotDong = [&](int chiSo, bool dangDuocChon) {
         if (chiSo < viTriDauBang || chiSo >= viTriCuoiBang || chiSo < 0 || chiSo >= soMucPhuHop) return;
-        LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChiDaLoc[chiSo]];
-        NodeMH* monHoc = timMonHoc(cayMonHoc, lopTinChi->maMH);
+        PTRLTC lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChiDaLoc[chiSo]];
+        PTRMH monHoc = timMonHoc(root, lopTinChi->maMH);
         string tenMonHoc = monHoc ? monHoc->mh.tenMH : lopTinChi->maMH;
         int daDK = demSVDangKyHieuLuc(lopTinChi->dssvdk);
         int conTrong = max(0, lopTinChi->maxSV - daDK);
@@ -1595,7 +1595,7 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
         }
 
             if (suKien.type == SK_PHIM_ESC || hanhDong == 1) {
-                luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                 delete[] cacNut;
                 delete[] viTriLopTinChiDaLoc;
                 GiaoDienConsole::hienConTro(false);
@@ -1642,7 +1642,7 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
                     canLocLai = true;
                 }
             } else if ((suKien.type == SK_PHIM_ENTER || hanhDong == 0) && soMucPhuHop > 0) {
-                LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChiDaLoc[mucDangChon]];
+                PTRLTC lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChiDaLoc[mucDangChon]];
                 NodeDK* nutDangKy = timDangKy(lopTinChi->dssvdk, sv.maSV);
                 bool dangDK = (nutDangKy != nullptr && !nutDangKy->dk.huyDangKy);
 
@@ -1656,7 +1656,7 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
                         canVeKhung = true;
                         if (xacNhanHuy) {
                             nutDangKy->dk.huyDangKy = true;
-                            luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                            luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                             thongBao = "Đã hủy đăng ký lớp tín chỉ môn " + string(lopTinChi->maMH) + "!";
                             coLoi = false;
                         }
@@ -1665,7 +1665,7 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
                     bool trungMon = false;
                     for (int k = 0; k < soMucPhuHop; ++k) {
                         if (k == mucDangChon) continue;
-                        LopTinChi* other = danhSachLopTinChi.lopTC[viTriLopTinChiDaLoc[k]];
+                        PTRLTC other = danhSachLopTinChi.lopTC[viTriLopTinChiDaLoc[k]];
                         if (strcmp(other->maMH, lopTinChi->maMH) == 0) {
                             NodeDK* od = timDangKy(other->dssvdk, sv.maSV);
                             if (od != nullptr && !od->dk.huyDangKy) {
@@ -1683,7 +1683,7 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
                         coLoi = true;
                     } else {
                         themDangKy(lopTinChi->dssvdk, taoDangKy(sv.maSV, -1.0f, false));
-                        luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                        luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                         thongBao = "Đăng ký thành công môn " + string(lopTinChi->maMH) + " - Nhóm " + to_string(lopTinChi->nhom) + "!";
                         coLoi = false;
                     }
@@ -1704,9 +1704,9 @@ void chucNangG_DangKyLopTinChi(PTRMH cayMonHoc, DanhSachLop& danhSachLop, DanhSa
 // ============================================================================
 
 // ============================================================================
-void chucNangH_HuyLopTinChi(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
+void chucNangH_HuyLopTinChi(PTRMH root, const DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
     auto xemChiTietVaHuy = [&](int viTriLopTinChi) {
-        LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
+        PTRLTC lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
         int soBanGhi = demTongDangKy(lopTinChi->dssvdk);
         int trang = 0;
         const int soDongMoiTrang = 12;
@@ -1720,7 +1720,7 @@ void chucNangH_HuyLopTinChi(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, Dan
             if (veLai) {
                 GiaoDienConsole::xoaManHinh();
                 GiaoDienConsole::veKhung(1, 2, 114, 24, XANH_NGOC_NHAT, DEN, "CHI TIẾT LỚP TÍN CHỈ - XÁC NHẬN HỦY");
-                NodeMH* monHoc = timMonHoc(cayMonHoc, lopTinChi->maMH);
+                PTRMH monHoc = timMonHoc(root, lopTinChi->maMH);
                 GiaoDienConsole::datMau(VANG, DEN);
                 GiaoDienConsole::diDenToaDo(4, 4);
                 cout << "Môn học: " << (monHoc ? monHoc->mh.tenMH : lopTinChi->maMH) << " (" << lopTinChi->maMH << ")";
@@ -1803,7 +1803,7 @@ void chucNangH_HuyLopTinChi(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, Dan
                 string thongTin = "Đang có " + to_string(soDangKy) + " sinh viên đăng ký; mức tối thiểu là " + to_string(lopTinChi->minSV) + ".";
                 if (GiaoDienConsole::hopXacNhan("XÁC NHẬN HỦY LỚP TÍN CHỈ", "Hủy lớp " + string(lopTinChi->maMH) + " - Nhóm " + to_string(lopTinChi->nhom) + "?", thongTin)) {
                     lopTinChi->huyLop = true;
-                    luuTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+                    luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                     GiaoDienConsole::hopThongBao("THÀNH CÔNG", "Đã hủy lớp tín chỉ. Lịch sử đăng ký của sinh viên được giữ lại.");
                     return true;
                 }
@@ -1813,10 +1813,10 @@ void chucNangH_HuyLopTinChi(PTRMH cayMonHoc, const DanhSachLop& danhSachLop, Dan
     };
 
     while (true) {
-        int viTriLopTinChi = chonLopTinChiTheoThongTin(cayMonHoc, danhSachLopTinChi,
+        int viTriLopTinChi = chonLopTinChiTheoThongTin(root, danhSachLopTinChi,
             "CHỨC NĂNG (h): TÌM VÀ HỦY LỚP TÍN CHỈ", true);
         if (viTriLopTinChi < 0) return;
-        LopTinChi* lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
+        PTRLTC lopTinChi = danhSachLopTinChi.lopTC[viTriLopTinChi];
         int soDangKy = demSVDangKyHieuLuc(lopTinChi->dssvdk);
         if (!lopTinChi->huyLop && soDangKy < lopTinChi->minSV) {
             xemChiTietVaHuy(viTriLopTinChi);

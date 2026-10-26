@@ -29,7 +29,7 @@ enum class KetQuaDocMonHoc {
 MonHoc taoMonHoc(const char* maMH, const char* tenMH, int soTCLT, int soTCTH);
 NodeMH* timMonHoc(PTRMH root, const char* maMH);
 bool themMonHoc(PTRMH& root, const MonHoc& monHoc);
-void timNutTheMang(PTRMH& nutCanXoa, PTRMH& nutThayThe);
+void timNutThayThe(PTRMH& nutCanXoa, PTRMH& nutThayThe);
 bool xoaMonHoc(PTRMH& root, const char* maMH);
 int demMonHoc(PTRMH root);
 void bstSangMang(PTRMH root, MonHoc* mangMonHoc, int& viTri);
