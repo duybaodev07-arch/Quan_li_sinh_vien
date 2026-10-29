@@ -10,12 +10,12 @@ DangKy taoDangKy(const char* maSV, float diem, bool huyDangKy) {
     return dangKy;
 }
 
-bool themDangKy(PTRDK& dauDanhSach, const DangKy& dangKy) {
-    if (dauDanhSach == nullptr) {
-        dauDanhSach = new NodeDK{dangKy, nullptr};
+bool themDangKy(PTRDK& first, const DangKy& dangKy) {
+    if (first == nullptr) {
+        first = new NodeDK{dangKy, nullptr};
         return true;
     }
-    NodeDK* nutHienTai = dauDanhSach;
+    NodeDK* nutHienTai = first;
     while (true) {
         if (std::strcmp(nutHienTai->dk.maSV, dangKy.maSV) == 0) {
             if (nutHienTai->dk.huyDangKy) {
@@ -31,31 +31,31 @@ bool themDangKy(PTRDK& dauDanhSach, const DangKy& dangKy) {
     return true;
 }
 
-NodeDK* timDangKy(PTRDK dauDanhSach, const char* maSV) {
-    for (NodeDK* nut = dauDanhSach; nut != nullptr; nut = nut->next) {
+NodeDK* timDangKy(PTRDK first, const char* maSV) {
+    for (NodeDK* nut = first; nut != nullptr; nut = nut->next) {
         if (std::strcmp(nut->dk.maSV, maSV) == 0) return nut;
     }
     return nullptr;
 }
 
-int demSVDangKyHieuLuc(PTRDK dauDanhSach) {
+int demSVDangKyHieuLuc(PTRDK first) {
     int soLuong = 0;
-    for (NodeDK* nut = dauDanhSach; nut != nullptr; nut = nut->next) {
+    for (NodeDK* nut = first; nut != nullptr; nut = nut->next) {
         if (!nut->dk.huyDangKy) ++soLuong;
     }
     return soLuong;
 }
 
-int demTongDangKy(PTRDK dauDanhSach) {
+int demTongDangKy(PTRDK first) {
     int soLuong = 0;
-    for (NodeDK* nut = dauDanhSach; nut != nullptr; nut = nut->next) ++soLuong;
+    for (NodeDK* nut = first; nut != nullptr; nut = nut->next) ++soLuong;
     return soLuong;
 }
 
-void giaiPhongDSDK(PTRDK& dauDanhSach) {
-    while (dauDanhSach != nullptr) {
-        NodeDK* nutXoa = dauDanhSach;
-        dauDanhSach = dauDanhSach->next;
+void giaiPhongDSDK(PTRDK& first) {
+    while (first != nullptr) {
+        NodeDK* nutXoa = first;
+        first = first->next;
         delete nutXoa;
     }
 }

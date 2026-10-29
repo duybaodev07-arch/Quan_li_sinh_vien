@@ -41,7 +41,7 @@ void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& dan
         GiaoDienConsole::datMau(dangDuocChon ? DEN : TRANG, dangDuocChon ? VANG : DEN);
         GiaoDienConsole::diDenToaDo(vungNutMenu[i].x, vungNutMenu[i].y);
         string tienTo = dangDuocChon ? " >> " : "    ";
-        cout << GiaoDienConsole::canPhai(tienTo + vungNutMenu[i].label, vungNutMenu[i].w);
+        cout << GiaoDienConsole::canTrai(tienTo + vungNutMenu[i].label, vungNutMenu[i].w);
     };
 
     int mucDangChon = 0;

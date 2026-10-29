@@ -51,16 +51,16 @@ void chucNangA_MoLopTinChi(PTRMH root, DanhSachLopTinChi& danhSachLopTinChi, con
             string tenMonHoc = mh ? mh->mh.tenMH : "(Không rõ)";
             int soDangKy = demSVDangKyHieuLuc(lopTinChi->dssvdk);
             GiaoDienConsole::datMau(dangDuocChon ? DEN : (lopTinChi->huyLop ? DO_NHAT : TRANG), dangDuocChon ? VANG : DEN);
-            cout << GiaoDienConsole::canPhai(" " + to_string(lopTinChi->maLopTC), 7)
-                 << GiaoDienConsole::canPhai(lopTinChi->maMH, 10)
-                 << GiaoDienConsole::canPhai(tenMonHoc, 32)
-                 << GiaoDienConsole::canPhai(lopTinChi->nienKhoa, 12)
-                 << GiaoDienConsole::canPhai(to_string(lopTinChi->hocKy), 5)
-                 << GiaoDienConsole::canPhai(to_string(lopTinChi->nhom), 6)
-                 << GiaoDienConsole::canPhai(to_string(lopTinChi->minSV), 8)
-                 << GiaoDienConsole::canPhai(to_string(lopTinChi->maxSV), 8)
-                 << GiaoDienConsole::canPhai(to_string(soDangKy), 8)
-                 << GiaoDienConsole::canPhai(lopTinChi->huyLop ? "Đã hủy" : "Đang mở", 12);
+            cout << GiaoDienConsole::canTrai(" " + to_string(lopTinChi->maLopTC), 7)
+                 << GiaoDienConsole::canTrai(lopTinChi->maMH, 10)
+                 << GiaoDienConsole::canTrai(tenMonHoc, 32)
+                 << GiaoDienConsole::canTrai(lopTinChi->nienKhoa, 12)
+                 << GiaoDienConsole::canTrai(to_string(lopTinChi->hocKy), 5)
+                 << GiaoDienConsole::canTrai(to_string(lopTinChi->nhom), 6)
+                 << GiaoDienConsole::canTrai(to_string(lopTinChi->minSV), 8)
+                 << GiaoDienConsole::canTrai(to_string(lopTinChi->maxSV), 8)
+                 << GiaoDienConsole::canTrai(to_string(soDangKy), 8)
+                 << GiaoDienConsole::canTrai(lopTinChi->huyLop ? "Đã hủy" : "Đang mở", 12);
         } else {
             GiaoDienConsole::datMau(XAM_NHAT, DEN);
             cout << string(108, ' ');
@@ -129,16 +129,16 @@ void chucNangA_MoLopTinChi(PTRMH root, DanhSachLopTinChi& danhSachLopTinChi, con
 
             GiaoDienConsole::datMau(VANG, LAM);
             GiaoDienConsole::diDenToaDo(4, 5);
-            cout << GiaoDienConsole::canPhai("MÃ LTC", 7)
-                 << GiaoDienConsole::canPhai("MÃ MH", 10)
-                 << GiaoDienConsole::canPhai("TÊN MÔN HỌC", 32)
-                 << GiaoDienConsole::canPhai("NIÊN KHÓA", 12)
-                 << GiaoDienConsole::canPhai("HK", 5)
-                 << GiaoDienConsole::canPhai("NHÓM", 6)
-                 << GiaoDienConsole::canPhai("SV MIN", 8)
-                 << GiaoDienConsole::canPhai("SV MAX", 8)
-                 << GiaoDienConsole::canPhai("ĐÃ ĐK", 8)
-                 << GiaoDienConsole::canPhai("TRẠNG THÁI", 12);
+            cout << GiaoDienConsole::canTrai("MÃ LTC", 7)
+                 << GiaoDienConsole::canTrai("MÃ MH", 10)
+                 << GiaoDienConsole::canTrai("TÊN MÔN HỌC", 32)
+                 << GiaoDienConsole::canTrai("NIÊN KHÓA", 12)
+                 << GiaoDienConsole::canTrai("HK", 5)
+                 << GiaoDienConsole::canTrai("NHÓM", 6)
+                 << GiaoDienConsole::canTrai("SV MIN", 8)
+                 << GiaoDienConsole::canTrai("SV MAX", 8)
+                 << GiaoDienConsole::canTrai("ĐÃ ĐK", 8)
+                 << GiaoDienConsole::canTrai("TRẠNG THÁI", 12);
 
             for (int r = 0; r < soDongMoiTrang; ++r) {
                 int idx = viTriDau + r;
@@ -581,16 +581,16 @@ void chucNangB_InDSSVDangKyLopTC(PTRMH root, const DanhSachLopTinChi& danhSachLo
             GiaoDienConsole::diDenToaDo(4, 9 + chiSoDong - viTriDau);
             const DongDangKy& dong = cacDong[cacDongLoc[chiSoDong]];
             GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
-            cout << GiaoDienConsole::canPhai(" " + to_string(chiSoDong + 1), 7);
+            cout << GiaoDienConsole::canTrai(" " + to_string(chiSoDong + 1), 7);
             GiaoDienConsole::datMau(dangTro ? DEN : XANH_NGOC, dangTro ? VANG : DEN); cout << "|";
             GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
-            cout << GiaoDienConsole::canPhai(dong.maSV, 20);
+            cout << GiaoDienConsole::canTrai(dong.maSV, 20);
             GiaoDienConsole::datMau(dangTro ? DEN : XANH_NGOC, dangTro ? VANG : DEN); cout << "|";
             GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
-            cout << GiaoDienConsole::canPhai(dong.hoTen, 48);
+            cout << GiaoDienConsole::canTrai(dong.hoTen, 48);
             GiaoDienConsole::datMau(dangTro ? DEN : XANH_NGOC, dangTro ? VANG : DEN); cout << "|";
             GiaoDienConsole::datMau(dangTro ? DEN : (dong.daHuy ? DO_NHAT : TRANG), dangTro ? VANG : DEN);
-            cout << GiaoDienConsole::canPhai(dong.trangThaiSinhVien, 30);
+            cout << GiaoDienConsole::canTrai(dong.trangThaiSinhVien, 30);
         };
 
         while (true) {
@@ -619,16 +619,16 @@ void chucNangB_InDSSVDangKyLopTC(PTRMH root, const DanhSachLopTinChi& danhSachLo
 
                 GiaoDienConsole::diDenToaDo(4, 7);
                 GiaoDienConsole::datMau(VANG, LAM);
-                cout << GiaoDienConsole::canPhai(" STT", 7);
+                cout << GiaoDienConsole::canTrai(" STT", 7);
                 GiaoDienConsole::datMau(XANH_NGOC, LAM); cout << "|";
                 GiaoDienConsole::datMau(VANG, LAM);
-                cout << GiaoDienConsole::canPhai("MÃ SINH VIÊN", 20);
+                cout << GiaoDienConsole::canTrai("MÃ SINH VIÊN", 20);
                 GiaoDienConsole::datMau(XANH_NGOC, LAM); cout << "|";
                 GiaoDienConsole::datMau(VANG, LAM);
-                cout << GiaoDienConsole::canPhai("HỌ VÀ TÊN SINH VIÊN", 48);
+                cout << GiaoDienConsole::canTrai("HỌ VÀ TÊN SINH VIÊN", 48);
                 GiaoDienConsole::datMau(XANH_NGOC, LAM); cout << "|";
                 GiaoDienConsole::datMau(VANG, LAM);
-                cout << GiaoDienConsole::canPhai("TRẠNG THÁI SV", 30);
+                cout << GiaoDienConsole::canTrai("TRẠNG THÁI SV", 30);
 
                 GiaoDienConsole::diDenToaDo(4, 8);
                 GiaoDienConsole::datMau(XANH_NGOC, DEN);
@@ -846,11 +846,11 @@ void chucNangE_CapNhatMonHoc(PTRMH& root, const DanhSachLop& danhSachLop, const 
             if (chiSoLoc >= 0 && chiSoLoc < soMonHocLoc) {
                 const MonHoc& monHoc = mangMonHoc[monHocLoc[chiSoLoc]];
                 GiaoDienConsole::datMau(dangDuocChon ? DEN : TRANG, dangDuocChon ? VANG : DEN);
-                cout << GiaoDienConsole::canPhai(" " + to_string(chiSoLoc + 1), 8)
-                     << GiaoDienConsole::canPhai(monHoc.maMH, 18)
-                     << GiaoDienConsole::canPhai(monHoc.tenMH, 48)
-                     << GiaoDienConsole::canPhai("   " + to_string(monHoc.soTCLT), 18)
-                     << GiaoDienConsole::canPhai("   " + to_string(monHoc.soTCTH), 16);
+                cout << GiaoDienConsole::canTrai(" " + to_string(chiSoLoc + 1), 8)
+                     << GiaoDienConsole::canTrai(monHoc.maMH, 18)
+                     << GiaoDienConsole::canTrai(monHoc.tenMH, 48)
+                     << GiaoDienConsole::canTrai("   " + to_string(monHoc.soTCLT), 18)
+                     << GiaoDienConsole::canTrai("   " + to_string(monHoc.soTCTH), 16);
             } else {
                 GiaoDienConsole::datMau(XAM_NHAT, DEN);
                 cout << string(108, ' ');
@@ -862,11 +862,11 @@ void chucNangE_CapNhatMonHoc(PTRMH& root, const DanhSachLop& danhSachLop, const 
             GiaoDienConsole::veKhung(1, 2, 114, 24, XANH_NGOC_NHAT, DEN, "DANH SÁCH MÔN HỌC");
             GiaoDienConsole::datMau(VANG, LAM);
             GiaoDienConsole::diDenToaDo(4, 6);
-            cout << GiaoDienConsole::canPhai(" STT", 8)
-                 << GiaoDienConsole::canPhai("MÃ MÔN HỌC", 18)
-                 << GiaoDienConsole::canPhai("TÊN MÔN HỌC", 48)
-                 << GiaoDienConsole::canPhai("STC LÝ THUYẾT", 18)
-                 << GiaoDienConsole::canPhai("STC THỰC HÀNH", 16);
+            cout << GiaoDienConsole::canTrai(" STT", 8)
+                 << GiaoDienConsole::canTrai("MÃ MÔN HỌC", 18)
+                 << GiaoDienConsole::canTrai("TÊN MÔN HỌC", 48)
+                 << GiaoDienConsole::canTrai("STC LÝ THUYẾT", 18)
+                 << GiaoDienConsole::canTrai("STC THỰC HÀNH", 16);
             GiaoDienConsole::diDenToaDo(4, 7);
             GiaoDienConsole::datMau(XANH_NGOC_NHAT, DEN);
             cout << string(108, '-');
@@ -1120,11 +1120,11 @@ void chucNangF_InDSMonHocTheoTen(PTRMH root) {
                 const MonHoc& monHoc = dsMonHoc[monHocLoc[chiSoLoc]];
                 bool dangChon = chiSoLoc == mucDangChon;
                 GiaoDienConsole::datMau(dangChon ? DEN : TRANG, dangChon ? VANG : DEN);
-                cout << GiaoDienConsole::canPhai(" " + to_string(chiSoLoc + 1), 8)
-                     << GiaoDienConsole::canPhai(monHoc.maMH, 18)
-                     << GiaoDienConsole::canPhai(monHoc.tenMH, 48)
-                     << GiaoDienConsole::canPhai("   " + to_string(monHoc.soTCLT), 18)
-                     << GiaoDienConsole::canPhai("   " + to_string(monHoc.soTCTH), 16);
+                cout << GiaoDienConsole::canTrai(" " + to_string(chiSoLoc + 1), 8)
+                     << GiaoDienConsole::canTrai(monHoc.maMH, 18)
+                     << GiaoDienConsole::canTrai(monHoc.tenMH, 48)
+                     << GiaoDienConsole::canTrai("   " + to_string(monHoc.soTCLT), 18)
+                     << GiaoDienConsole::canTrai("   " + to_string(monHoc.soTCTH), 16);
             } else {
                 GiaoDienConsole::datMau(TRANG, DEN);
                 cout << string(108, ' ');
@@ -1141,11 +1141,11 @@ void chucNangF_InDSMonHocTheoTen(PTRMH root) {
     GiaoDienConsole::veKhung(1, 2, 114, 24, XANH_NGOC_NHAT, DEN, "DANH SÁCH MÔN HỌC");
     GiaoDienConsole::datMau(VANG, LAM);
     GiaoDienConsole::diDenToaDo(4, 6);
-    cout << GiaoDienConsole::canPhai(" STT", 8)
-         << GiaoDienConsole::canPhai("MÃ MÔN HỌC", 18)
-         << GiaoDienConsole::canPhai("TÊN MÔN HỌC", 48)
-         << GiaoDienConsole::canPhai("STC LÝ THUYẾT", 18)
-         << GiaoDienConsole::canPhai("STC THỰC HÀNH", 16);
+    cout << GiaoDienConsole::canTrai(" STT", 8)
+         << GiaoDienConsole::canTrai("MÃ MÔN HỌC", 18)
+         << GiaoDienConsole::canTrai("TÊN MÔN HỌC", 48)
+         << GiaoDienConsole::canTrai("STC LÝ THUYẾT", 18)
+         << GiaoDienConsole::canTrai("STC THỰC HÀNH", 16);
     GiaoDienConsole::diDenToaDo(4, 7);
     GiaoDienConsole::datMau(XANH_NGOC_NHAT, DEN);
     cout << string(108, '-');
@@ -1219,21 +1219,21 @@ void chucNangF_InDSMonHocTheoTen(PTRMH root) {
                     const MonHoc& monHocCu = mangMonHoc[monHocLoc[mucCu]];
                     GiaoDienConsole::diDenToaDo(4, 8 + mucCu - viTriDau);
                     GiaoDienConsole::datMau(TRANG, DEN);
-                    cout << GiaoDienConsole::canPhai(" " + to_string(mucCu + 1), 8)
-                         << GiaoDienConsole::canPhai(monHocCu.maMH, 18)
-                         << GiaoDienConsole::canPhai(monHocCu.tenMH, 48)
-                         << GiaoDienConsole::canPhai("   " + to_string(monHocCu.soTCLT), 18)
-                         << GiaoDienConsole::canPhai("   " + to_string(monHocCu.soTCTH), 16);
+                    cout << GiaoDienConsole::canTrai(" " + to_string(mucCu + 1), 8)
+                         << GiaoDienConsole::canTrai(monHocCu.maMH, 18)
+                         << GiaoDienConsole::canTrai(monHocCu.tenMH, 48)
+                         << GiaoDienConsole::canTrai("   " + to_string(monHocCu.soTCLT), 18)
+                         << GiaoDienConsole::canTrai("   " + to_string(monHocCu.soTCTH), 16);
                 }
                 if (mucDangChon >= viTriDau && mucDangChon < viTriCuoi) {
                     const MonHoc& monHocMoi = mangMonHoc[monHocLoc[mucDangChon]];
                     GiaoDienConsole::diDenToaDo(4, 8 + mucDangChon - viTriDau);
                     GiaoDienConsole::datMau(DEN, VANG);
-                    cout << GiaoDienConsole::canPhai(" " + to_string(mucDangChon + 1), 8)
-                         << GiaoDienConsole::canPhai(monHocMoi.maMH, 18)
-                         << GiaoDienConsole::canPhai(monHocMoi.tenMH, 48)
-                         << GiaoDienConsole::canPhai("   " + to_string(monHocMoi.soTCLT), 18)
-                         << GiaoDienConsole::canPhai("   " + to_string(monHocMoi.soTCTH), 16);
+                    cout << GiaoDienConsole::canTrai(" " + to_string(mucDangChon + 1), 8)
+                         << GiaoDienConsole::canTrai(monHocMoi.maMH, 18)
+                         << GiaoDienConsole::canTrai(monHocMoi.tenMH, 48)
+                         << GiaoDienConsole::canTrai("   " + to_string(monHocMoi.soTCLT), 18)
+                         << GiaoDienConsole::canTrai("   " + to_string(monHocMoi.soTCTH), 16);
                 }
                 mucChonTruoc = mucDangChon;
                 canVeTrangThai = true;
@@ -1478,12 +1478,12 @@ void chucNangG_DangKyLopTinChi(PTRMH root, DanhSachLop& danhSachLop, DanhSachLop
         bool dangDK = nutDangKy != nullptr && !nutDangKy->dk.huyDangKy;
         GiaoDienConsole::datMau(dangDuocChon ? DEN : (dangDK ? XANH_LA_NHAT : TRANG), dangDuocChon ? VANG : DEN);
         GiaoDienConsole::diDenToaDo(4, 10 + chiSo - viTriDauBang);
-        cout << GiaoDienConsole::canPhai(lopTinChi->maMH, 12)
-             << GiaoDienConsole::canPhai(tenMonHoc, 36)
-             << GiaoDienConsole::canPhai("  " + to_string(lopTinChi->nhom), 8)
-             << GiaoDienConsole::canPhai("    " + to_string(daDK), 16)
-             << GiaoDienConsole::canPhai("      " + to_string(conTrong), 16)
-             << GiaoDienConsole::canPhai(dangDK ? "[ĐÃ ĐĂNG KÝ]" : "Chưa đăng ký", 20);
+        cout << GiaoDienConsole::canTrai(lopTinChi->maMH, 12)
+             << GiaoDienConsole::canTrai(tenMonHoc, 36)
+             << GiaoDienConsole::canTrai("  " + to_string(lopTinChi->nhom), 8)
+             << GiaoDienConsole::canTrai("    " + to_string(daDK), 16)
+             << GiaoDienConsole::canTrai("      " + to_string(conTrong), 16)
+             << GiaoDienConsole::canTrai(dangDK ? "[ĐÃ ĐĂNG KÝ]" : "Chưa đăng ký", 20);
     };
 
     auto veKhungChinh = [&]() {
@@ -1493,12 +1493,12 @@ void chucNangG_DangKyLopTinChi(PTRMH root, DanhSachLop& danhSachLop, DanhSachLop
         GiaoDienConsole::diDenToaDo(4, 3);
         cout << canTrai("Sinh viên: " + string(sv.maSV) + " - " + sv.ho + " " + sv.ten + " | Lớp: " + lopSinhVien.maLop, 108);
         GiaoDienConsole::diDenToaDo(4, 8);
-        cout << GiaoDienConsole::canPhai("MÃ MH", 12)
-             << GiaoDienConsole::canPhai("TÊN MÔN HỌC", 36)
-             << GiaoDienConsole::canPhai("NHÓM", 8)
-             << GiaoDienConsole::canPhai("SỐ SV ĐÃ ĐK", 16)
-             << GiaoDienConsole::canPhai("SLOT CÒN TRỐNG", 16)
-             << GiaoDienConsole::canPhai("TRẠNG THÁI CỦA BẠN", 20);
+        cout << GiaoDienConsole::canTrai("MÃ MH", 12)
+             << GiaoDienConsole::canTrai("TÊN MÔN HỌC", 36)
+             << GiaoDienConsole::canTrai("NHÓM", 8)
+             << GiaoDienConsole::canTrai("SỐ SV ĐÃ ĐK", 16)
+             << GiaoDienConsole::canTrai("SLOT CÒN TRỐNG", 16)
+             << GiaoDienConsole::canTrai("TRẠNG THÁI CỦA BẠN", 20);
         GiaoDienConsole::diDenToaDo(4, 9);
         GiaoDienConsole::datMau(XANH_NGOC_NHAT, DEN);
         cout << string(108, '-');
@@ -1733,10 +1733,10 @@ void chucNangH_HuyLopTinChi(PTRMH root, const DanhSachLop& danhSachLop, DanhSach
                 cout << "Trạng thái: Đang mở | Sĩ số đăng ký: " << soDangKyHieuLuc << "/" << lopTinChi->minSV << " tối thiểu";
                 GiaoDienConsole::datMau(VANG, LAM);
                 GiaoDienConsole::diDenToaDo(4, 8);
-                cout << GiaoDienConsole::canPhai("STT", 8)
-                     << GiaoDienConsole::canPhai("MÃ SINH VIÊN", 18)
-                     << GiaoDienConsole::canPhai("HỌ VÀ TÊN SINH VIÊN", 52)
-                     << GiaoDienConsole::canPhai("TRẠNG THÁI ĐĂNG KÝ", 30);
+                cout << GiaoDienConsole::canTrai("STT", 8)
+                     << GiaoDienConsole::canTrai("MÃ SINH VIÊN", 18)
+                     << GiaoDienConsole::canTrai("HỌ VÀ TÊN SINH VIÊN", 52)
+                     << GiaoDienConsole::canTrai("TRẠNG THÁI ĐĂNG KÝ", 30);
                 GiaoDienConsole::datMau(XANH_NGOC_NHAT, DEN);
                 GiaoDienConsole::diDenToaDo(4, 9);
                 cout << string(108, '-');
@@ -1754,10 +1754,10 @@ void chucNangH_HuyLopTinChi(PTRMH root, const DanhSachLop& danhSachLop, DanhSach
                     NodeSV* sinhVien = timSinhVienToanTruong(danhSachLop, dangKy->dk.maSV);
                     string hoTen = sinhVien ? string(sinhVien->sv.ho) + " " + sinhVien->sv.ten : "(Không tìm thấy sinh viên)";
                     GiaoDienConsole::datMau(dangKy->dk.huyDangKy ? XAM_NHAT : TRANG, DEN);
-                    cout << GiaoDienConsole::canPhai(to_string(viTriDau + dong + 1), 8)
-                         << GiaoDienConsole::canPhai(dangKy->dk.maSV, 18)
-                         << GiaoDienConsole::canPhai(hoTen, 52)
-                         << GiaoDienConsole::canPhai(dangKy->dk.huyDangKy ? "Đã hủy đăng ký" : "Đã đăng ký", 30);
+                    cout << GiaoDienConsole::canTrai(to_string(viTriDau + dong + 1), 8)
+                         << GiaoDienConsole::canTrai(dangKy->dk.maSV, 18)
+                         << GiaoDienConsole::canTrai(hoTen, 52)
+                         << GiaoDienConsole::canTrai(dangKy->dk.huyDangKy ? "Đã hủy đăng ký" : "Đã đăng ký", 30);
                     dangKy = dangKy->next;
                 }
                 if (soBanGhi == 0) {

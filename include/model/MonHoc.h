@@ -27,7 +27,7 @@ enum class KetQuaDocMonHoc {
 };
 
 MonHoc taoMonHoc(const char* maMH, const char* tenMH, int soTCLT, int soTCTH);
-NodeMH* timMonHoc(PTRMH root, const char* maMH);
+PTRMH timMonHoc(PTRMH root, const char* maMH);
 bool themMonHoc(PTRMH& root, const MonHoc& monHoc);
 void timNutThayThe(PTRMH& nutCanXoa, PTRMH& nutThayThe);
 bool xoaMonHoc(PTRMH& root, const char* maMH);

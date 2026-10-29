@@ -12,11 +12,11 @@ struct NodeDK {
     DangKy dk;
     NodeDK* next = nullptr;
 };
-typedef NodeDK* PTRDK;
+typedef NodeDK* PTRDK;  
 
 DangKy taoDangKy(const char* maSV, float diem = -1.0f, bool huyDangKy = false);
-bool themDangKy(PTRDK& dauDanhSach, const DangKy& dangKy);
-NodeDK* timDangKy(PTRDK dauDanhSach, const char* maSV);
-int demSVDangKyHieuLuc(PTRDK dauDanhSach);
-int demTongDangKy(PTRDK dauDanhSach);
-void giaiPhongDSDK(PTRDK& dauDanhSach);
+bool themDangKy(PTRDK& first, const DangKy& dangKy); // cap phat new o day
+PTRDK timDangKy(PTRDK first, const char* maSV);
+int demSVDangKyHieuLuc(PTRDK first);
+int demTongDangKy(PTRDK first);
+void giaiPhongDSDK(PTRDK& first);

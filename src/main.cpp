@@ -4,18 +4,26 @@
 #include "model/LopTinChi.h"
 #include "storage/DocGhiDuLieu.h"
 #include "ui/Menu.h"
+#include <string>
 
 int main() {
     GiaoDienConsole::khoiTaoConsole("QUAN LI SINH VIEN HE TIN CHI");
 
-    PTRMH cayMonHoc = nullptr;
+    PTRMH root = nullptr;
     static DanhSachLop danhSachLop;
     static DanhSachLopTinChi danhSachLopTinChi;
 
-    docTatCaDuLieu(cayMonHoc, danhSachLop, danhSachLopTinChi);
-    chayMenu(cayMonHoc, danhSachLop, danhSachLopTinChi);
+    std::string thongBaoLoi;
+    while (!docTatCaDuLieu(root, danhSachLop, danhSachLopTinChi, thongBaoLoi)) {
+        bool thuDocLai = GiaoDienConsole::hopXacNhan(
+            "KHÔNG ĐỌC ĐƯỢC DỮ LIỆU",
+            thongBaoLoi,
+            "Đồng ý: thử lại | Hủy bỏ: vào menu rỗng");
+        if (!thuDocLai) break;
+    }
+    chayMenu(root, danhSachLop, danhSachLopTinChi);
 
-    giaiPhongBST(cayMonHoc);
+    giaiPhongBST(root);
     giaiPhongDanhSachLop(danhSachLop);
     giaiPhongDanhSachLopTinChi(danhSachLopTinChi);
     return 0;

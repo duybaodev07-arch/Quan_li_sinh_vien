@@ -18,7 +18,7 @@ typedef NodeSV* PTRSV;
 
 SinhVien taoSinhVien(const char* maSV, const char* ho, const char* ten, const char* phai, const char* soDT);
 int soSanhTenSV(const SinhVien& sinhVienA, const SinhVien& sinhVienB);
-void themSVCoThuTu(PTRSV& root, const SinhVien& sv);
-bool xoaSVTheoMa(PTRSV& root, const char* maSV);
-int demSVTrongLop(PTRSV root);
-void giaiPhongDSSV(PTRSV& root);
+void themSVCoThuTu(PTRSV& first, const SinhVien& sv);
+bool xoaSVTheoMa(PTRSV& first, const char* maSV);
+int demSVTrongLop(PTRSV first);
+void giaiPhongDSSV(PTRSV& first);

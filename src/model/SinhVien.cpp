@@ -21,14 +21,14 @@ int soSanhTenSV(const SinhVien& sinhVienA, const SinhVien& sinhVienB) {
     return soSanhKhongPhanBietHoaThuong(sinhVienA.maSV, sinhVienB.maSV);
 }
 
-void themSVCoThuTu(PTRSV& root, const SinhVien& sv) {
+void themSVCoThuTu(PTRSV& first, const SinhVien& sv) {
     NodeSV* newNode = new NodeSV{sv, nullptr};
-    if (root == nullptr || soSanhTenSV(sv, root->sv) < 0) {
-        newNode->next = root;
-        root = newNode;
+    if (first == nullptr || soSanhTenSV(sv, first->sv) < 0) {
+        newNode->next = first;
+        first = newNode;
         return;
     }
-    NodeSV* cur = root;
+    NodeSV* cur = first;
     while (cur->next != nullptr && soSanhTenSV(cur->next->sv, sv) <= 0) {
         cur = cur->next;
     }
@@ -36,15 +36,15 @@ void themSVCoThuTu(PTRSV& root, const SinhVien& sv) {
     cur->next = newNode;
 }
 
-bool xoaSVTheoMa(PTRSV& root, const char* maSV) {
-    if (root == nullptr) return false;
-    if (std::strcmp(root->sv.maSV, maSV) == 0) {
-        NodeSV* nutXoa = root;
-        root = root->next;
+bool xoaSVTheoMa(PTRSV& first, const char* maSV) {
+    if (first == nullptr) return false;
+    if (std::strcmp(first->sv.maSV, maSV) == 0) {
+        NodeSV* nutXoa = first;
+        first = first->next;
         delete nutXoa;
         return true;
     }
-    NodeSV* cur = root;
+    NodeSV* cur = first;
     while (cur->next != nullptr && std::strcmp(cur->next->sv.maSV, maSV) != 0) {
         cur = cur->next;
     }
@@ -55,16 +55,16 @@ bool xoaSVTheoMa(PTRSV& root, const char* maSV) {
     return true;
 }
 
-int demSVTrongLop(PTRSV root) {
+int demSVTrongLop(PTRSV first) {
     int soLuong = 0;
-    for (NodeSV* nut = root; nut != nullptr; nut = nut->next) ++soLuong;
+    for (NodeSV* nut = first; nut != nullptr; nut = nut->next) ++soLuong;
     return soLuong;
 }
 
-void giaiPhongDSSV(PTRSV& root) {
-    while (root != nullptr) {
-        NodeSV* nutXoa = root;
-        root = root->next;
+void giaiPhongDSSV(PTRSV& first) {
+    while (first != nullptr) {
+        NodeSV* nutXoa = first;
+        first = first->next;
         delete nutXoa;
     }
 }

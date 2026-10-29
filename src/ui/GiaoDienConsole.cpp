@@ -18,13 +18,13 @@ void GiaoDienConsole::toMauVung(int x, int y, int w, int h, int mauChu, int mauN
         for (int r = 0; r < h; ++r) {
             diDenToaDo(x, y + r);
             cout << dong;
-        }
+        } 
     }
 
 int GiaoDienConsole::doDaiUtf8(const string& str) {
         int doDai = 0;
         for (size_t i = 0; i < str.size(); ++i) {
-            if ((str[i] & 0xC0) != 0x80) doDai++;
+            if ((str[i] & 0xC0) != 0x80) doDai++; // 0xC0: 11000000(dùng lọc), 0x80: 10000000(byte đuôi)
         }
         return doDai;
     }
@@ -33,27 +33,27 @@ string GiaoDienConsole::catChuoiUtf8(const string& str, int soKyTuToiDa) {
         int soKyTu = 0;
         size_t i = 0;
         while (i < str.size() && soKyTu < soKyTuToiDa) {
-            if ((str[i] & 0xC0) != 0x80) soKyTu++;
+            if ((str[i] & 0xC0) != 0x80) soKyTu++;  
             i++;
             while (i < str.size() && (str[i] & 0xC0) == 0x80) i++;
         }
         return str.substr(0, i);
     }
 
-string GiaoDienConsole::canPhai(const string& str, int chieuRong) {
+string GiaoDienConsole::canTrai(const string& str, int chieuRong) { // chieu rong console
         if (chieuRong <= 0) return "";
         int doDai = doDaiUtf8(str);
         if (doDai > chieuRong) {
             if (chieuRong > 2) return catChuoiUtf8(str, chieuRong - 2) + "..";
             return catChuoiUtf8(str, chieuRong);
-        }
+        }   
         return str + string(chieuRong - doDai, ' ');
     }
 
 string GiaoDienConsole::canGiua(const string& str, int chieuRong) {
         if (chieuRong <= 0) return "";
-        int doDai = doDaiUtf8(str);
-        if (doDai >= chieuRong) return canPhai(str, chieuRong);
+        int doDai = doDaiUtf8(str); 
+        if (doDai >= chieuRong) return canTrai(str, chieuRong);
         int trai = (chieuRong - doDai) / 2;
         int phai = chieuRong - doDai - trai;
         return string(trai, ' ') + str + string(phai, ' ');
@@ -76,7 +76,7 @@ void GiaoDienConsole::veKhung(int x, int y, int w, int h, int mauChu, int mauNen
             int tLen = doDaiUtf8(t);
             if (tLen > w - 4) {
                 t = " " + catChuoiUtf8(tieuDe, w - 6) + " ";
-                tLen = doDaiUtf8(t);
+                tLen = doDaiUtf8(t);            
             }
             int tx = x + (w - tLen) / 2;
             if (tx > x) {
@@ -111,7 +111,7 @@ void GiaoDienConsole::veThanhTrangThai(const string& goiY, const string& thongBa
 
         diDenToaDo(1, 27);
         datMau(DEN, XAM_NHAT);
-        cout << canPhai(" " + goiY, 114);
+        cout << canTrai(" " + goiY, 114);
         datLaiMau();
     }
 
@@ -287,7 +287,7 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
         fields[i].w = chieuRongBieuMau - 30;
         GiaoDienConsole::datMau(TRANG, DEN);
         GiaoDienConsole::diDenToaDo(toaDoXBieuMau + 3, fields[i].y);
-        cout << GiaoDienConsole::canPhai(fields[i].label + ":", 23);
+        cout << GiaoDienConsole::canTrai(fields[i].label + ":", 23);
     }
 
     int toaDoNutY = toaDoYBieuMau + chieuCaoBieuMau - 2;
@@ -313,7 +313,7 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
             GiaoDienConsole::datMau(XAM_NHAT, XAM_DAM);
         }
         GiaoDienConsole::diDenToaDo(fields[i].x, fields[i].y);
-        cout << " " << GiaoDienConsole::canPhai(fields[i].value, fields[i].w - 2) << " ";
+        cout << " " << GiaoDienConsole::canTrai(fields[i].value, fields[i].w - 2) << " ";
     };
 
     auto veDongThongBao = [&]() {

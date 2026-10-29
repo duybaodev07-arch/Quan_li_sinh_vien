@@ -1,6 +1,9 @@
 #include "storage/DocGhiDuLieu.h"
 
+#include <algorithm>
 #include <cstring>
+#include <cstdlib>
+#include <cmath>
 #include <fstream>
 #include <sstream>
 #include "model/MonHoc.h"
@@ -50,6 +53,7 @@ bool luuTatCaDuLieu(PTRMH root, const DanhSachLop& danhSachLop, const DanhSachLo
                     << p->sv.phai << "|"
                     << p->sv.soDT << "\n";
             }
+            if (i + 1 < danhSachLop.soLuong) out << "\n";
         }
         out.close();
     }
@@ -76,6 +80,7 @@ bool luuTatCaDuLieu(PTRMH root, const DanhSachLop& danhSachLop, const DanhSachLo
                     << p->dk.diem << "|"
                     << (p->dk.huyDangKy ? 1 : 0) << "\n";
             }
+            if (i + 1 < danhSachLopTinChi.soLuong) out << "\n";
         }
         out.close();
     }
@@ -99,185 +104,199 @@ int tachChuoi(const string& dong, char kyTuPhanCach, string* cacMuc, int soMucTo
     return count;
 }
 
-// Khởi tạo dữ liệu mẫu phong phú khi chạy lần đầu
-void khoiTaoDuLieuMau(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
-    // 1. Môn học mẫu (BST)
-    themMonHoc(root, taoMonHoc("INT1306", "Cau truc du lieu va giai thuat", 3, 1));
-    themMonHoc(root, taoMonHoc("INT1154", "Tin hoc co so 2", 2, 1));
-    themMonHoc(root, taoMonHoc("INT1332", "Lap trinh huong doi tuong", 2, 1));
-    themMonHoc(root, taoMonHoc("INT1313", "Co so du lieu", 3, 1));
-    themMonHoc(root, taoMonHoc("INT1336", "Mang may tinh", 3, 0));
-    themMonHoc(root, taoMonHoc("INT1319", "He dieu hanh", 2, 1));
-    themMonHoc(root, taoMonHoc("BAS1203", "Giai tich 1", 3, 0));
-    themMonHoc(root, taoMonHoc("BAS1201", "Dai so tuyen tinh", 3, 0));
-
-    // 2. Lớp học & Sinh viên mẫu
-    danhSachLop.lop[danhSachLop.soLuong++] = taoLop("D22CQCN01", "Cong nghe thong tin 01 - K22");
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN005", "Nguyen Van", "An", "Nam", "0901234501"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN001", "Tran Thi", "Bich", "Nu", "0901234502"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN008", "Le Hoang", "Cuong", "Nam", "0901234503"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN003", "Pham Minh", "Dung", "Nam", "0901234504"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN002", "Hoang Thu", "Ha", "Nu", "0901234505"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN009", "Vu Quang", "Huy", "Nam", "0901234506"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN004", "Dang Ngoc", "Lan", "Nu", "0901234507"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN007", "Bui Duc", "Minh", "Nam", "0901234508"));
-    themSVCoThuTu(danhSachLop.lop[0].dssv, taoSinhVien("N22DCCN006", "Doan Thanh", "Tuan", "Nam", "0901234509"));
-
-    danhSachLop.lop[danhSachLop.soLuong++] = taoLop("D22CQCN02", "Cong nghe thong tin 02 - K22");
-    themSVCoThuTu(danhSachLop.lop[1].dssv, taoSinhVien("N22DCCN102", "Nguyen Hoang", "Anh", "Nam", "0912345601"));
-    themSVCoThuTu(danhSachLop.lop[1].dssv, taoSinhVien("N22DCCN105", "Le Thi", "Mai", "Nu", "0912345602"));
-    themSVCoThuTu(danhSachLop.lop[1].dssv, taoSinhVien("N22DCCN101", "Tran Quoc", "Khanh", "Nam", "0912345603"));
-    themSVCoThuTu(danhSachLop.lop[1].dssv, taoSinhVien("N22DCCN104", "Pham Gia", "Phong", "Nam", "0912345604"));
-    themSVCoThuTu(danhSachLop.lop[1].dssv, taoSinhVien("N22DCCN103", "Vo Thi", "Thao", "Nu", "0912345605"));
-
-    danhSachLop.lop[danhSachLop.soLuong++] = taoLop("D22CQAT01", "An toan thong tin 01 - K22");
-    themSVCoThuTu(danhSachLop.lop[2].dssv, taoSinhVien("N22DCAT002", "Ly Minh", "Khoa", "Nam", "0923456701"));
-    themSVCoThuTu(danhSachLop.lop[2].dssv, taoSinhVien("N22DCAT001", "Trinh Bao", "Ngoc", "Nu", "0923456702"));
-    themSVCoThuTu(danhSachLop.lop[2].dssv, taoSinhVien("N22DCAT003", "Ngo Tuan", "Kiet", "Nam", "0923456703"));
-
-    // 3. Lớp tín chỉ & Đăng ký mẫu
-    auto taoLTC = [&](const char* maMH, const char* nienKhoa, int hocKy, int nhom, int soSinhVienToiThieu, int soSinhVienToiDa) -> LopTinChi* {
-        LopTinChi* lopTinChi = new LopTinChi();
-        lopTinChi->maLopTC = layMaLopTCKeTiep(danhSachLopTinChi);
-        strncpy(lopTinChi->maMH, maMH, MAX_MAMH - 1); lopTinChi->maMH[MAX_MAMH - 1] = '\0';
-        strncpy(lopTinChi->nienKhoa, nienKhoa, MAX_NIENKHOA - 1); lopTinChi->nienKhoa[MAX_NIENKHOA - 1] = '\0';
-        lopTinChi->hocKy = hocKy;
-        lopTinChi->nhom = nhom;
-        lopTinChi->minSV = soSinhVienToiThieu;
-        lopTinChi->maxSV = soSinhVienToiDa;
-        lopTinChi->huyLop = false;
-        danhSachLopTinChi.lopTC[danhSachLopTinChi.soLuong++] = lopTinChi;
-        return lopTinChi;
-    };
-
-    // LTC 1: INT1306 (CTDL&GT) - 2025-2026 - HK1 - Nhóm 1
-    LopTinChi* lopTinChi1 = taoLTC("INT1306", "2025-2026", 1, 1, 3, 50);
-    themDangKy(lopTinChi1->dssvdk, taoDangKy("N22DCCN001", 8.5f, false));
-    themDangKy(lopTinChi1->dssvdk, taoDangKy("N22DCCN002", 7.5f, false));
-    themDangKy(lopTinChi1->dssvdk, taoDangKy("N22DCCN003", 9.0f, false));
-    themDangKy(lopTinChi1->dssvdk, taoDangKy("N22DCCN004", 6.5f, false));
-    themDangKy(lopTinChi1->dssvdk, taoDangKy("N22DCCN005", 8.0f, false));
-    themDangKy(lopTinChi1->dssvdk, taoDangKy("N22DCCN006", 7.0f, true)); // Đã hủy ĐK
-
-    // LTC 2: INT1332 (LTHĐT) - 2025-2026 - HK1 - Nhóm 1
-    LopTinChi* lopTinChi2 = taoLTC("INT1332", "2025-2026", 1, 1, 3, 45);
-    themDangKy(lopTinChi2->dssvdk, taoDangKy("N22DCCN001", 9.0f, false));
-    themDangKy(lopTinChi2->dssvdk, taoDangKy("N22DCCN002", 8.0f, false));
-    themDangKy(lopTinChi2->dssvdk, taoDangKy("N22DCCN005", 4.5f, false)); // Điểm thấp, học lại ở HK2
-    themDangKy(lopTinChi2->dssvdk, taoDangKy("N22DCCN101", 8.5f, false));
-
-    // LTC 3: INT1313 (CSDL) - 2025-2026 - HK1 - Nhóm 1
-    LopTinChi* lopTinChi3 = taoLTC("INT1313", "2025-2026", 1, 1, 3, 50);
-    themDangKy(lopTinChi3->dssvdk, taoDangKy("N22DCCN001", 7.5f, false));
-    themDangKy(lopTinChi3->dssvdk, taoDangKy("N22DCCN003", 8.5f, false));
-    themDangKy(lopTinChi3->dssvdk, taoDangKy("N22DCCN005", 9.0f, false));
-    themDangKy(lopTinChi3->dssvdk, taoDangKy("N22DCCN007", 8.0f, false));
-
-    // LTC 4: INT1336 (Mạng MT) - 2025-2026 - HK1 - Nhóm 2 (Số SV ĐK = 1 < minSV = 5 -> để test chức năng Hủy lớp TC)
-    LopTinChi* lopTinChi4 = taoLTC("INT1336", "2025-2026", 1, 2, 5, 40);
-    themDangKy(lopTinChi4->dssvdk, taoDangKy("N22DCCN008", -1.0f, false));
-
-    // LTC 5: INT1332 (LTHĐT) - 2025-2026 - HK2 - Nhóm 1 (SV N22DCCN005 học cải thiện điểm lên 8.5)
-    LopTinChi* lopTinChi5 = taoLTC("INT1332", "2025-2026", 2, 1, 2, 40);
-    themDangKy(lopTinChi5->dssvdk, taoDangKy("N22DCCN005", 8.5f, false));
-    themDangKy(lopTinChi5->dssvdk, taoDangKy("N22DCCN008", 7.0f, false));
-    themDangKy(lopTinChi5->dssvdk, taoDangKy("N22DCCN009", 8.0f, false));
-
-    luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
+// Đọc dòng tiếp theo có nội dung, bỏ qua các dòng trống dùng để phân nhóm dữ liệu.
+bool docDongKhongRong(ifstream& tep, string& dong) {
+    while (getline(tep, dong)) {
+        while (!dong.empty() && dong.back() == '\r') dong.pop_back();
+        if (dong.find_first_not_of(" \t\r\n") != string::npos) return true;
+    }
+    return false;
 }
 
-void docTatCaDuLieu(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
+static bool docSoNguyen(const string& chuoi, int& giaTri) {
+    if (chuoi.empty()) return false;
+    char* cuoi = nullptr;
+    long ketQua = strtol(chuoi.c_str(), &cuoi, 10);
+    if (cuoi == chuoi.c_str() || *cuoi != '\0' || ketQua < 0 || ketQua > 100000) return false;
+    giaTri = static_cast<int>(ketQua);
+    return true;
+}
+
+static bool docDiem(const string& chuoi, float& giaTri) {
+    if (chuoi.empty()) return false;
+    char* cuoi = nullptr;
+    float ketQua = strtof(chuoi.c_str(), &cuoi);
+    if (cuoi == chuoi.c_str() || *cuoi != '\0' || !std::isfinite(ketQua) ||
+        (ketQua < 0.0f && ketQua != -1.0f) || ketQua > 10.0f) return false;
+    giaTri = ketQua;
+    return true;
+}
+
+static int demTruong(const string& dong) {
+    return 1 + static_cast<int>(count(dong.begin(), dong.end(), '|'));
+}
+
+static bool dongConDuLieu(ifstream& tep) {
+    string dong;
+    while (getline(tep, dong)) {
+        while (!dong.empty() && dong.back() == '\r') dong.pop_back();
+        if (dong.find_first_not_of(" \t\r\n") != string::npos) return true;
+    }
+    return false;
+}
+
+bool docTatCaDuLieu(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi, string& thongBaoLoi) {
     ifstream tepMonHoc(FILE_MONHOC);
     ifstream tepLop(FILE_LOP_SV);
     ifstream tepLopTinChi(FILE_LOPTC_DK);
 
-    if (!tepMonHoc.is_open() || !tepLop.is_open() || !tepLopTinChi.is_open()) {
-        khoiTaoDuLieuMau(root, danhSachLop, danhSachLopTinChi);
-        return;
-    }
+    auto loiVaXoaDuLieuDocDo = [&](const string& noiDung) {
+        thongBaoLoi = noiDung;
+        giaiPhongBST(root);
+        giaiPhongDanhSachLop(danhSachLop);
+        giaiPhongDanhSachLopTinChi(danhSachLopTinChi);
+        return false;
+    };
 
-    string* cacMuc = new string[12];
+    if (!tepMonHoc.is_open()) return loiVaXoaDuLieuDocDo(string("Không mở được ") + FILE_MONHOC);
+    if (!tepLop.is_open()) return loiVaXoaDuLieuDocDo(string("Không mở được ") + FILE_LOP_SV);
+    if (!tepLopTinChi.is_open()) return loiVaXoaDuLieuDocDo(string("Không mở được ") + FILE_LOPTC_DK);
+
+    string cacMuc[12];
     string dong;
+    int soLuong = 0;
+    int soTruong = 0;
 
     // 1. Đọc danh sách môn học
-    if (getline(tepMonHoc, dong) && !dong.empty()) {
-        int soMH = atoi(dong.c_str());
-        for (int i = 0; i < soMH; ++i) {
-            if (!getline(tepMonHoc, dong) || dong.empty()) break;
-            if (tachChuoi(dong, '|', cacMuc, 10) >= 4) {
-                MonHoc mh = taoMonHoc(cacMuc[0].c_str(), cacMuc[1].c_str(), atoi(cacMuc[2].c_str()), atoi(cacMuc[3].c_str()));
-                themMonHoc(root, mh);
-            }
+    if (!docDongKhongRong(tepMonHoc, dong) || !docSoNguyen(dong, soLuong))
+        return loiVaXoaDuLieuDocDo("Sai dòng đếm môn học trong data/data_monhoc.txt.");
+    for (int i = 0; i < soLuong; ++i) {
+        if (!docDongKhongRong(tepMonHoc, dong))
+            return loiVaXoaDuLieuDocDo("Thiếu dòng môn học trong data/data_monhoc.txt.");
+        soTruong = tachChuoi(dong, '|', cacMuc, 12);
+        int tinChiLyThuyet = 0, tinChiThucHanh = 0;
+        if (demTruong(dong) != 4 || soTruong != 4 || cacMuc[0].empty() || cacMuc[1].empty() ||
+            cacMuc[0].size() >= MAX_MAMH || cacMuc[1].size() >= MAX_TENMH ||
+            !docSoNguyen(cacMuc[2], tinChiLyThuyet) || !docSoNguyen(cacMuc[3], tinChiThucHanh) ||
+            tinChiLyThuyet + tinChiThucHanh <= 0) {
+            return loiVaXoaDuLieuDocDo("Sai định dạng bản ghi môn học trong data/data_monhoc.txt.");
         }
+        MonHoc monHoc = taoMonHoc(cacMuc[0].c_str(), cacMuc[1].c_str(), tinChiLyThuyet, tinChiThucHanh);
+        if (!themMonHoc(root, monHoc))
+            return loiVaXoaDuLieuDocDo("Mã môn học bị trùng trong data/data_monhoc.txt.");
     }
+    if (dongConDuLieu(tepMonHoc)) return loiVaXoaDuLieuDocDo("Có dữ liệu thừa trong data/data_monhoc.txt.");
     tepMonHoc.close();
 
     // 2. Đọc danh sách lớp & sinh viên
-    if (getline(tepLop, dong) && !dong.empty()) {
-        int soLop = atoi(dong.c_str());
-        for (int i = 0; i < soLop && danhSachLop.soLuong < MAX_LOP; ++i) {
-            if (!getline(tepLop, dong) || dong.empty()) break;
-            if (tachChuoi(dong, '|', cacMuc, 10) >= 3) {
-                string maLop = cacMuc[0];
-                string tenLop = cacMuc[1];
-                int soSV = atoi(cacMuc[2].c_str());
-                int idx = danhSachLop.soLuong++;
-                danhSachLop.lop[idx] = taoLop(maLop.c_str(), tenLop.c_str());
-                for (int j = 0; j < soSV; ++j) {
-                    if (!getline(tepLop, dong) || dong.empty()) break;
-                    if (tachChuoi(dong, '|', cacMuc, 10) >= 5) {
-                        SinhVien sv = taoSinhVien(cacMuc[0].c_str(), cacMuc[1].c_str(), cacMuc[2].c_str(), cacMuc[3].c_str(), cacMuc[4].c_str());
-                        themSVCoThuTu(danhSachLop.lop[idx].dssv, sv);
-                    }
-                }
+    if (!docDongKhongRong(tepLop, dong) || !docSoNguyen(dong, soLuong) || soLuong > MAX_LOP)
+        return loiVaXoaDuLieuDocDo("Sai dòng đếm lớp trong data/data_lop_sinhvien.txt.");
+    for (int i = 0; i < soLuong; ++i) {
+        if (!docDongKhongRong(tepLop, dong))
+            return loiVaXoaDuLieuDocDo("Thiếu dòng thông tin lớp trong data/data_lop_sinhvien.txt.");
+        soTruong = tachChuoi(dong, '|', cacMuc, 12);
+        int soSV = 0;
+        if (demTruong(dong) != 3 || soTruong != 3 || cacMuc[0].empty() || cacMuc[1].empty() ||
+            cacMuc[0].size() >= MAX_MALOP || cacMuc[1].size() >= MAX_TENLOP ||
+            !docSoNguyen(cacMuc[2], soSV)) {
+            return loiVaXoaDuLieuDocDo("Sai định dạng dòng lớp trong data/data_lop_sinhvien.txt.");
+        }
+        for (int lop = 0; lop < danhSachLop.soLuong; ++lop) {
+            if (strcmp(danhSachLop.lop[lop].maLop, cacMuc[0].c_str()) == 0)
+                return loiVaXoaDuLieuDocDo("Mã lớp bị trùng trong data/data_lop_sinhvien.txt.");
+        }
+        int idx = danhSachLop.soLuong++;
+        danhSachLop.lop[idx] = taoLop(cacMuc[0].c_str(), cacMuc[1].c_str());
+        for (int j = 0; j < soSV; ++j) {
+            if (!docDongKhongRong(tepLop, dong))
+                return loiVaXoaDuLieuDocDo("Thiếu dòng sinh viên trong data/data_lop_sinhvien.txt.");
+            soTruong = tachChuoi(dong, '|', cacMuc, 12);
+            if (demTruong(dong) != 5 || soTruong != 5 || cacMuc[0].empty() || cacMuc[1].empty() ||
+                cacMuc[2].empty() || cacMuc[3].empty() || cacMuc[4].empty() ||
+                cacMuc[0].size() >= MAX_MASV || cacMuc[1].size() >= MAX_HO ||
+                cacMuc[2].size() >= MAX_TEN || cacMuc[3].size() >= MAX_PHAI || cacMuc[4].size() >= MAX_SODT ||
+                timSinhVienToanTruong(danhSachLop, cacMuc[0].c_str()) != nullptr) {
+                return loiVaXoaDuLieuDocDo("Sai định dạng hoặc trùng mã sinh viên trong data/data_lop_sinhvien.txt.");
             }
+            SinhVien sinhVien = taoSinhVien(cacMuc[0].c_str(), cacMuc[1].c_str(), cacMuc[2].c_str(), cacMuc[3].c_str(), cacMuc[4].c_str());
+            themSVCoThuTu(danhSachLop.lop[idx].dssv, sinhVien);
         }
     }
+    if (dongConDuLieu(tepLop)) return loiVaXoaDuLieuDocDo("Có dữ liệu thừa trong data/data_lop_sinhvien.txt.");
     tepLop.close();
 
     // 3. Đọc danh sách lớp tín chỉ & đăng ký
-    if (getline(tepLopTinChi, dong) && !dong.empty()) {
-        if (tachChuoi(dong, '|', cacMuc, 10) >= 2) {
-            int soLTC = atoi(cacMuc[0].c_str());
-            
-            for (int i = 0; i < soLTC && danhSachLopTinChi.soLuong < MAX_LOP_TC; ++i) {
-                if (!getline(tepLopTinChi, dong) || dong.empty()) break;
-                if (tachChuoi(dong, '|', cacMuc, 12) >= 9) {
-                    LopTinChi* lopTinChi = new LopTinChi();
-                    lopTinChi->maLopTC = atoi(cacMuc[0].c_str());
-                    strncpy(lopTinChi->maMH, cacMuc[1].c_str(), MAX_MAMH - 1); lopTinChi->maMH[MAX_MAMH - 1] = '\0';
-                    strncpy(lopTinChi->nienKhoa, cacMuc[2].c_str(), MAX_NIENKHOA - 1); lopTinChi->nienKhoa[MAX_NIENKHOA - 1] = '\0';
-                    lopTinChi->hocKy = atoi(cacMuc[3].c_str());
-                    lopTinChi->nhom = atoi(cacMuc[4].c_str());
-                    lopTinChi->minSV = atoi(cacMuc[5].c_str());
-                    lopTinChi->maxSV = atoi(cacMuc[6].c_str());
-                    lopTinChi->huyLop = (atoi(cacMuc[7].c_str()) != 0);
-                    int soDangKy = atoi(cacMuc[8].c_str());
+    if (!docDongKhongRong(tepLopTinChi, dong))
+        return loiVaXoaDuLieuDocDo("Thiếu dòng đếm lớp tín chỉ trong data/data_loptinchi_dangky.txt.");
+    soTruong = tachChuoi(dong, '|', cacMuc, 12);
+    int maLopTCKeTiep = 0;
+    if (demTruong(dong) != 2 || soTruong != 2 || !docSoNguyen(cacMuc[0], soLuong) || soLuong > MAX_LOP_TC ||
+        !docSoNguyen(cacMuc[1], maLopTCKeTiep) || maLopTCKeTiep < 1)
+        return loiVaXoaDuLieuDocDo("Sai dòng đếm lớp tín chỉ trong data/data_loptinchi_dangky.txt.");
 
-                    for (int j = 0; j < soDangKy; ++j) {
-                        if (!getline(tepLopTinChi, dong) || dong.empty()) break;
-                        if (tachChuoi(dong, '|', cacMuc, 10) >= 3) {
-                            string maSV = cacMuc[0];
-                            float diem = (float)atof(cacMuc[1].c_str());
-                            bool huy = (atoi(cacMuc[2].c_str()) != 0);
-                            // Nối vào cuối DSLK
-                            if (lopTinChi->dssvdk == nullptr) {
-                                lopTinChi->dssvdk = new NodeDK{taoDangKy(maSV.c_str(), diem, huy), nullptr};
-                            } else {
-                                PTRDK p = lopTinChi->dssvdk;
-                                while (p->next != nullptr) p = p->next;
-                                p->next = new NodeDK{taoDangKy(maSV.c_str(), diem, huy), nullptr};
-                            }
-                        }
-                    }
-                    danhSachLopTinChi.lopTC[danhSachLopTinChi.soLuong++] = lopTinChi;
-                }
+    int maLopTCMax = 0;
+    for (int i = 0; i < soLuong; ++i) {
+        if (!docDongKhongRong(tepLopTinChi, dong))
+            return loiVaXoaDuLieuDocDo("Thiếu dòng thông tin lớp tín chỉ trong data/data_loptinchi_dangky.txt.");
+        soTruong = tachChuoi(dong, '|', cacMuc, 12);
+        int maLopTC = 0, hocKy = 0, nhom = 0, minSV = 0, maxSV = 0, daHuy = 0, soDangKy = 0;
+        if (demTruong(dong) != 9 || soTruong != 9 ||
+            !docSoNguyen(cacMuc[0], maLopTC) || maLopTC < 1 ||
+            cacMuc[1].empty() || cacMuc[1].size() >= MAX_MAMH || timMonHoc(root, cacMuc[1].c_str()) == nullptr ||
+            cacMuc[2].empty() || cacMuc[2].size() >= MAX_NIENKHOA ||
+            !docSoNguyen(cacMuc[3], hocKy) || hocKy < 1 || hocKy > 3 ||
+            !docSoNguyen(cacMuc[4], nhom) || nhom < 1 ||
+            !docSoNguyen(cacMuc[5], minSV) || !docSoNguyen(cacMuc[6], maxSV) || maxSV < minSV ||
+            !docSoNguyen(cacMuc[7], daHuy) || daHuy > 1 ||
+            !docSoNguyen(cacMuc[8], soDangKy)) {
+            return loiVaXoaDuLieuDocDo("Sai định dạng dòng lớp tín chỉ trong data/data_loptinchi_dangky.txt.");
+        }
+        if (timLopTinChiTheoMa(danhSachLopTinChi, maLopTC) != -1)
+            return loiVaXoaDuLieuDocDo("Mã lớp tín chỉ bị trùng trong data/data_loptinchi_dangky.txt.");
+
+        LopTinChi* lopTinChi = new LopTinChi();
+        lopTinChi->maLopTC = maLopTC;
+        strncpy(lopTinChi->maMH, cacMuc[1].c_str(), MAX_MAMH - 1);
+        strncpy(lopTinChi->nienKhoa, cacMuc[2].c_str(), MAX_NIENKHOA - 1);
+        lopTinChi->hocKy = hocKy;
+        lopTinChi->nhom = nhom;
+        lopTinChi->minSV = minSV;
+        lopTinChi->maxSV = maxSV;
+        lopTinChi->huyLop = daHuy != 0;
+
+        for (int j = 0; j < soDangKy; ++j) {
+            if (!docDongKhongRong(tepLopTinChi, dong)) {
+                giaiPhongDSDK(lopTinChi->dssvdk);
+                delete lopTinChi;
+                return loiVaXoaDuLieuDocDo("Thiếu dòng đăng ký trong data/data_loptinchi_dangky.txt.");
+            }
+            soTruong = tachChuoi(dong, '|', cacMuc, 12);
+            float diem = 0.0f;
+            int huyDangKy = 0;
+            if (demTruong(dong) != 3 || soTruong != 3 || cacMuc[0].empty() || cacMuc[0].size() >= MAX_MASV ||
+                !docDiem(cacMuc[1], diem) || !docSoNguyen(cacMuc[2], huyDangKy) || huyDangKy > 1) {
+                giaiPhongDSDK(lopTinChi->dssvdk);
+                delete lopTinChi;
+                return loiVaXoaDuLieuDocDo("Sai định dạng bản ghi đăng ký trong data/data_loptinchi_dangky.txt.");
+            }
+            NodeDK* nutMoi = new NodeDK{taoDangKy(cacMuc[0].c_str(), diem, huyDangKy != 0), nullptr};
+            if (lopTinChi->dssvdk == nullptr) lopTinChi->dssvdk = nutMoi;
+            else {
+                PTRDK p = lopTinChi->dssvdk;
+                while (p->next != nullptr) p = p->next;
+                p->next = nutMoi;
             }
         }
+        danhSachLopTinChi.lopTC[danhSachLopTinChi.soLuong++] = lopTinChi;
+        if (maLopTC > maLopTCMax) maLopTCMax = maLopTC;
     }
+    if (maLopTCKeTiep <= maLopTCMax)
+        return loiVaXoaDuLieuDocDo("Mã lớp tín chỉ kế tiếp không hợp lệ trong data/data_loptinchi_dangky.txt.");
+    if (dongConDuLieu(tepLopTinChi)) return loiVaXoaDuLieuDocDo("Có dữ liệu thừa trong data/data_loptinchi_dangky.txt.");
     tepLopTinChi.close();
 
-    delete[] cacMuc;
+    thongBaoLoi.clear();
+    return true;
 }
 
 

@@ -104,7 +104,7 @@ public:
 
     static std::string catChuoiUtf8(const std::string& str, int soKyTuToiDa);
 
-    static std::string canPhai(const std::string& str, int chieuRong);
+    static std::string canTrai(const std::string& str, int chieuRong);
 
     static std::string canGiua(const std::string& str, int chieuRong);
 
