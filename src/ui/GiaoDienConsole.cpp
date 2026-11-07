@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cmath>
+using namespace std;
 
 using namespace std;
 
@@ -87,15 +88,10 @@ void GiaoDienConsole::veKhung(int x, int y, int w, int h, int mauChu, int mauNen
         }
     }
 
-void GiaoDienConsole::veTieuDe(const string& tieuDePhu) {
+void GiaoDienConsole::veTieuDe() {
         datMau(VANG, LAM);
         diDenToaDo(1, 0);
         cout << canGiua("QUẢN LÍ SINH VIÊN HỆ TÍN CHỈ", 114);
-        if (!tieuDePhu.empty()) {
-            datMau(TRANG, XANH_NGOC);
-            diDenToaDo(1, 1);
-            cout << canGiua(tieuDePhu, 114);
-        }
         datLaiMau();
     }
 
@@ -261,19 +257,22 @@ string GiaoDienConsole::vietHoaDauTu(const string& s) {
         return res;
     }
 
-bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string& thongBaoLoi, const string& nhanNutLuu, const string& nhanNutHuy, const string& nhanNutXoa, bool* daChonXoa, const string& nhanNutF1, bool* daNhanF1) {
+bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string& thongBaoLoi, const string& nhanNutLuu, const string& nhanNutHuy, const string& nhanNutXoa, bool* daChonXoa, const string& nhanNutF1, bool* daNhanF1, bool* daChonUndo, const string& nhanNutUndo) {
     GiaoDienConsole::hienConTro(false);
     bool coNutXoa = !nhanNutXoa.empty() && daChonXoa != nullptr;
     bool coNutF1 = !nhanNutF1.empty() && daNhanF1 != nullptr;
+    bool coNutUndo = !nhanNutUndo.empty() && daChonUndo != nullptr;
     if (daChonXoa != nullptr) *daChonXoa = false;
     if (daNhanF1 != nullptr) *daNhanF1 = false;
-    int soNutHanhDong = 2 + (coNutXoa ? 1 : 0) + (coNutF1 ? 1 : 0);
+    if (daChonUndo != nullptr) *daChonUndo = false;
+    int soNutHanhDong = 2 + (coNutXoa ? 1 : 0) + (coNutF1 ? 1 : 0) + (coNutUndo ? 1 : 0);
     int viTriNutLuu = soTruong;
-    int viTriNutXoa = coNutXoa ? soTruong + 1 : -1;
-    int viTriNutF1 = coNutF1 ? soTruong + 1 + (coNutXoa ? 1 : 0) : -1;
+    int viTriNutUndo = coNutUndo ? soTruong + 1 : -1;
+    int viTriNutXoa = coNutXoa ? soTruong + 1 + (coNutUndo ? 1 : 0) : -1;
+    int viTriNutF1 = coNutF1 ? soTruong + 1 + (coNutUndo ? 1 : 0) + (coNutXoa ? 1 : 0) : -1;
     int viTriNutHuy = soTruong + soNutHanhDong - 1;
     int soMucDieuHuong = soTruong + soNutHanhDong;
-    int chieuRongBieuMau = 76;
+    int chieuRongBieuMau = soNutHanhDong >= 5 ? 110 : (soNutHanhDong == 4 ? 90 : 76);
     int chieuCaoBieuMau = soTruong * 2 + 7;
     int toaDoXBieuMau = (CHIEU_RONG_GIAO_DIEN - chieuRongBieuMau) / 2;
     int toaDoYBieuMau = (CHIEU_CAO_GIAO_DIEN - chieuCaoBieuMau) / 2;
@@ -293,15 +292,19 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
     int toaDoNutY = toaDoYBieuMau + chieuCaoBieuMau - 2;
     bool baNutHanhDong = soNutHanhDong == 3;
     bool bonNutHanhDong = soNutHanhDong == 4;
-    int nutRong = bonNutHanhDong ? 17 : (baNutHanhDong ? 20 : 18);
-    int xNutLuu = bonNutHanhDong ? 1 : (baNutHanhDong ? 2 : 16);
-    int xNutPhu = bonNutHanhDong ? 20 : 28;
-    int xNutF1 = bonNutHanhDong ? 39 : 28;
-    int xNutHuy = bonNutHanhDong ? 58 : (baNutHanhDong ? 54 : 42);
-    NutChuNhat nutLuu = { toaDoXBieuMau + xNutLuu, toaDoNutY, nutRong, 1, 1, nhanNutLuu };
-    NutChuNhat nutXoa = { toaDoXBieuMau + xNutPhu, toaDoNutY, nutRong, 1, 2, nhanNutXoa };
-    NutChuNhat nutF1 = { toaDoXBieuMau + xNutF1, toaDoNutY, nutRong, 1, 3, nhanNutF1 };
-    NutChuNhat nutHuy = { toaDoXBieuMau + xNutHuy, toaDoNutY, nutRong, 1, 0, nhanNutHuy };
+    bool namNutHanhDong = soNutHanhDong == 5;
+    int nutRong = namNutHanhDong ? 18 : (bonNutHanhDong ? 20 : (baNutHanhDong ? 20 : 18));
+    auto toaDoXNut = [&](int chiSo) {
+        if (namNutHanhDong) return toaDoXBieuMau + 4 + chiSo * 20;
+        if (bonNutHanhDong) return toaDoXBieuMau + 1 + chiSo * 22;
+        if (baNutHanhDong) return toaDoXBieuMau + 2 + chiSo * 26;
+        return toaDoXBieuMau + 16 + chiSo * 26;
+    };
+    NutChuNhat nutLuu = { toaDoXNut(0), toaDoNutY, nutRong, 1, 1, nhanNutLuu };
+    NutChuNhat nutUndo = { toaDoXNut(viTriNutUndo - soTruong), toaDoNutY, nutRong, 1, 2, nhanNutUndo };
+    NutChuNhat nutXoa = { toaDoXNut(viTriNutXoa - soTruong), toaDoNutY, nutRong, 1, 3, nhanNutXoa };
+    NutChuNhat nutF1 = { toaDoXNut(viTriNutF1 - soTruong), toaDoNutY, nutRong, 1, 3, nhanNutF1 };
+    NutChuNhat nutHuy = { toaDoXNut(viTriNutHuy - soTruong), toaDoNutY, nutRong, 1, 0, nhanNutHuy };
 
     auto veMotTruong = [&](int i, bool dangHoatDong) {
         if (i < 0 || i >= soTruong) return;
@@ -317,15 +320,17 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
     };
 
     auto veDongThongBao = [&]() {
-        GiaoDienConsole::diDenToaDo(toaDoXBieuMau + 2, toaDoYBieuMau + chieuCaoBieuMau - 4);
+        GiaoDienConsole::diDenToaDo(toaDoXBieuMau + 2, toaDoYBieuMau + chieuCaoBieuMau - 3);
         if (!thongBaoLoi.empty()) {
             GiaoDienConsole::datMau(DO_NHAT, DEN);
             cout << GiaoDienConsole::canGiua(thongBaoLoi, chieuRongBieuMau - 4);
         } else {
             GiaoDienConsole::datMau(XAM_DAM, DEN);
             string huongDan = coNutF1
-                ? "F1 hoặc nút Chọn môn: mở danh sách môn học | Tab/Lên/Xuống: di chuyển"
-                : "Click chuột vào ô hoặc dùng phím Lên/Xuống/Tab để di chuyển";
+                ? "Tab/Lên/Xuống: di chuyển giữa các ô"
+                : (coNutUndo
+                    ? "Dùng nút Hoàn tác hoặc nhấn F3"
+                    : "Click chuột vào ô hoặc dùng phím Lên/Xuống/Tab để di chuyển");
             cout << GiaoDienConsole::canGiua(huongDan, chieuRongBieuMau - 4);
         }
     };
@@ -340,11 +345,21 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
     for (int i = 0; i < soTruong; ++i) {
         veMotTruong(i, i == viTriTruongDangChon);
     }
+    if (coNutF1 && soTruong > 1) {
+        GiaoDienConsole::datMau(XANH_NGOC_NHAT, DEN);
+        GiaoDienConsole::diDenToaDo(fields[1].x, fields[1].y + 1);
+        cout << GiaoDienConsole::canTrai("F1 hoặc nút CHỌN MÔN: mở danh sách môn học", fields[1].w);
+    }
     GiaoDienConsole::veNut(nutLuu, viTriTruongDangChon == viTriNutLuu, TRANG, XANH_LA, DEN, VANG);
+    if (coNutUndo) GiaoDienConsole::veNut(nutUndo, viTriTruongDangChon == viTriNutUndo, TRANG, NAU, DEN, VANG);
     if (coNutXoa) GiaoDienConsole::veNut(nutXoa, viTriTruongDangChon == viTriNutXoa, TRANG, DO_NHAT, DEN, VANG);
     if (coNutF1) GiaoDienConsole::veNut(nutF1, viTriTruongDangChon == viTriNutF1, TRANG, XANH_NGOC, DEN, VANG);
     GiaoDienConsole::veNut(nutHuy, viTriTruongDangChon == viTriNutHuy, TRANG, DO, DEN, VANG);
     veDongThongBao();
+    string goiYBieuMau = "Tab: đổi ô | Enter/F2: lưu | Esc: hủy | Nhập không dấu";
+    if (coNutF1) goiYBieuMau += " | F1: chọn môn";
+    if (coNutUndo) goiYBieuMau += " | F3: hoàn tác";
+    GiaoDienConsole::veThanhTrangThai(goiYBieuMau);
 
     int viTriTruongTruoc = viTriTruongDangChon;
     string thongBaoTruoc = thongBaoLoi;
@@ -360,12 +375,14 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
             GiaoDienConsole::hienConTro(false);
             if (viTriTruongTruoc < soTruong) veMotTruong(viTriTruongTruoc, false);
             else if (viTriTruongTruoc == viTriNutLuu) GiaoDienConsole::veNut(nutLuu, false, TRANG, XANH_LA, DEN, VANG);
+            else if (coNutUndo && viTriTruongTruoc == viTriNutUndo) GiaoDienConsole::veNut(nutUndo, false, TRANG, NAU, DEN, VANG);
             else if (coNutXoa && viTriTruongTruoc == viTriNutXoa) GiaoDienConsole::veNut(nutXoa, false, TRANG, DO_NHAT, DEN, VANG);
             else if (coNutF1 && viTriTruongTruoc == viTriNutF1) GiaoDienConsole::veNut(nutF1, false, TRANG, XANH_NGOC, DEN, VANG);
             else if (viTriTruongTruoc == viTriNutHuy) GiaoDienConsole::veNut(nutHuy, false, TRANG, DO, DEN, VANG);
 
             if (viTriTruongDangChon < soTruong) veMotTruong(viTriTruongDangChon, true);
             else if (viTriTruongDangChon == viTriNutLuu) GiaoDienConsole::veNut(nutLuu, true, TRANG, XANH_LA, DEN, VANG);
+            else if (coNutUndo && viTriTruongDangChon == viTriNutUndo) GiaoDienConsole::veNut(nutUndo, true, TRANG, NAU, DEN, VANG);
             else if (coNutXoa && viTriTruongDangChon == viTriNutXoa) GiaoDienConsole::veNut(nutXoa, true, TRANG, DO_NHAT, DEN, VANG);
             else if (coNutF1 && viTriTruongDangChon == viTriNutF1) GiaoDienConsole::veNut(nutF1, true, TRANG, XANH_NGOC, DEN, VANG);
             else if (viTriTruongDangChon == viTriNutHuy) GiaoDienConsole::veNut(nutHuy, true, TRANG, DO, DEN, VANG);
@@ -408,6 +425,9 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
             int viTriNut = viTriTruongDangChon - soTruong;
             viTriNut = (viTriNut + buoc + soNutHanhDong) % soNutHanhDong;
             viTriTruongDangChon = soTruong + viTriNut;
+        } else if (coNutUndo && suKien.type == EVT_KEY_F3) {
+            *daChonUndo = true;
+            return false;
         } else if (coNutF1 && suKien.type == EVT_KEY_F1) {
             *daNhanF1 = true;
             return false;
@@ -418,6 +438,9 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
                 return false;
             } else if (coNutXoa && viTriTruongDangChon == viTriNutXoa) {
                 *daChonXoa = true;
+                return false;
+            } else if (coNutUndo && viTriTruongDangChon == viTriNutUndo) {
+                *daChonUndo = true;
                 return false;
             } else if (coNutF1 && viTriTruongDangChon == viTriNutF1) {
                 *daNhanF1 = true;
@@ -487,6 +510,11 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
                 GiaoDienConsole::hienConTro(false);
                 return true;
             }
+            if (coNutUndo && nutUndo.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) {
+                *daChonUndo = true;
+                GiaoDienConsole::hienConTro(false);
+                return false;
+            }
             if (coNutXoa && nutXoa.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) {
                 *daChonXoa = true;
                 GiaoDienConsole::hienConTro(false);
@@ -503,6 +531,7 @@ bool chayBieuMau(const string& tieuDe, TruongNhap* fields, int soTruong, string&
             }
         } else if (suKien.type == SK_CHUOT_DI_CHUYEN) {
             if (nutLuu.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutLuu;
+            else if (coNutUndo && nutUndo.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutUndo;
             else if (coNutXoa && nutXoa.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutXoa;
             else if (coNutF1 && nutF1.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutF1;
             else if (nutHuy.contains(suKien.toaDoChuotX, suKien.toaDoChuotY)) viTriTruongDangChon = viTriNutHuy;

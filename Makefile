@@ -5,18 +5,11 @@ rwildcard = $(foreach dir,$(wildcard $(1)/*),$(call rwildcard,$(dir),$(2)) $(fil
 SOURCES := $(call rwildcard,src,*.cpp)
 HEADERS := $(call rwildcard,include,*.h)
 
-ifeq ($(OS),Windows_NT)
 TARGET := QuanLyDiemSV.exe
-PLATFORM_SOURCE := src/ui/GiaoDienConsole_Windows.cpp
+PLATFORM_SOURCE := src/ui/GiaoDienConsole_NenTang.cpp
 RUN := ./$(TARGET)
 RM := del /Q /F
-else
-TARGET := QuanLyDiemSV
-PLATFORM_SOURCE := src/ui/GiaoDienConsole_Linux.cpp
-RUN := ./$(TARGET)
-RM := rm -f
-endif
-SOURCES := $(filter-out src/ui/GiaoDienConsole_Windows.cpp src/ui/GiaoDienConsole_Linux.cpp,$(SOURCES)) $(PLATFORM_SOURCE)
+SOURCES := $(filter-out src/ui/GiaoDienConsole_NenTang.cpp,$(SOURCES)) $(PLATFORM_SOURCE)
 
 .PHONY: all run clean
 all: $(TARGET)

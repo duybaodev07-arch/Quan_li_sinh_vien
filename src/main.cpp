@@ -1,7 +1,8 @@
-#include "ui/GiaoDienConsole.h"
+#include <ui/GiaoDienConsole.h>
 #include "model/MonHoc.h"
 #include "model/Lop.h"
 #include "model/LopTinChi.h"
+#include "model/LichSuThaoTac.h"
 #include "storage/DocGhiDuLieu.h"
 #include "ui/Menu.h"
 #include <string>
@@ -21,7 +22,9 @@ int main() {
             "Đồng ý: thử lại | Hủy bỏ: vào menu rỗng");
         if (!thuDocLai) break;
     }
-    chayMenu(root, danhSachLop, danhSachLopTinChi);
+    QuanLyLichSu lichSu;
+    chayMenu(root, danhSachLop, danhSachLopTinChi, lichSu);
+    LichSuThaoTac::giaiPhongLichSu(lichSu);
 
     giaiPhongBST(root);
     giaiPhongDanhSachLop(danhSachLop);

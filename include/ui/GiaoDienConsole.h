@@ -3,10 +3,9 @@
 
 #include <iostream>
 #include <string>
-#include <cstring>
 #include <iomanip>
 #include <sstream>
-#include <cmath>
+
 
 // Kích thước chuẩn an toàn tuyệt đối cho mọi cửa sổ Windows Terminal / CMD (mặc định 120x30)
 // Không bao giờ vẽ chạm cột 119 hay dòng 29 để tránh tự động xuống dòng (wrap) và cuộn màn hình (scroll)
@@ -111,7 +110,7 @@ public:
     static void veKhung(int x, int y, int w, int h, int mauChu = XANH_NGOC_NHAT, int mauNen = DEN, const std::string& tieuDe = "");
 
     // Header gọn gàng (dòng 0, rộng 114 cột tại x=1)
-    static void veTieuDe(const std::string& tieuDePhu = "");
+    static void veTieuDe();
 
     // Thanh trạng thái cố định ở dòng 26 & 27 (không bao giờ vượt quá dòng 27)
     static void veThanhTrangThai(const std::string& goiY, const std::string& thongBao = "", bool coLoi = false);
@@ -151,7 +150,7 @@ struct TruongNhap {
 };
 
 // Form nhập liệu KHÔNG NHẤP NHÁY: Chỉ vẽ khung 1 lần, chỉ vẽ lại đúng ô đang gõ hoặc khi chuyển ô
-bool chayBieuMau(const std::string& tieuDe, TruongNhap* fields, int soTruong, std::string& thongBaoLoi, const std::string& nhanNutLuu = "[ LƯU (Enter) ]", const std::string& nhanNutHuy = "[ HỦY (ESC) ]", const std::string& nhanNutXoa = "", bool* daChonXoa = nullptr, const std::string& nhanNutF1 = "", bool* daNhanF1 = nullptr);
+bool chayBieuMau(const std::string& tieuDe, TruongNhap* fields, int soTruong, std::string& thongBaoLoi, const std::string& nhanNutLuu = "[ LƯU (Enter) ]", const std::string& nhanNutHuy = "[ HỦY (ESC) ]", const std::string& nhanNutXoa = "", bool* daChonXoa = nullptr, const std::string& nhanNutF1 = "", bool* daNhanF1 = nullptr, bool* daChonUndo = nullptr, const std::string& nhanNutUndo = "[ HOÀN TÁC ]");
 
 
 #endif // CONSOLE_UI_H

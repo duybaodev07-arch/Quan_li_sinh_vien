@@ -1,10 +1,10 @@
 #include "ui/GiaoDienConsole.h"
 #include "features/QuanLyDiemBaoCao.h"
-#include "features/HamDungChung.h"
+#include "features/TienIchChung.h"
 
 #include "storage/DocGhiDuLieu.h"
 
-
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -12,7 +12,6 @@
 
 using namespace std;
 
-// ============================================================================
 void chucNangI_NhapDiem(PTRMH root, const DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
     while (true) {
         int viTriLopTinChi = chonLopTinChiTheoThongTin(root, danhSachLopTinChi, "CHỨC NĂNG (i): NHẬP ĐIỂM LỚP TÍN CHỈ");

@@ -1,13 +1,6 @@
 #include "ui/GiaoDienConsole.h"
-#include <iostream>
-#include <string>
-#include <cstdlib>
-#include <cstring>
-#include <sstream>
 #include <windows.h>
-
 using namespace std;
-
 namespace {
 HANDLE hOut = nullptr;
 HANDLE hIn = nullptr;
@@ -19,7 +12,7 @@ void GiaoDienConsole::khoiTaoConsole(const char* tieuDe) {
         hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         hIn = GetStdHandle(STD_INPUT_HANDLE);
 
-        SetConsoleOutputCP(65001);
+        SetConsoleOutputCP(65001); // ma code utf8
         SetConsoleCP(65001);
         SetConsoleTitleA(tieuDe);
 
@@ -140,4 +133,6 @@ SuKienNhap GiaoDienConsole::docSuKien() {
             }
         }
     }
+
+
 

@@ -4,7 +4,7 @@
     {
       "label": "Build QuanLyDiemSV",
       "type": "shell",
-      "command": "make",
+      "command": "mingw32-make",
       "args": [
         "all"
       ],
@@ -17,13 +17,19 @@
       },
       "problemMatcher": [
         "$gcc"
+      ]
+    },
+    {
+      "label": "Run QuanLyDiemSV",
+      "type": "shell",
+      "command": "mingw32-make",
+      "args": [
+        "run"
       ],
-      "windows": {
-        "command": "mingw32-make"
+      "options": {
+        "cwd": "${workspaceFolder}"
       },
-      "linux": {
-        "command": "make"
-      }
+      "problemMatcher": []
     }
   ]
 }

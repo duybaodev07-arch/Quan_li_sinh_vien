@@ -1,6 +1,7 @@
 #include "ui/GiaoDienConsole.h"
 #include "features/QuanLyLopSinhVien.h"
-#include "features/HamDungChung.h"
+#include "model/LichSuThaoTac.h"
+#include "features/TienIchChung.h"
 
 #include "storage/DocGhiDuLieu.h"
 #include "model/SoSanhChuoi.h"
@@ -14,9 +15,9 @@
 
 using namespace std;
 
-void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const DanhSachLopTinChi& danhSachLopTinChi) {
+void chucNangC_CapNhatSinhVienLop(PTRMH& root, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi, QuanLyLichSu& lichSu) {
     while (true) {
-        string maLop = chonLopNhanh(danhSachLop, true);
+        string maLop = chonLopNhanh(danhSachLop, true, false, root, &danhSachLopTinChi, &lichSu);
         if (maLop.empty()) break;
 
         int viTriLop = timLop(danhSachLop, maLop.c_str());
@@ -45,10 +46,11 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
         int nutDangTro = -1;
         int nutTruocDo = -1;
 
-        int soNut = 2;
+        int soNut = 3;
         NutChuNhat* cacNut = new NutChuNhat[soNut];
         cacNut[0] = { 6,  23, 28, 1, 0, "[ + NHẬP SV MỚI (Ins) ]" };
-        cacNut[1] = { 90, 23, 20, 1, 3, "[ ĐỔI LỚP (ESC) ]" };
+        cacNut[1] = { 53, 23, 24, 1, 4, "[ F3: HOÀN TÁC ]" };
+        cacNut[2] = { 90, 23, 20, 1, 3, "[ ĐỔI LỚP (ESC) ]" };
 
         auto veCacOLoc = [&]() {
             const int toaDoX[] = {4, 32, 64, 91};
@@ -187,7 +189,8 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
                     GiaoDienConsole::veNut(cacNut[i], i == nutDangTro, TRANG, XAM_DAM, DEN, VANG);
                 }
 
-                GiaoDienConsole::veThanhTrangThai("Trang " + to_string(trangHienTai + 1) + "/" + to_string(tongSoTrang) + " | Tìm SV | ←/→: con trỏ | Tab: đổi ô | Enter: sửa | Ins: thêm | Esc: đổi lớp", thongBao, coLoi);
+                string moTaUndo = LichSuThaoTac::moTaThaoTacCGanNhat(lichSu);
+                GiaoDienConsole::veThanhTrangThai("Trang " + to_string(trangHienTai + 1) + "/" + to_string(tongSoTrang) + " | F3: hoàn tác [" + moTaUndo + "] | Enter sửa | Ins thêm | Esc đổi lớp | Tìm không dấu", thongBao, coLoi);
                 thongBao = "";
                 canVeLaiToanBo = false;
                 canVeLaiCacOLoc = false;
@@ -234,7 +237,8 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
                     nutTruocDo = nutDangTro;
                 }
                 if (canVeLaiThanhTrangThai) {
-                    GiaoDienConsole::veThanhTrangThai("Trang " + to_string(trangHienTai + 1) + "/" + to_string(tongSoTrang) + " | Tìm SV | ←/→: con trỏ | Tab: đổi ô | Enter: sửa | Ins: thêm | Esc: đổi lớp", thongBao, coLoi);
+                    string moTaUndo = LichSuThaoTac::moTaThaoTacCGanNhat(lichSu);
+                    GiaoDienConsole::veThanhTrangThai("Trang " + to_string(trangHienTai + 1) + "/" + to_string(tongSoTrang) + " | F3: hoàn tác [" + moTaUndo + "] | Enter sửa | Ins thêm | Esc đổi lớp | Tìm không dấu", thongBao, coLoi);
                     canVeLaiThanhTrangThai = false;
                 }
             }
@@ -284,7 +288,16 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
                 }
             }
 
-            if (suKien.type == SK_PHIM_ESC || hanhDong == 3) {
+            if (suKien.type == EVT_KEY_F3 || hanhDong == 4) {
+                const string moTaUndo = LichSuThaoTac::moTaThaoTacCGanNhat(lichSu);
+                string thongBaoUndo;
+                bool daHoanTac = LichSuThaoTac::hoanTacThaoTacC(
+                    lichSu, root, danhSachLop, danhSachLopTinChi, thongBaoUndo);
+                thongBao = daHoanTac ? "Đã hoàn tác: " + moTaUndo : thongBaoUndo;
+                coLoi = !daHoanTac;
+                canVeLaiToanBo = true;
+                canVeLaiThanhTrangThai = true;
+            } else if (suKien.type == SK_PHIM_ESC || hanhDong == 3) {
                 if (mangSinhVien) delete[] mangSinhVien;
                 luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                 break;
@@ -304,7 +317,6 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
 
                     string thongBaoLoi = "Bỏ trống ô Mã SV và nhấn Enter/Lưu để dừng nhập mới.";
                     bool dungVongLap = false;
-
                     while (true) {
                         if (!chayBieuMau(string("THÊM SV VÀO LỚP ") + lop.maLop + " (ĐÃ THÊM: " + to_string(soLuongDaThem) + ")", f, 5, thongBaoLoi)) {
                             dungVongLap = true;
@@ -338,7 +350,9 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
                             continue;
                         }
 
-                        themSVCoThuTu(lop.dssv, taoSinhVien(maSV.c_str(), ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str()));
+                        SinhVien sinhVienMoi = taoSinhVien(maSV.c_str(), ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str());
+                        themSVCoThuTu(lop.dssv, sinhVienMoi);
+                        LichSuThaoTac::ghiNhanThemSinhVien(lichSu, lop.maLop, sinhVienMoi);
                         soLuongDaThem++;
                         luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                         break;
@@ -401,6 +415,7 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
                                 continue;
                             }
                             if (GiaoDienConsole::hopXacNhan("XÁC NHẬN XÓA SINH VIÊN", "Xóa sinh viên " + string(sinhVienCu.maSV) + " khỏi lớp " + lop.maLop + "?")) {
+                                LichSuThaoTac::ghiNhanXoaSinhVien(lichSu, lop.maLop, sinhVienCu);
                                 xoaSVTheoMa(lop.dssv, sinhVienCu.maSV);
                                 luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                                 thongBao = "Đã xóa sinh viên " + string(sinhVienCu.maSV) + " thành công!";
@@ -429,8 +444,10 @@ void chucNangC_CapNhatSinhVienLop(PTRMH root, DanhSachLop& danhSachLop, const Da
                         continue;
                     }
 
+                    SinhVien sinhVienMoi = taoSinhVien(sinhVienCu.maSV, ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str());
                     xoaSVTheoMa(lop.dssv, sinhVienCu.maSV);
-                    themSVCoThuTu(lop.dssv, taoSinhVien(sinhVienCu.maSV, ho.c_str(), ten.c_str(), phai.c_str(), sdt.c_str()));
+                    themSVCoThuTu(lop.dssv, sinhVienMoi);
+                    LichSuThaoTac::ghiNhanSuaSinhVien(lichSu, lop.maLop, sinhVienCu, sinhVienMoi);
                     luuTatCaDuLieu(root, danhSachLop, danhSachLopTinChi);
                     thongBao = string("Đã hiệu chỉnh sinh viên ") + sinhVienCu.maSV + " và sắp xếp lại theo Tên!";
                     coLoi = false;
@@ -627,7 +644,7 @@ void chucNangD_InDSSVTheoMaSV(DanhSachLop& danhSachLop) {
             }
             if (canVeTrangThai) {
                 GiaoDienConsole::veNut(nutQuayLai, true, TRANG, XAM_DAM, DEN, VANG);
-                GiaoDienConsole::veThanhTrangThai("Trang " + to_string(trang + 1) + "/" + to_string(tongSoTrang) + " | Tìm SV | ↑/↓/Cuộn: chọn dòng | PgUp/PgDn: chuyển trang | Enter/Esc: quay lại");
+                GiaoDienConsole::veThanhTrangThai("Trang " + to_string(trang + 1) + "/" + to_string(tongSoTrang) + " | Tìm SV | ↑/↓ chọn | PgUp/PgDn trang | Enter/Esc về | Nhập không dấu");
                 canVeTrangThai = false;
             }
 
@@ -738,8 +755,5 @@ void chucNangD_InDSSVTheoMaSV(DanhSachLop& danhSachLop) {
     }
 }
 
-// ============================================================================
-// CHỨC NĂNG (e): NHẬP MÔN HỌC (Thêm / Xóa / Hiệu chỉnh trên Cây BST)
-// ============================================================================
 
 

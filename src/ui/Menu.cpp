@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi) {
+void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& danhSachLopTinChi, QuanLyLichSu& lichSu) {
     // Khởi tạo Menu chính bằng MẢNG ĐỘNG
     const int SO_MUC_MENU = 13;
     string* tieuDeMucMenu = new string[SO_MUC_MENU];
@@ -76,7 +76,11 @@ void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& dan
         GiaoDienConsole::datMau(TRANG, DEN);
         GiaoDienConsole::diDenToaDo(67, 15); cout << "- Tổng số Lớp tín chỉ  : "; GiaoDienConsole::datMau(VANG, DEN); cout << danhSachLopTinChi.soLuong << " lớp (" << ltcDangMo << " đang mở)";
 
-        GiaoDienConsole::veThanhTrangThai("Chuột: Di chuyển & Click trái | Bàn phím: Mũi tên Lên/Xuống, Enter, ESC hoặc phím 'a' -> 'l'");
+        GiaoDienConsole::diDenToaDo(4, 19);
+        GiaoDienConsole::datMau(VANG, DEN);
+        cout << "Lưu ý: Tìm và nhập tiếng Việt không dấu.";
+
+        GiaoDienConsole::veThanhTrangThai("Chuột: Di chuyển & Click trái | Bàn phím: Mũi tên Lên/Xuống, Enter, ESC, phím a-l, 0: thoát");
 
         int mucChonTruoc = mucDangChon;
         bool canVeLaiToanBo = false;
@@ -133,11 +137,11 @@ void chayMenu(PTRMH& cayMonHoc, DanhSachLop& danhSachLop, DanhSachLopTinChi& dan
 
             if (luaChonKichHoat != -1) {
                 switch (luaChonKichHoat) {
-                    case 0:  chucNangA_MoLopTinChi(cayMonHoc, danhSachLopTinChi, danhSachLop); break;
+                    case 0:  chucNangA_MoLopTinChi(cayMonHoc, danhSachLopTinChi, danhSachLop, lichSu); break;
                     case 1:  chucNangB_InDSSVDangKyLopTC(cayMonHoc, danhSachLopTinChi, danhSachLop); break;
-                    case 2:  chucNangC_CapNhatSinhVienLop(cayMonHoc, danhSachLop, danhSachLopTinChi); break;
+                    case 2:  chucNangC_CapNhatSinhVienLop(cayMonHoc, danhSachLop, danhSachLopTinChi, lichSu); break;
                     case 3:  chucNangD_InDSSVTheoMaSV(danhSachLop); break;
-                    case 4:  chucNangE_CapNhatMonHoc(cayMonHoc, danhSachLop, danhSachLopTinChi); break;
+                    case 4:  chucNangE_CapNhatMonHoc(cayMonHoc, danhSachLop, danhSachLopTinChi, lichSu); break;
                     case 5:  chucNangF_InDSMonHocTheoTen(cayMonHoc); break;
                     case 6:  chucNangG_DangKyLopTinChi(cayMonHoc, danhSachLop, danhSachLopTinChi); break;
                     case 7:  chucNangH_HuyLopTinChi(cayMonHoc, danhSachLop, danhSachLopTinChi); break;
